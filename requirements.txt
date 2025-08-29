@@ -1,13 +1,11 @@
-# Core dependencies
+# Production-ready dependencies for Azure App Service
 PyYAML>=6.0
 Flask>=2.3.0
 Werkzeug>=2.3.0
-
-# Additional utilities
 click>=8.0.0
 jinja2>=3.1.0
 python-dateutil>=2.8.0
 
-# Development dependencies (optional)
-# pytest>=7.0.0
-# black>=23.0.0
+# Production WSGI server
+gunicorn>=21.2.0
+gevent>=23.0.0
