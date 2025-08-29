@@ -1,0 +1,536 @@
+{% extends "base.html" %}
+
+{% block title %}Test Cases - {{ problem.config.get('title', problem.slug) }} - PocketOJ{% endblock %}
+
+{% block extra_css %}
+<style>
+    .test-case-card {
+        transition: transform 0.2s;
+    }
+    
+    .test-case-card:hover {
+        transform: translateY(-1px);
+    }
+    
+    .size-indicator {
+        font-size: 0.8rem;
+    }
+    
+    .pattern-badge {
+        font-size: 0.75rem;
+    }
+    
+    .code-input {
+        font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('problem_detail', slug=problem.slug) }}">{{ problem.config.get('title', problem.slug) }}</a></li>
+            <li class="breadcrumb-item active">Test Cases</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1><i class="fas fa-vial"></i> Test Case Management</h1>
+            <p class="text-muted">{{ problem.config.get('title', problem.slug) }}</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="btn-group">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateModal">
+                    <i class="fas fa-cog"></i> Generate Tests
+                </button>
+                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#manualModal">
+                    <i class="fas fa-plus"></i> Add Manual
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-eye fa-2x mb-2"></i>
+                    <h3>{{ stats.categories.samples.count }}</h3>
+                    <p class="mb-0">Samples</p>
+                    <small>{{ "%.1f"|format(stats.categories.samples.size_bytes/1024) }}KB</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-server fa-2x mb-2"></i>
+                    <h3>{{ stats.categories.system.count }}</h3>
+                    <p class="mb-0">System</p>
+                    <small>{{ "%.1f"|format(stats.categories.system.size_bytes/1024) }}KB</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-hdd fa-2x mb-2"></i>
+                    <h3>{{ stats.total_cases }}</h3>
+                    <p class="mb-0">Total</p>
+                    <small>{{ "%.1f"|format(stats.total_size_bytes/1024/1024) }}MB</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Case Categories -->
+    <div class="row">
+        
+        <!-- Samples -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-eye text-primary"></i> Sample Test Cases</h5>
+                    <span class="badge bg-primary">{{ stats.categories.samples.count }}</span>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">Examples shown in problem statement</p>
+                    <div class="d-flex justify-content-between text-small">
+                        <span>Size: {{ "%.1f"|format(stats.categories.samples.size_bytes/1024) }}KB</span>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="loadTestCases('samples')">
+                            <i class="fas fa-list"></i> View
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- System Tests -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-server text-success"></i> System Tests</h5>
+                    <span class="badge bg-success">{{ stats.categories.system.count }}</span>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">Comprehensive final validation</p>
+                    <div class="d-flex justify-content-between text-small">
+                        <span>Size: {{ "%.1f"|format(stats.categories.system.size_bytes/1024) }}KB</span>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="loadTestCases('system')">
+                            <i class="fas fa-list"></i> View
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Test Case List (populated by JavaScript) -->
+    <div class="card" id="testCaseList" style="display: none;">
+        <div class="card-header">
+            <h5 id="testCaseTitle">Test Cases</h5>
+        </div>
+        <div class="card-body">
+            <div id="testCaseContent">
+                <!-- Test cases will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Generate Tests Modal -->
+<div class="modal fade" id="generateModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-cog"></i> Generate Test Cases</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="generateForm">
+                    <div class="mb-3">
+                        <label for="testCategory" class="form-label">Test Category</label>
+                        <select class="form-select" id="testCategory" name="category">
+                            <option value="system" selected>System Tests (auto-generated)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Generation Patterns</label>
+                        <div class="row" id="patternsContainer">
+                            {% for pattern in (problem.config.get('test_generation.patterns') or []) %}
+                            <div class="col-md-4 mb-2">
+                                <div class="card pattern-config">
+                                    <div class="card-body">
+                                        <h6>{{ pattern.name|title }}</h6>
+                                        <div class="mb-2">
+                                            <label class="form-label small">Count:</label>
+                                            <input type="number" class="form-control form-control-sm pattern-count" 
+                                                   data-pattern="{{ pattern.name }}" 
+                                                   value="{{ pattern.count }}" min="0" max="50">
+                                        </div>
+                                        <small class="text-muted">Range: {{ pattern.get('n_range', ['auto', 'auto'])[0] }}-{{ pattern.get('n_range', ['auto', 'auto'])[1] }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="alert alert-info small">
+                            <i class="fas fa-info-circle"></i>
+                            Set count to 0 to skip a pattern. Your generator.py will be called with each pattern name.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="replaceExisting" name="replace_existing">
+                            <label class="form-check-label" for="replaceExisting">
+                                <strong>Replace existing test cases</strong>
+                            </label>
+                            <div class="form-text">If unchecked, new test cases will be appended to existing ones</div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-exclamation-triangle"></i> Generator Interface Rules</h6>
+                        <p class="mb-2">Your <code>generator.py</code> must follow this interface:</p>
+                        <pre class="small bg-light p-2">python generator.py &lt;pattern&gt; &lt;case_num&gt; &lt;seed&gt;</pre>
+                        <ul class="small mb-0">
+                            <li><strong>pattern</strong>: Pattern name (e.g., 'small', 'large', 'uniform')</li>
+                            <li><strong>case_num</strong>: Case number within pattern (1, 2, 3, ...)</li>
+                            <li><strong>seed</strong>: Random seed for reproducible generation</li>
+                            <li><strong>Output</strong>: Print test case to stdout in exact problem format</li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="generateTestsBtn">
+                    <i class="fas fa-cog"></i> Generate Tests
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Manual Test Modal -->
+<div class="modal fade" id="manualModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-plus"></i> Add Manual Test Case</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="manualForm">
+                    <div class="mb-3">
+                        <label for="manualCategory" class="form-label">Test Category</label>
+                        <select class="form-select" id="manualCategory" name="category">
+                            <option value="samples" selected>Samples (shown in problem statement)</option>
+
+                            <option value="system">System Tests (comprehensive)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="manualInput" class="form-label">Test Input *</label>
+                        <textarea class="form-control code-input" id="manualInput" name="input" 
+                                  rows="8" required placeholder="Enter test case input...
+
+Example for this problem:
+3
+1 2 3"></textarea>
+                        <div class="form-text">The correct answer will be generated automatically using your reference solution</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button type="button" class="btn btn-outline-info" id="validateInputBtn">
+                                <i class="fas fa-check-circle"></i> Validate Input
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <div id="validationResult"></div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="addManualTestBtn">
+                    <i class="fas fa-plus"></i> Add Test Case
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // Generate tests functionality
+    document.getElementById('generateTestsBtn').addEventListener('click', function() {
+        const btn = this;
+        const originalText = btn.innerHTML;
+        
+        // Show loading state
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+        btn.disabled = true;
+        
+        const category = document.getElementById('testCategory').value;
+        const replaceExisting = document.getElementById('replaceExisting').checked;
+        
+        // Collect custom pattern counts
+        const patterns = [];
+        document.querySelectorAll('.pattern-config').forEach(card => {
+            const patternName = card.querySelector('.pattern-count').dataset.pattern;
+            const count = parseInt(card.querySelector('.pattern-count').value) || 0;
+            
+            if (count > 0) {
+                patterns.push({
+                    name: patternName,
+                    count: count
+                });
+            }
+        });
+        
+        if (patterns.length === 0) {
+            alert('Please set at least one pattern count > 0');
+            return;
+        }
+        
+        fetch(`/api/problem/{{ problem.slug }}/generate-tests`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                category: category,
+                patterns: patterns,
+                replace_existing: replaceExisting
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                showAlert('success', data.message);
+                
+                // Close modal and refresh page
+                bootstrap.Modal.getInstance(document.getElementById('generateModal')).hide();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showAlert('danger', `Error: ${data.error}`);
+            }
+        })
+        .catch(error => {
+            showAlert('danger', `Network error: ${error.message}`);
+        })
+        .finally(() => {
+            // Restore button
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    });
+    
+    // Add manual test functionality
+    document.getElementById('addManualTestBtn').addEventListener('click', function() {
+        const btn = this;
+        const originalText = btn.innerHTML;
+        
+        const input = document.getElementById('manualInput').value.trim();
+        const category = document.getElementById('manualCategory').value;
+        
+        if (!input) {
+            showAlert('warning', 'Please enter test input');
+            return;
+        }
+        
+        // Show loading state
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+        btn.disabled = true;
+        
+        fetch(`/api/problem/{{ problem.slug }}/add-manual-test`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                input: input,
+                category: category
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                showAlert('success', data.message);
+                
+                // Clear form and close modal
+                document.getElementById('manualInput').value = '';
+                document.getElementById('validationResult').innerHTML = '';
+                bootstrap.Modal.getInstance(document.getElementById('manualModal')).hide();
+                
+                // Refresh page
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showAlert('danger', `Error: ${data.error}`);
+            }
+        })
+        .catch(error => {
+            showAlert('danger', `Network error: ${error.message}`);
+        })
+        .finally(() => {
+            // Restore button
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    });
+    
+    // Validate input functionality
+    document.getElementById('validateInputBtn').addEventListener('click', function() {
+        const input = document.getElementById('manualInput').value.trim();
+        const resultDiv = document.getElementById('validationResult');
+        
+        if (!input) {
+            resultDiv.innerHTML = '<span class="text-warning">Please enter input to validate</span>';
+            return;
+        }
+        
+        resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Validating...';
+        
+        // Call actual validation API
+        fetch(`/api/problem/{{ problem.slug }}/validate-input`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                input: input
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.valid) {
+                resultDiv.innerHTML = '<span class="text-success"><i class="fas fa-check"></i> Input is valid</span>';
+            } else {
+                resultDiv.innerHTML = '<span class="text-danger"><i class="fas fa-times"></i> Input validation failed</span>';
+            }
+        })
+        .catch(error => {
+            resultDiv.innerHTML = '<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> Validation error</span>';
+        });
+    });
+    
+});
+
+// Test case loading functionality
+function loadTestCases(category) {
+    const listDiv = document.getElementById('testCaseList');
+    const titleDiv = document.getElementById('testCaseTitle');
+    const contentDiv = document.getElementById('testCaseContent');
+    
+    titleDiv.innerHTML = `${category.charAt(0).toUpperCase() + category.slice(1)} Test Cases`;
+    contentDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading test cases...</div>';
+    listDiv.style.display = 'block';
+    
+    // Load actual test case data from API
+    fetch(`/api/problem/{{ problem.slug }}/test-cases/${category}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayTestCases(data.test_cases, category);
+            } else {
+                contentDiv.innerHTML = `<div class="alert alert-danger">Error loading test cases: ${data.error}</div>`;
+            }
+        })
+        .catch(error => {
+            contentDiv.innerHTML = `<div class="alert alert-warning">Failed to load test cases: ${error.message}</div>`;
+        });
+}
+
+function getStatsForCategory(category) {
+    const stats = {{ stats.categories | tojson }};
+    return stats[category] ? stats[category].count : 0;
+}
+
+function showAlert(type, message) {
+    const alertHtml = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    // Insert alert at top of page
+    const container = document.querySelector('.container-fluid');
+    container.insertAdjacentHTML('afterbegin', alertHtml);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        const alerts = document.querySelectorAll('.alert');
+        if (alerts.length > 0) {
+            alerts[alerts.length - 1].remove();
+        }
+    }, 5000);
+}
+
+function displayTestCases(testCases, category) {
+    const contentDiv = document.getElementById('testCaseContent');
+    
+    if (testCases.length === 0) {
+        contentDiv.innerHTML = `<div class="alert alert-info">No test cases found in ${category} category.</div>`;
+        return;
+    }
+    
+    let html = '<div class="row">';
+    
+    testCases.forEach(testCase => {
+        const sizeText = testCase.input_size > 1024 ? 
+            `${(testCase.input_size / 1024).toFixed(1)}KB` : 
+            `${testCase.input_size}B`;
+        
+        html += `
+            <div class="col-md-6 mb-3">
+                <div class="card test-case-card">
+                    <div class="card-header d-flex justify-content-between">
+                        <span><strong>Test ${testCase.filename}</strong></span>
+                        <span class="badge bg-secondary">${sizeText}</span>
+                    </div>
+                    <div class="card-body">
+                        <h6>Input:</h6>
+                        <pre class="bg-light p-2 small">${testCase.input_preview.substring(0, 200)}${testCase.input_preview.length > 200 ? '...' : ''}</pre>
+                        <h6>Expected Output:</h6>
+                        <pre class="bg-light p-2 small">${testCase.answer}</pre>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    contentDiv.innerHTML = html;
+}
+
+console.log('Test case management page loaded for: {{ problem.slug }}');
+console.log('Statistics:', {{ stats | tojson }});
+</script>
+{% endblock %}

@@ -1,0 +1,797 @@
+{% extends "base.html" %}
+
+{% block title %}Create New Problem - PocketOJ{% endblock %}
+
+{% block extra_css %}
+<style>
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+    
+    .step {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .step.active {
+        background-color: #007bff;
+        color: white;
+    }
+    
+    .step.completed {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .step.inactive {
+        background-color: #e9ecef;
+        color: #6c757d;
+    }
+    
+    .step-content {
+        display: none;
+    }
+    
+    .step-content.active {
+        display: block;
+    }
+    
+    .code-editor {
+        font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+        font-size: 14px;
+        min-height: 300px;
+    }
+    
+    .file-status {
+        display: inline-block;
+        margin-left: 10px;
+    }
+    
+    .file-required {
+        color: #dc3545;
+        font-weight: bold;
+    }
+    
+    .file-optional {
+        color: #6c757d;
+    }
+    
+    .integration-result {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1><i class="fas fa-plus-circle"></i> Create New Problem</h1>
+            <p class="text-muted">File-centric approach - provide your own files for maximum flexibility</p>
+        </div>
+    </div>
+
+    <!-- Step Indicator -->
+    <div class="step-indicator">
+        <div class="step active" data-step="1">
+            <i class="fas fa-info-circle me-2"></i>
+            <span>Basic Info</span>
+        </div>
+        <div class="step inactive" data-step="2">
+            <i class="fas fa-file-code me-2"></i>
+            <span>Files</span>
+        </div>
+        <div class="step inactive" data-step="3">
+            <i class="fas fa-cog me-2"></i>
+            <span>Integration</span>
+        </div>
+        <div class="step inactive" data-step="4">
+            <i class="fas fa-check-circle me-2"></i>
+            <span>Create</span>
+        </div>
+    </div>
+
+    <!-- Problem Creation Form -->
+    <form id="problemForm" onsubmit="return false;">
+        
+        <!-- Step 1: Basic Information -->
+        <div class="step-content active" id="step1">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-info-circle"></i> Basic Problem Information</h4>
+                    <small class="text-muted">Just the essentials - no constraints needed</small>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Problem Title *</label>
+                                <input type="text" class="form-control" id="title" name="title" 
+                                       placeholder="e.g., Maximum Subarray Sum" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="slug" class="form-label">Problem Slug *</label>
+                                <input type="text" class="form-control" id="slug" name="slug" 
+                                       placeholder="e.g., max-subarray-sum" required>
+                                <div class="form-text">URL-friendly identifier (auto-generated)</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="difficulty" class="form-label">Difficulty *</label>
+                                <select class="form-select" id="difficulty" name="difficulty" required>
+                                    <option value="">Select difficulty</option>
+                                    <option value="Easy">Easy</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Hard">Hard</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="time_limit" class="form-label">Time Limit (ms)</label>
+                                <input type="number" class="form-control" id="time_limit" name="time_limit" 
+                                       value="1000" min="100" max="10000">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="memory_limit" class="form-label">Memory Limit (MB)</label>
+                                <input type="number" class="form-control" id="memory_limit" name="memory_limit" 
+                                       value="256" min="16" max="1024">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="tags" class="form-label">Tags</label>
+                                <input type="text" class="form-control" id="tags" name="tags" 
+                                       placeholder="e.g., array, dynamic-programming">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="checker_type" class="form-label">Answer Checker *</label>
+                                <select class="form-select" id="checker_type" name="checker_type" required>
+                                    <option value="diff">Exact Match (diff)</option>
+                                    <option value="float">Floating Point</option>
+                                    <option value="spj">Special Judge (multiple answers)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Short Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="2"
+                                  placeholder="Brief description for internal use..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: File Provision -->
+        <div class="step-content" id="step2">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-file-code"></i> Provide Problem Files</h4>
+                    <small class="text-muted">You define the problem structure - maximum flexibility</small>
+                </div>
+                <div class="card-body">
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>File-Centric Approach:</strong> You provide the files, we handle the infrastructure.
+                        No assumptions about input format, constraints, or problem structure.
+                    </div>
+                    
+                    <!-- Required Files -->
+                    <h5 class="text-danger">Required Files <span class="file-required">*</span></h5>
+                    
+                    <!-- Statement -->
+                    <div class="mb-4">
+                        <label for="statement_content" class="form-label">
+                            📝 Problem Statement (statement.md) <span class="file-required">*</span>
+                        </label>
+                        <textarea class="form-control code-editor" id="statement_content" name="statement_content" 
+                                  rows="10" required placeholder="# Your Problem Title
+
+## Problem Statement
+Describe your problem here...
+
+## Input Format
+Describe the input format...
+
+## Output Format  
+Describe the output format...
+
+## Examples
+Show examples with explanations...
+
+## Constraints
+List any constraints..."></textarea>
+                        <div class="form-text">Markdown format - will be displayed to users</div>
+                    </div>
+                    
+                    <!-- Reference Solution -->
+                    <div class="mb-4">
+                        <label for="solution_content" class="form-label">
+                            🐍 Reference Solution (solution.py) <span class="file-required">*</span>
+                        </label>
+                        <textarea class="form-control code-editor" id="solution_content" name="solution_content" 
+                                  rows="15" required placeholder="#!/usr/bin/env python3
+
+def solve():
+    # Read input in YOUR format
+    # Process according to problem
+    # Return answer in YOUR format
+    pass
+
+def main():
+    result = solve()
+    print(result)  # or print(result, end='') for multi-line
+
+if __name__ == '__main__':
+    main()"></textarea>
+                        <div class="form-text">Python solution used to generate correct answers for test cases</div>
+                    </div>
+                    
+                    <!-- Test Generator -->
+                    <div class="mb-4">
+                        <label for="generator_content" class="form-label">
+                            🎲 Test Generator (generator.py) <span class="file-required">*</span>
+                        </label>
+                        <textarea class="form-control code-editor" id="generator_content" name="generator_content" 
+                                  rows="12" required placeholder="#!/usr/bin/env python3
+import random, sys
+
+def main():
+    pattern, case_num, seed = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
+    random.seed(seed)
+    
+    # Define YOUR patterns
+    if pattern == 'small':
+        # Generate small test case in YOUR format
+        pass
+    elif pattern == 'large':
+        # Generate large test case in YOUR format  
+        pass
+    else:
+        sys.exit(1)
+
+if __name__ == '__main__':
+    main()"></textarea>
+                        <div class="form-text">Must follow interface: python generator.py &lt;pattern&gt; &lt;case_num&gt; &lt;seed&gt;</div>
+                    </div>
+                    
+                    <!-- Optional Files -->
+                    <h5 class="text-secondary">Optional Files <span class="file-optional">(enhance your problem)</span></h5>
+                    
+                    <!-- Validator Toggle -->
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="include_validator" name="include_validator">
+                            <label class="form-check-label" for="include_validator">
+                                <strong>Include Input Validator</strong> - Validate test cases against constraints
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Validator Content -->
+                    <div class="mb-4" id="validator_section" style="display: none;">
+                        <label for="validator_content" class="form-label">
+                            ✅ Input Validator (validator.py)
+                        </label>
+                        <textarea class="form-control code-editor" id="validator_content" name="validator_content" 
+                                  rows="10" placeholder="#!/usr/bin/env python3
+import sys
+
+def validate():
+    input_text = sys.stdin.read()
+    
+    # YOUR validation logic
+    # Check YOUR constraints
+    
+    try:
+        # Parse and validate input
+        lines = input_text.strip().split('\n')
+        # Add your validation here
+        
+        print('VALID')
+        sys.exit(0)
+    except:
+        print('INVALID: reason')
+        sys.exit(1)
+
+if __name__ == '__main__':
+    validate()"></textarea>
+                        <div class="form-text">Exit 0=valid, 1=invalid. Will run on ALL test cases.</div>
+                    </div>
+                    
+                    <!-- SPJ Toggle -->
+                    <div class="mb-3" id="spj_toggle_section" style="display: none;">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="include_spj" name="include_spj">
+                            <label class="form-check-label" for="include_spj">
+                                <strong>Provide Custom Checker (SPJ)</strong> - For problems with multiple correct answers
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- SPJ Content -->
+                    <div class="mb-4" id="spj_section" style="display: none;">
+                        <label for="spj_content" class="form-label">
+                            🔧 Special Judge (checker/spj.cpp)
+                        </label>
+                        <textarea class="form-control code-editor" id="spj_content" name="spj_content" 
+                                  rows="10" placeholder='#include "testlib.h"
+using namespace std;
+
+int main(int argc, char* argv[]) {
+    registerTestlibCmd(argc, argv);
+    
+    // Read input file
+    // Read participant output  
+    // Read expected answer (from solution.py)
+    
+    // YOUR checking logic
+    
+    if (/* answer is correct */) {
+        quitf(_ok, "correct");
+    } else {
+        quitf(_wa, "wrong answer");
+    }
+}'></textarea>
+                        <div class="form-text">Uses testlib.h. Return codes: 0=AC, 1=WA, 2=PE</div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Integration Testing -->
+        <div class="step-content" id="step3">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-cog"></i> File Integration Testing</h4>
+                </div>
+                <div class="card-body">
+                    <div class="integration-result" id="integrationResults">
+                        <!-- Results populated by JavaScript -->
+                    </div>
+                    
+                    <div class="text-center" id="integrationLoading">
+                        <i class="fas fa-spinner fa-spin fa-2x"></i>
+                        <p class="mt-2">Testing file integration...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: Create Problem -->
+        <div class="step-content" id="step4">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-check-circle"></i> Create Problem</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Test Case Generation</h5>
+                            <div class="mb-3">
+                                <label for="sample_count" class="form-label">Sample Test Cases</label>
+                                <input type="number" class="form-control" id="sample_count" name="sample_count" 
+                                       value="3" min="1" max="10">
+                                <div class="form-text">Manual examples for problem statement</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="system_count" class="form-label">System Test Cases</label>
+                                <input type="number" class="form-control" id="system_count" name="system_count" 
+                                       value="20" min="5" max="100">
+                                <div class="form-text">Auto-generated using your generator</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>Problem Summary</h5>
+                            <div id="problemSummary">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i>
+                        <strong>Ready to create!</strong> All files integrate correctly.
+                        Your problem will be created with the specified test cases.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="d-flex justify-content-between mt-4">
+            <button type="button" class="btn btn-outline-secondary" id="prevStep" style="display: none;">
+                <i class="fas fa-arrow-left"></i> Previous
+            </button>
+            
+            <div class="ms-auto">
+                <button type="button" class="btn btn-primary" id="nextStep">
+                    Next <i class="fas fa-arrow-right"></i>
+                </button>
+                <button type="button" class="btn btn-outline-info" id="testIntegration" style="display: none;">
+                    <i class="fas fa-flask"></i> Test Files
+                </button>
+                <button type="button" class="btn btn-success" id="createProblem" style="display: none;">
+                    <i class="fas fa-plus-circle"></i> Create Problem
+                </button>
+            </div>
+        </div>
+    </form>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentStep = 1;
+    const totalSteps = 4;
+    
+    // Auto-generate slug from title
+    document.getElementById('title').addEventListener('input', function() {
+        const slug = this.value.toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        document.getElementById('slug').value = slug;
+    });
+    
+    // Show/hide validator section
+    document.getElementById('include_validator').addEventListener('change', function() {
+        const section = document.getElementById('validator_section');
+        section.style.display = this.checked ? 'block' : 'none';
+    });
+    
+    // Show/hide SPJ section based on checker type
+    document.getElementById('checker_type').addEventListener('change', function() {
+        const spjToggleSection = document.getElementById('spj_toggle_section');
+        const spjSection = document.getElementById('spj_section');
+        
+        if (this.value === 'spj') {
+            spjToggleSection.style.display = 'block';
+        } else {
+            spjToggleSection.style.display = 'none';
+            spjSection.style.display = 'none';
+            document.getElementById('include_spj').checked = false;
+        }
+    });
+    
+    // Show/hide SPJ content
+    document.getElementById('include_spj').addEventListener('change', function() {
+        const section = document.getElementById('spj_section');
+        section.style.display = this.checked ? 'block' : 'none';
+    });
+    
+    // Step navigation
+    function updateStepIndicator() {
+        document.querySelectorAll('.step').forEach((step, index) => {
+            step.classList.remove('active', 'completed', 'inactive');
+            const stepNumber = index + 1;
+            
+            if (stepNumber < currentStep) {
+                step.classList.add('completed');
+            } else if (stepNumber === currentStep) {
+                step.classList.add('active');
+            } else {
+                step.classList.add('inactive');
+            }
+        });
+        
+        // Update content visibility
+        document.querySelectorAll('.step-content').forEach((content, index) => {
+            content.classList.toggle('active', index + 1 === currentStep);
+        });
+        
+        // Update button visibility
+        document.getElementById('prevStep').style.display = currentStep > 1 ? 'inline-block' : 'none';
+        document.getElementById('nextStep').style.display = (currentStep < totalSteps && currentStep !== 3) ? 'inline-block' : 'none';
+        document.getElementById('testIntegration').style.display = currentStep === 3 ? 'inline-block' : 'none';
+        document.getElementById('createProblem').style.display = currentStep === 4 ? 'inline-block' : 'none';
+    }
+    
+    document.getElementById('nextStep').addEventListener('click', function() {
+        if (validateCurrentStep()) {
+            currentStep++;
+            if (currentStep === 3) {
+                // Auto-test integration when reaching step 3
+                setTimeout(testFileIntegration, 500);
+            } else if (currentStep === 4) {
+                populateSummary();
+            }
+            updateStepIndicator();
+        }
+    });
+    
+    document.getElementById('prevStep').addEventListener('click', function() {
+        if (currentStep > 1) {
+            currentStep--;
+            updateStepIndicator();
+        }
+    });
+    
+    document.getElementById('testIntegration').addEventListener('click', function() {
+        testFileIntegration();
+    });
+    
+    function validateCurrentStep() {
+        if (currentStep === 1) {
+            const title = document.getElementById('title').value.trim();
+            const slug = document.getElementById('slug').value.trim();
+            const difficulty = document.getElementById('difficulty').value;
+            
+            if (!title || !slug || !difficulty) {
+                alert('Please fill in all required fields');
+                return false;
+            }
+        } else if (currentStep === 2) {
+            const statement = document.getElementById('statement_content').value.trim();
+            const solution = document.getElementById('solution_content').value.trim();
+            const generator = document.getElementById('generator_content').value.trim();
+            
+            if (!statement || !solution || !generator) {
+                alert('Please provide all required files (statement, solution, generator)');
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    function testFileIntegration() {
+        const loadingDiv = document.getElementById('integrationLoading');
+        const resultsDiv = document.getElementById('integrationResults');
+        
+        loadingDiv.style.display = 'block';
+        resultsDiv.style.display = 'none';
+        
+        // Collect file data
+        const files = {
+            'statement.md': document.getElementById('statement_content').value,
+            'solution.py': document.getElementById('solution_content').value,
+            'generator.py': document.getElementById('generator_content').value
+        };
+        
+        // Include optional files if provided
+        if (document.getElementById('include_validator').checked) {
+            files['validator.py'] = document.getElementById('validator_content').value;
+        }
+        
+        if (document.getElementById('include_spj').checked) {
+            files['checker/spj.cpp'] = document.getElementById('spj_content').value;
+        }
+        
+        // Test file integration via API
+        fetch('/api/test-file-integration', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ files: files })
+        })
+        .then(response => response.json())
+        .then(data => {
+            loadingDiv.style.display = 'none';
+            resultsDiv.style.display = 'block';
+            
+            displayIntegrationResults(data);
+            
+            if (data.success) {
+                // Enable next step
+                currentStep = 4;
+                updateStepIndicator();
+            }
+        })
+        .catch(error => {
+            loadingDiv.style.display = 'none';
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = `<div class="alert alert-danger">Integration test failed: ${error.message}</div>`;
+        });
+    }
+    
+    function displayIntegrationResults(data) {
+        const resultsDiv = document.getElementById('integrationResults');
+        let html = '';
+        
+        if (data.success) {
+            html += '<div class="alert alert-success"><i class="fas fa-check-circle"></i> All files integrate correctly!</div>';
+            
+            // Show preview
+            if (data.preview) {
+                html += `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Sample Generated Test Case:</h6>
+                            <pre class="bg-light p-3 small">${data.preview.input}</pre>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Reference Solution Output:</h6>
+                            <pre class="bg-light p-3 small">${data.preview.output}</pre>
+                            ${data.preview.valid ? '<span class="badge bg-success">✅ Validator Passed</span>' : ''}
+                        </div>
+                    </div>
+                `;
+            }
+        } else {
+            html += '<div class="alert alert-danger"><i class="fas fa-times-circle"></i> File integration issues found:</div>';
+            
+            if (data.errors && data.errors.length > 0) {
+                html += '<ul class="text-danger">';
+                data.errors.forEach(error => {
+                    html += `<li><strong>Error:</strong> ${error}</li>`;
+                });
+                html += '</ul>';
+            }
+        }
+        
+        if (data.warnings && data.warnings.length > 0) {
+            html += '<div class="alert alert-warning"><strong>Warnings:</strong></div>';
+            html += '<ul class="text-warning">';
+            data.warnings.forEach(warning => {
+                html += `<li>${warning}</li>`;
+            });
+            html += '</ul>';
+        }
+        
+        resultsDiv.innerHTML = html;
+    }
+    
+    function populateSummary() {
+        const summaryDiv = document.getElementById('problemSummary');
+        const title = document.getElementById('title').value;
+        const difficulty = document.getElementById('difficulty').value;
+        const checkerType = document.getElementById('checker_type').value;
+        const hasValidator = document.getElementById('include_validator').checked;
+        const hasSPJ = document.getElementById('include_spj').checked;
+        
+        summaryDiv.innerHTML = `
+            <table class="table">
+                <tr><td><strong>Title:</strong></td><td>${title}</td></tr>
+                <tr><td><strong>Difficulty:</strong></td><td><span class="badge bg-${getDifficultyColor(difficulty)}">${difficulty}</span></td></tr>
+                <tr><td><strong>Checker:</strong></td><td>${checkerType.toUpperCase()}</td></tr>
+                <tr><td><strong>Has Validator:</strong></td><td>${hasValidator ? '✅ Yes' : '❌ No'}</td></tr>
+                <tr><td><strong>Has Custom Checker:</strong></td><td>${hasSPJ ? '✅ Yes' : '❌ No'}</td></tr>
+                <tr><td><strong>Files:</strong></td><td>statement, solution, generator${hasValidator ? ', validator' : ''}${hasSPJ ? ', spj' : ''}</td></tr>
+            </table>
+        `;
+    }
+    
+    function getDifficultyColor(difficulty) {
+        switch(difficulty) {
+            case 'Easy': return 'success';
+            case 'Medium': return 'warning';
+            case 'Hard': return 'danger';
+            default: return 'secondary';
+        }
+    }
+    
+    // Handle problem creation
+    document.getElementById('createProblem').addEventListener('click', function() {
+        createProblemWithFiles();
+    });
+    
+    function createProblemWithFiles() {
+        const btn = document.getElementById('createProblem');
+        const originalText = btn.innerHTML;
+        
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+        btn.disabled = true;
+        
+        // Collect all data
+        const formData = new FormData(document.getElementById('problemForm'));
+        const data = {};
+        for (let [key, value] of formData.entries()) {
+            data[key] = value;
+        }
+        
+        // Add file contents
+        data.files = {
+            'statement.md': document.getElementById('statement_content').value,
+            'solution.py': document.getElementById('solution_content').value,
+            'generator.py': document.getElementById('generator_content').value
+        };
+        
+        if (document.getElementById('include_validator').checked) {
+            data.files['validator.py'] = document.getElementById('validator_content').value;
+        }
+        
+        if (document.getElementById('include_spj').checked) {
+            data.files['checker/spj.cpp'] = document.getElementById('spj_content').value;
+        }
+        
+        // Create problem
+        fetch('/api/create-problem-v2', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showSuccessMessage(data.message);
+                setTimeout(() => {
+                    window.location.href = data.redirect_url;
+                }, 2000);
+            } else {
+                showErrorMessage(data.error);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Problem creation error:', error);
+            
+            // Handle specific network errors
+            if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                showErrorMessage('Server restarted during creation. Please wait 5 seconds and try again with a different problem name.');
+            } else {
+                showErrorMessage(`Network error: ${error.message}`);
+            }
+            
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    }
+    
+    function showSuccessMessage(message) {
+        const alertHtml = `
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle"></i> <strong>Success!</strong> ${message}
+                <br><small>Redirecting to problem page...</small>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        const container = document.querySelector('.container');
+        container.insertAdjacentHTML('afterbegin', alertHtml);
+        window.scrollTo(0, 0);
+    }
+    
+    function showErrorMessage(message) {
+        const alertHtml = `
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle"></i> <strong>Error!</strong> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        const container = document.querySelector('.container');
+        container.insertAdjacentHTML('afterbegin', alertHtml);
+        window.scrollTo(0, 0);
+    }
+    
+    // Initialize
+    updateStepIndicator();
+    
+    console.log('New file-centric problem creation wizard initialized');
+});
+</script>
+{% endblock %}

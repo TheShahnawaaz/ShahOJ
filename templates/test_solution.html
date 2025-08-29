@@ -1,0 +1,619 @@
+{% extends "base.html" %}
+
+{% block title %}Test Solution - {{ problem.config.get('title', problem.slug) }} - PocketOJ{% endblock %}
+
+{% block extra_css %}
+<style>
+    .code-editor {
+        font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+    
+    .verdict-AC { color: #28a745; font-weight: bold; }
+    .verdict-WA { color: #dc3545; font-weight: bold; }
+    .verdict-TLE { color: #ffc107; font-weight: bold; }
+    .verdict-RTE { color: #fd7e14; font-weight: bold; }
+    .verdict-CE { color: #6f42c1; font-weight: bold; }
+    .verdict-PE { color: #20c997; font-weight: bold; }
+    .verdict-JE { color: #6c757d; font-weight: bold; }
+    
+    .test-result-card {
+        transition: all 0.2s;
+    }
+    
+    .test-result-card:hover {
+        transform: translateY(-1px);
+    }
+    
+    .progress-container {
+        display: none;
+    }
+    
+    .results-container {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('problem_detail', slug=problem.slug) }}">{{ problem.config.get('title', problem.slug) }}</a></li>
+            <li class="breadcrumb-item active">Test Solution</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1><i class="fas fa-play"></i> Test Solution</h1>
+            <p class="text-muted">{{ problem.config.get('title') or problem.slug }}</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <span class="badge bg-info fs-6">
+                {{ problem.config.get('limits.time_ms') or 1000 }}ms / {{ problem.config.get('limits.memory_mb') or 256 }}MB
+            </span>
+        </div>
+    </div>
+
+    <div class="row">
+        
+        <!-- Code Editor Panel -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-code"></i> C++ Solution</h5>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-secondary" id="clearCodeBtn">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                        <button class="btn btn-outline-info" id="loadTemplateBtn">
+                            <i class="fas fa-file-code"></i> Template
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <textarea class="form-control code-editor" id="cppCode" rows="20" 
+                              placeholder="#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    // Your solution here
+    
+    return 0;
+}"></textarea>
+                </div>
+                <div class="card-footer">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <button class="btn btn-success me-2" id="runTestsBtn">
+                                <i class="fas fa-play"></i> Run All Tests
+                            </button>
+                            <button class="btn btn-outline-primary" id="quickTestBtn" data-bs-toggle="modal" data-bs-target="#quickTestModal">
+                                <i class="fas fa-bolt"></i> Quick Test
+                            </button>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <small class="text-muted">
+                                Compile with: <code>g++ -std=c++17 -O2</code>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Problem Info Panel -->
+        <div class="col-md-4">
+            
+            <!-- Problem Overview -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6><i class="fas fa-info-circle"></i> Problem Info</h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <td><strong>Time Limit:</strong></td>
+                            <td>{{ problem.config.get('limits.time_ms') or 1000 }}ms</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Memory Limit:</strong></td>
+                            <td>{{ problem.config.get('limits.memory_mb') or 256 }}MB</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Test Cases:</strong></td>
+                            <td>{% set counts = problem.get_test_cases_count() %}{{ counts.samples + counts.system }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Checker:</strong></td>
+                            <td>{{ (problem.config.get('checker.type') or 'diff')|upper }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Test Categories -->
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-vial"></i> Test Categories</h6>
+                </div>
+                <div class="card-body">
+                    {% set test_counts = problem.get_test_cases_count() %}
+                    <div class="mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="testSamples" value="samples" checked>
+                            <label class="form-check-label" for="testSamples">
+                                <strong>Samples</strong> ({{ test_counts.samples }})
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="testSystem" value="system" checked>
+                            <label class="form-check-label" for="testSystem">
+                                <strong>System Tests</strong> ({{ test_counts.system }})
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Progress Section -->
+    <div class="progress-container mt-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-spinner fa-spin"></i> Testing in Progress...</h5>
+            </div>
+            <div class="card-body">
+                <div class="progress mb-2">
+                    <div class="progress-bar" id="testProgress" style="width: 0%"></div>
+                </div>
+                <div id="progressText">Compiling solution...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="results-container mt-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 id="resultsTitle"><i class="fas fa-check-circle"></i> Test Results</h5>
+            </div>
+            <div class="card-body">
+                <div id="resultsContent">
+                    <!-- Results will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Quick Test Modal -->
+<div class="modal fade" id="quickTestModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-bolt"></i> Quick Test</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="quickTestInput" class="form-label">Test Input</label>
+                    <textarea class="form-control code-editor" id="quickTestInput" rows="6" 
+                              placeholder="Enter test input...
+
+Example:
+3
+1 2 3"></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="quickTestOutput" class="form-label">Output</label>
+                    <textarea class="form-control code-editor" id="quickTestOutput" rows="4" 
+                              readonly placeholder="Output will appear here..."></textarea>
+                </div>
+                
+                <div id="quickTestError" style="display: none;">
+                    <div class="alert alert-danger">
+                        <strong>Error:</strong> <span id="quickTestErrorText"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="runQuickTestBtn">
+                    <i class="fas fa-play"></i> Run Test
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Content Viewer Modal -->
+<div class="modal fade" id="contentViewerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="contentViewerTitle">Content Viewer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-end mb-2">
+                    <button class="btn btn-sm btn-outline-secondary" id="copyContentBtn">
+                        <i class="fas fa-copy"></i> Copy to Clipboard
+                    </button>
+                </div>
+                <pre class="bg-light p-3" style="max-height: 400px; overflow-y: auto;"><code id="contentViewerContent"></code></pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // Load C++ template
+    document.getElementById('loadTemplateBtn').addEventListener('click', function() {
+        const template = `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    
+    vector<int> arr(n);
+    for (int i = 0; i < n; i++) {
+        cin >> arr[i];
+    }
+    
+    // Your solution logic here
+    int result = 0;
+    
+    cout << result << endl;
+    return 0;
+}`;
+        document.getElementById('cppCode').value = template;
+    });
+    
+    // Clear code
+    document.getElementById('clearCodeBtn').addEventListener('click', function() {
+        if (confirm('Are you sure you want to clear the code?')) {
+            document.getElementById('cppCode').value = '';
+        }
+    });
+    
+    // Run all tests
+    document.getElementById('runTestsBtn').addEventListener('click', function() {
+        const code = document.getElementById('cppCode').value.trim();
+        
+        if (!code) {
+            alert('Please enter C++ code to test');
+            return;
+        }
+        
+        // Get selected test categories
+        const categories = [];
+        if (document.getElementById('testSamples').checked) categories.push('samples');
+
+        if (document.getElementById('testSystem').checked) categories.push('system');
+        
+        if (categories.length === 0) {
+            alert('Please select at least one test category');
+            return;
+        }
+        
+        runAllTests(code, categories);
+    });
+    
+    // Quick test
+    document.getElementById('runQuickTestBtn').addEventListener('click', function() {
+        const code = document.getElementById('cppCode').value.trim();
+        const input = document.getElementById('quickTestInput').value.trim();
+        
+        if (!code) {
+            alert('Please enter C++ code to test');
+            return;
+        }
+        
+        if (!input) {
+            alert('Please enter test input');
+            return;
+        }
+        
+        runQuickTest(code, input);
+    });
+    
+});
+
+function runAllTests(code, categories) {
+    // Show progress
+    document.querySelector('.progress-container').style.display = 'block';
+    document.querySelector('.results-container').style.display = 'none';
+    document.getElementById('progressText').textContent = 'Compiling solution...';
+    document.getElementById('testProgress').style.width = '10%';
+    
+    // Disable run button
+    const runBtn = document.getElementById('runTestsBtn');
+    const originalText = runBtn.innerHTML;
+    runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+    runBtn.disabled = true;
+    
+    fetch(`/api/problem/{{ problem.slug }}/test-solution`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            code: code,
+            categories: categories
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Hide progress, show results
+        document.querySelector('.progress-container').style.display = 'none';
+        document.querySelector('.results-container').style.display = 'block';
+        
+        if (data.success) {
+            displayTestResults(data.results);
+        } else {
+            displayError(data.error);
+        }
+    })
+    .catch(error => {
+        document.querySelector('.progress-container').style.display = 'none';
+        displayError(`Network error: ${error.message}`);
+    })
+    .finally(() => {
+        // Restore run button
+        runBtn.innerHTML = originalText;
+        runBtn.disabled = false;
+    });
+}
+
+function runQuickTest(code, input) {
+    const btn = document.getElementById('runQuickTestBtn');
+    const originalText = btn.innerHTML;
+    
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running...';
+    btn.disabled = true;
+    
+    document.getElementById('quickTestError').style.display = 'none';
+    document.getElementById('quickTestOutput').value = '';
+    
+    fetch(`/api/problem/{{ problem.slug }}/quick-test`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            code: code,
+            input: input
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('quickTestOutput').value = data.output;
+        } else {
+            document.getElementById('quickTestErrorText').textContent = data.error;
+            document.getElementById('quickTestError').style.display = 'block';
+        }
+    })
+    .catch(error => {
+        document.getElementById('quickTestErrorText').textContent = `Network error: ${error.message}`;
+        document.getElementById('quickTestError').style.display = 'block';
+    })
+    .finally(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+// Helper function to safely escape strings for JavaScript template literals
+function escapeForJs(str) {
+    if (!str) return '';
+    return str
+        .replace(/\\/g, '\\\\')   // Escape backslashes
+        .replace(/`/g, '\\`')     // Escape backticks  
+        .replace(/\$/g, '\\$')    // Escape dollar signs
+        .replace(/"/g, '\\"')     // Escape double quotes
+        .replace(/'/g, "\\'")     // Escape single quotes
+        .replace(/\n/g, '\\n')    // Escape newlines
+        .replace(/\r/g, '\\r')    // Escape carriage returns
+        .replace(/\t/g, '\\t');   // Escape tabs
+}
+
+function displayTestResults(results) {
+    const title = document.getElementById('resultsTitle');
+    const content = document.getElementById('resultsContent');
+    
+    // Update title with overall verdict
+    const verdict = results.overall_verdict;
+    const verdictClass = `verdict-${verdict.split(' ')[0]}`;
+    title.innerHTML = `<i class="fas fa-check-circle"></i> Test Results - <span class="${verdictClass}">${verdict}</span>`;
+    
+    // Build results HTML
+    let html = '';
+    
+    // Compilation result
+    if (results.compilation.success) {
+        html += `<div class="alert alert-success">
+            <i class="fas fa-check-circle"></i> <strong>Compilation Successful</strong> 
+            (${results.compilation.time_ms.toFixed(1)}ms)
+        </div>`;
+    } else {
+        html += `<div class="alert alert-danger">
+            <i class="fas fa-times-circle"></i> <strong>Compilation Failed</strong><br>
+            <pre class="mt-2">${results.compilation.errors}</pre>
+        </div>`;
+        content.innerHTML = html;
+        return;
+    }
+    
+    // Overall statistics
+    const stats = results.statistics;
+    html += `<div class="row mb-3">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-success">${stats.passed}</h4>
+                    <small>Passed</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-danger">${stats.failed}</h4>
+                    <small>Failed</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4>${stats.total_tests}</h4>
+                    <small>Total</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4>${stats.pass_rate}%</h4>
+                    <small>Pass Rate</small>
+                </div>
+            </div>
+        </div>
+    </div>`;
+    
+    // Enhanced category results with detailed failure information
+    for (const [category, categoryResults] of Object.entries(results.test_results)) {
+        if (categoryResults.length === 0) continue;
+        
+        const categoryStats = results.categories[category];
+        const categoryClass = categoryStats.failed === 0 ? 'success' : 'danger';
+        
+        html += `<div class="card mb-3">
+            <div class="card-header bg-${categoryClass} text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-vial"></i> ${category.charAt(0).toUpperCase() + category.slice(1)} 
+                    (${categoryStats.passed}/${categoryStats.count} passed, ${categoryStats.avg_time_ms}ms avg)
+                </h6>
+            </div>
+            <div class="card-body">`;
+        
+        // Show individual test results with enhanced debugging
+        categoryResults.forEach(result => {
+            const verdictClass = `verdict-${result.verdict}`;
+            
+            if (result.verdict === 'AC') {
+                // Simple badge for passing tests
+                html += `<span class="badge bg-success me-2 mb-2">
+                    Test ${String(result.test_num).padStart(2, '0')}: ${result.verdict} (${result.time_ms.toFixed(1)}ms)
+                </span>`;
+            } else {
+                // Enhanced failure display with all debugging info
+                html += `<div class="border border-danger rounded p-3 mb-3">
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="text-danger mb-3">
+                                <span class="${verdictClass}">Test ${String(result.test_num).padStart(2, '0')}: ${result.verdict}</span>
+                                <small class="text-muted ms-2">(${result.time_ms.toFixed(1)}ms)</small>
+                            </h6>
+                            
+                            <div class="row">
+                                <!-- Input Column -->
+                                <div class="col-md-4">
+                                    <h6 class="text-info mb-2">📥 Input:</h6>
+                                    <div class="bg-light p-2 rounded">
+                                        <code class="small">${result.input_truncated || 'N/A'}</code>
+                                    </div>
+                                    ${result.input_full && result.input_full.length > 50 ? 
+                                        `<button class="btn btn-sm btn-outline-info mt-2" onclick="showFullContent('Test ${result.test_num} Input', \`${escapeForJs(result.input_full)}\`)">
+                                            <i class="fas fa-eye"></i> View Full Input
+                                        </button>` : ''}
+                                </div>
+                                
+                                <!-- Expected Column -->
+                                <div class="col-md-4">
+                                    <h6 class="text-success mb-2">✅ Expected:</h6>
+                                    <div class="bg-light p-2 rounded">
+                                        <code class="small text-success">${result.expected_truncated || 'N/A'}</code>
+                                    </div>
+                                    ${result.expected_full && result.expected_full.length > 20 ? 
+                                        `<button class="btn btn-sm btn-outline-success mt-2" onclick="showFullContent('Test ${result.test_num} Expected Output', \`${escapeForJs(result.expected_full)}\`)">
+                                            <i class="fas fa-eye"></i> View Full
+                                        </button>` : ''}
+                                </div>
+                                
+                                <!-- Actual Column -->
+                                <div class="col-md-4">
+                                    <h6 class="text-danger mb-2">❌ Your Output:</h6>
+                                    <div class="bg-light p-2 rounded">
+                                        <code class="small text-danger">${result.actual_truncated || 'N/A'}</code>
+                                    </div>
+                                    ${result.actual_full && result.actual_full.length > 20 ? 
+                                        `<button class="btn btn-sm btn-outline-danger mt-2" onclick="showFullContent('Test ${result.test_num} Your Output', \`${escapeForJs(result.actual_full)}\`)">
+                                            <i class="fas fa-eye"></i> View Full
+                                        </button>` : ''}
+                                </div>
+                            </div>
+                            
+                            <!-- Details and Actions -->
+                            <div class="row mt-3">
+                                <div class="col-md-8">
+                                    ${result.details ? `<small class="text-muted"><i class="fas fa-info-circle"></i> <strong>Details:</strong> ${result.details}</small>` : ''}
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="copyTestCase(\`${escapeForJs(result.input_full || '')}\`)">
+                                        <i class="fas fa-copy"></i> Copy Input
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+        });
+        
+        html += '</div></div>';
+    }
+    
+    content.innerHTML = html;
+}
+
+function displayError(error) {
+    const content = document.getElementById('resultsContent');
+    content.innerHTML = `<div class="alert alert-danger">
+        <i class="fas fa-exclamation-circle"></i> <strong>Error:</strong> ${error}
+    </div>`;
+    
+    document.querySelector('.results-container').style.display = 'block';
+}
+
+console.log('Solution testing page loaded for: {{ problem.slug }}');
+</script>
+{% endblock %}

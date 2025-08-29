@@ -1,0 +1,375 @@
+{% extends "base.html" %}
+
+{% block title %}{{ problem.config.get('title', problem.slug) }} - PocketOJ{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">{{ problem.config.get('title', problem.slug) }}</li>
+        </ol>
+    </nav>
+
+    <!-- Problem Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>{{ problem.config.get('title') or problem.slug }}</h1>
+            <p class="text-muted">{{ problem.slug }}</p>
+        </div>
+        <div class="col-md-4 text-end">
+            {% set difficulty = problem.config.get('difficulty') or 'Medium' %}
+            <span class="badge fs-6 
+                {% if difficulty == 'Easy' %}bg-success
+                {% elif difficulty == 'Medium' %}bg-warning
+                {% else %}bg-danger{% endif %}">
+                {{ difficulty }}
+            </span>
+            
+            <div class="mt-2">
+                {% for tag in (problem.config.get('tags') or []) %}
+                <span class="badge bg-secondary me-1">{{ tag }}</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="btn-group me-2">
+                <a href="{{ url_for('test_solution_page', slug=problem.slug) }}" class="btn btn-primary">
+                    <i class="fas fa-play"></i> Test Solution
+                </a>
+                <a href="{{ url_for('manage_test_cases', slug=problem.slug) }}" class="btn btn-outline-primary">
+                    <i class="fas fa-cog"></i> Manage Tests
+                </a>
+            </div>
+            
+            <div class="btn-group me-2">
+                <a href="{{ url_for('edit_problem_page', slug=problem.slug) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-edit"></i> Edit Problem
+                </a>
+                <button class="btn btn-outline-secondary">
+                    <i class="fas fa-file-alt"></i> Edit Statement
+                </button>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-outline-info">
+                    <i class="fas fa-download"></i> Export
+                </button>
+                <button class="btn btn-outline-danger">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Problem Information -->
+    <div class="row">
+        
+        <!-- Configuration Panel -->
+        <div class="col-md-4">
+            
+            <!-- Basic Info -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> Problem Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <td><strong>Time Limit:</strong></td>
+                            <td>{{ problem.config.get('limits.time_ms') or 1000 }}ms</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Memory Limit:</strong></td>
+                            <td>{{ problem.config.get('limits.memory_mb') or 256 }}MB</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Checker:</strong></td>
+                            <td>
+                                {% set checker_type = problem.config.get('checker.type') or 'diff' %}
+                                <span class="badge 
+                                    {% if checker_type == 'diff' %}bg-primary
+                                    {% elif checker_type == 'float' %}bg-info
+                                    {% else %}bg-warning{% endif %}">
+                                    {{ checker_type|upper }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Created:</strong></td>
+                            <td>{{ (problem.config.get('created_date') or 'Unknown')[:10] }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- File Status -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-file-code"></i> File Status</h5>
+                </div>
+                <div class="card-body">
+                    {% set files = problem.get_files_info() %}
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            config.yaml
+                            {% if files.config_exists %}
+                                <i class="fas fa-check-circle text-success"></i>
+                            {% else %}
+                                <i class="fas fa-times-circle text-danger"></i>
+                            {% endif %}
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            statement.md
+                            {% if files.statement_exists %}
+                                <i class="fas fa-check-circle text-success"></i>
+                            {% else %}
+                                <i class="fas fa-times-circle text-danger"></i>
+                            {% endif %}
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            solution.py
+                            {% if files.solution_exists %}
+                                <i class="fas fa-check-circle text-success"></i>
+                            {% else %}
+                                <i class="fas fa-times-circle text-danger"></i>
+                            {% endif %}
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            generator.py
+                            {% if files.generator_exists %}
+                                <i class="fas fa-check-circle text-success"></i>
+                            {% else %}
+                                <i class="fas fa-times-circle text-danger"></i>
+                            {% endif %}
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            validator.py
+                            {% if files.validator_exists %}
+                                <i class="fas fa-check-circle text-success"></i>
+                            {% else %}
+                                <i class="fas fa-times-circle text-danger"></i>
+                            {% endif %}
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            checker/
+                            {% if files.checker_exists %}
+                                <i class="fas fa-check-circle text-success"></i>
+                            {% else %}
+                                <i class="fas fa-times-circle text-danger"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test Cases Summary -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-vial"></i> Test Cases</h5>
+                </div>
+                <div class="card-body">
+                    {% set test_counts = problem.get_test_cases_count() %}
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ test_counts.samples }}</h4>
+                            <small class="text-muted">Samples</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">{{ test_counts.system }}</h4>
+                            <small class="text-muted">System</small>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="text-center">
+                        <h5>{{ test_counts.samples + test_counts.system }}</h5>
+                        <small class="text-muted">Total Test Cases</small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Main Content Panel -->
+        <div class="col-md-8">
+            
+            <!-- Tabs Navigation -->
+            <ul class="nav nav-tabs" id="problemTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="statement-tab" data-bs-toggle="tab" data-bs-target="#statement" type="button">
+                        <i class="fas fa-file-alt"></i> Statement
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button">
+                        <i class="fas fa-cog"></i> Configuration
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tests-tab" data-bs-toggle="tab" data-bs-target="#tests" type="button">
+                        <i class="fas fa-vial"></i> Test Cases
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content border border-top-0 p-3" id="problemTabsContent">
+                
+                <!-- Statement Tab -->
+                <div class="tab-pane fade show active" id="statement" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <h6>Problem Statement</h6>
+                            <button class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div id="problemStatement">
+                                <div class="text-center">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading problem statement...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuration Tab -->
+                <div class="tab-pane fade" id="config" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6>Problem Configuration</h6>
+                        </div>
+                        <div class="card-body">
+                            <pre class="bg-light p-3"><code>{{ problem.config.data | tojson(indent=2) }}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Cases Tab -->
+                <div class="tab-pane fade" id="tests" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <h6>Test Cases Management</h6>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary">
+                                    <i class="fas fa-plus"></i> Add Manual
+                                </button>
+                                <button class="btn btn-outline-success">
+                                    <i class="fas fa-cog"></i> Generate
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {% set test_counts = problem.get_test_cases_count() %}
+                            
+                            <div class="row text-center mb-3">
+                                <div class="col-4">
+                                    <h4 class="text-primary">{{ test_counts.samples }}</h4>
+                                    <small class="text-muted">Samples</small>
+                                </div>
+
+                                <div class="col-4">
+                                    <h4 class="text-success">{{ test_counts.system }}</h4>
+                                    <small class="text-muted">System</small>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center">
+                                <a href="{{ url_for('manage_test_cases', slug=problem.slug) }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-cog"></i> Manage All Test Cases
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tabs
+    const triggerTabList = [].slice.call(document.querySelectorAll('#problemTabs button'));
+    triggerTabList.forEach(function (triggerEl) {
+        const tabTrigger = new bootstrap.Tab(triggerEl);
+        
+        triggerEl.addEventListener('click', function (event) {
+            event.preventDefault();
+            tabTrigger.show();
+        });
+    });
+    
+    // Load problem statement
+    loadProblemStatement();
+    
+    console.log('Problem detail page loaded for: {{ problem.slug }}');
+});
+
+function loadProblemStatement() {
+    fetch(`/api/problem/{{ problem.slug }}/statement`)
+        .then(response => response.json())
+        .then(data => {
+            const statementDiv = document.getElementById('problemStatement');
+            if (data.success) {
+                // Convert markdown to HTML (simple conversion for now)
+                const htmlContent = convertMarkdownToHtml(data.statement);
+                statementDiv.innerHTML = htmlContent;
+            } else {
+                statementDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Problem statement could not be loaded. ${data.error || ''}
+                    </div>
+                    <h4>{{ problem.config.get('title', problem.slug) }}</h4>
+                    <p class="text-muted">{{ problem.config.get('description', 'No description available.') }}</p>
+                `;
+            }
+        })
+        .catch(error => {
+            const statementDiv = document.getElementById('problemStatement');
+            statementDiv.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    Problem statement file not found or could not be loaded.
+                </div>
+                <h4>{{ problem.config.get('title', problem.slug) }}</h4>
+                <p class="text-muted">{{ problem.config.get('description', 'No description available.') }}</p>
+            `;
+        });
+}
+
+function convertMarkdownToHtml(markdown) {
+    // Simple markdown conversion (basic implementation)
+    let html = markdown
+        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
+        .replace(/^##### (.+)$/gm, '<h5>$1</h5>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/`(.+?)`/g, '<code>$1</code>')
+        .replace(/^```\n([\s\S]*?)\n```/gm, '<pre class="bg-light p-3"><code>$1</code></pre>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/^\n/, '<p>')
+        .replace(/\n$/, '</p>');
+    
+    return `<div class="markdown-content">${html}</div>`;
+}
+</script>
+{% endblock %}

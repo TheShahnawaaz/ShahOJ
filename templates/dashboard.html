@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - PocketOJ{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+        <div>
+            <a href="{{ url_for('create_problem_form') }}" class="btn btn-primary me-2">
+                <i class="fas fa-plus"></i> Create Problem
+            </a>
+            <button class="btn btn-outline-secondary" onclick="location.reload()">
+                <i class="fas fa-sync"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-code fa-2x mb-2"></i>
+                    <h3>{{ stats.total_problems }}</h3>
+                    <p class="mb-0">Total Problems</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                    <h3>{{ stats.total_test_cases }}</h3>
+                    <p class="mb-0">Test Cases</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-2x mb-2"></i>
+                    <h3>{{ stats.difficulty_breakdown.Easy + stats.difficulty_breakdown.Medium + stats.difficulty_breakdown.Hard }}</h3>
+                    <p class="mb-0">Problems Ready</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x mb-2"></i>
+                    <h3>{{ stats.recent_problems|length }}</h3>
+                    <p class="mb-0">Recent</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Difficulty Breakdown -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-pie"></i> Difficulty Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <span class="badge bg-success me-2">Easy</span>
+                        <span class="text-muted">{{ stats.difficulty_breakdown.Easy }} problems</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-warning me-2">Medium</span>
+                        <span class="text-muted">{{ stats.difficulty_breakdown.Medium }} problems</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-danger me-2">Hard</span>
+                        <span class="text-muted">{{ stats.difficulty_breakdown.Hard }} problems</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> System Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Problems Directory:</strong> <code>problems/</code></p>
+                            <p><strong>Judge Directory:</strong> <code>judge/</code></p>
+                            <p><strong>Default Time Limit:</strong> 1000ms</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Default Memory Limit:</strong> 256MB</p>
+                            <p><strong>Supported Languages:</strong> C++17</p>
+                            <p><strong>API Status:</strong> <span class="badge bg-success">Active</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Problems List -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5><i class="fas fa-list"></i> Problems</h5>
+            <small class="text-muted">{{ problems|length }} problems found</small>
+        </div>
+        <div class="card-body">
+            {% if problems %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Difficulty</th>
+                            <th>Tags</th>
+                            <th>Test Cases</th>
+                            <th>Files Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for problem in problems %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('problem_detail', slug=problem.slug) }}" class="text-decoration-none">
+                                    <strong>{{ problem.config.get('title') or problem.slug }}</strong>
+                                </a>
+                                <br>
+                                <small class="text-muted">{{ problem.slug }}</small>
+                            </td>
+                            <td>
+                                {% set difficulty = problem.config.get('difficulty') or 'Medium' %}
+                                <span class="badge 
+                                    {% if difficulty == 'Easy' %}bg-success
+                                    {% elif difficulty == 'Medium' %}bg-warning
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ difficulty }}
+                                </span>
+                            </td>
+                            <td>
+                                {% for tag in (problem.config.get('tags') or []) %}
+                                <span class="badge bg-secondary me-1">{{ tag }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% set test_counts = problem.get_test_cases_count() %}
+                                <small>
+                                    <i class="fas fa-vial"></i> {{ test_counts.samples + test_counts.system }}
+                                    <br>
+                                    <span class="text-muted">
+                                        S:{{ test_counts.samples }} 
+                                        Sys:{{ test_counts.system }}
+                                    </span>
+                                </small>
+                            </td>
+                            <td>
+                                {% set files = problem.get_files_info() %}
+                                <div class="small">
+                                    {% if files.config_exists %}<i class="fas fa-check text-success"></i>{% else %}<i class="fas fa-times text-danger"></i>{% endif %} Config
+                                    {% if files.solution_exists %}<i class="fas fa-check text-success"></i>{% else %}<i class="fas fa-times text-danger"></i>{% endif %} Solution
+                                    {% if files.generator_exists %}<i class="fas fa-check text-success"></i>{% else %}<i class="fas fa-times text-danger"></i>{% endif %} Generator
+                                </div>
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    {{ (problem.config.get('created_date') or 'Unknown')[:10] }}
+                                </small>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('problem_detail', slug=problem.slug) }}" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <button class="btn btn-outline-secondary btn-sm" title="Generate Tests">
+                                        <i class="fas fa-cog"></i>
+                                    </button>
+                                    <button class="btn btn-outline-success btn-sm" title="Test Solution">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No problems found</h4>
+                <p class="text-muted">Get started by creating your first problem!</p>
+                <button class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Your First Problem
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Add some basic JavaScript functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click handlers for action buttons
+    const actionButtons = document.querySelectorAll('.btn-group .btn');
+    actionButtons.forEach(button => {
+        if (button.title) {
+            // Add tooltip functionality if needed
+            button.setAttribute('data-bs-toggle', 'tooltip');
+            button.setAttribute('data-bs-placement', 'top');
+        }
+    });
+    
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    console.log('Dashboard loaded with {{ problems|length }} problems');
+});
+</script>
+{% endblock %}

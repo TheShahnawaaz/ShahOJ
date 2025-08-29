@@ -1,0 +1,14 @@
+compiler:
+  cpp:
+    command: g++ -std=c++17 -O2 {src} -o {out}
+    timeout: 30
+system:
+  default_memory_limit_mb: 256
+  default_time_limit_ms: 1000
+  judge_dir: judge
+  max_file_size_mb: 10
+  problems_dir: problems
+web:
+  debug: true
+  host: 127.0.0.1
+  port: 5001

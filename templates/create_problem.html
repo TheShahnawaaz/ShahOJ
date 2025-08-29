@@ -1,0 +1,654 @@
+{% extends "base.html" %}
+
+{% block title %}Create New Problem - PocketOJ{% endblock %}
+
+{% block extra_css %}
+<style>
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+    
+    .step {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .step.active {
+        background-color: #007bff;
+        color: white;
+    }
+    
+    .step.completed {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .step.inactive {
+        background-color: #e9ecef;
+        color: #6c757d;
+    }
+    
+    .step-content {
+        display: none;
+    }
+    
+    .step-content.active {
+        display: block;
+    }
+    
+    .code-editor {
+        font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+        font-size: 14px;
+        min-height: 300px;
+    }
+    
+    .template-card {
+        cursor: pointer;
+        transition: transform 0.2s, border-color 0.2s;
+    }
+    
+    .template-card:hover {
+        transform: translateY(-2px);
+        border-color: #007bff;
+    }
+    
+    .template-card.selected {
+        border-color: #007bff;
+        background-color: #f8f9ff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1><i class="fas fa-plus-circle"></i> Create New Problem</h1>
+            <p class="text-muted">Set up a new competitive programming problem with guided steps</p>
+        </div>
+    </div>
+
+    <!-- Step Indicator -->
+    <div class="step-indicator">
+        <div class="step active" data-step="1">
+            <i class="fas fa-info-circle me-2"></i>
+            <span>Basic Info</span>
+        </div>
+        <div class="step inactive" data-step="2">
+            <i class="fas fa-file-code me-2"></i>
+            <span>Template</span>
+        </div>
+        <div class="step inactive" data-step="3">
+            <i class="fas fa-code me-2"></i>
+            <span>Solution</span>
+        </div>
+        <div class="step inactive" data-step="4">
+            <i class="fas fa-cog me-2"></i>
+            <span>Configuration</span>
+        </div>
+        <div class="step inactive" data-step="5">
+            <i class="fas fa-check-circle me-2"></i>
+            <span>Review</span>
+        </div>
+    </div>
+
+    <!-- Problem Creation Form -->
+    <form id="problemForm" onsubmit="return false;">
+        
+        <!-- Step 1: Basic Information -->
+        <div class="step-content active" id="step1">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-info-circle"></i> Basic Problem Information</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Problem Title *</label>
+                                <input type="text" class="form-control" id="title" name="title" 
+                                       placeholder="e.g., Two Sum" required>
+                                <div class="form-text">Clear, descriptive title for your problem</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="slug" class="form-label">Problem Slug *</label>
+                                <input type="text" class="form-control" id="slug" name="slug" 
+                                       placeholder="e.g., two-sum" required>
+                                <div class="form-text">URL-friendly identifier (auto-generated from title)</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="difficulty" class="form-label">Difficulty *</label>
+                                <select class="form-select" id="difficulty" name="difficulty" required>
+                                    <option value="">Select difficulty</option>
+                                    <option value="Easy">Easy</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Hard">Hard</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="time_limit" class="form-label">Time Limit (ms)</label>
+                                <input type="number" class="form-control" id="time_limit" name="time_limit" 
+                                       value="1000" min="100" max="10000">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="memory_limit" class="form-label">Memory Limit (MB)</label>
+                                <input type="number" class="form-control" id="memory_limit" name="memory_limit" 
+                                       value="256" min="16" max="1024">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="tags" class="form-label">Tags</label>
+                        <input type="text" class="form-control" id="tags" name="tags" 
+                               placeholder="e.g., array, hash-table, two-pointers">
+                        <div class="form-text">Comma-separated tags to categorize your problem</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Short Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"
+                                  placeholder="Brief description of what the problem asks..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Problem Template -->
+        <div class="step-content" id="step2">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-file-code"></i> Choose Problem Template</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="templateContainer">
+                        <!-- Templates will be loaded here -->
+                        <div class="col-md-4 mb-3">
+                            <div class="card template-card" data-template="basic">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-code fa-3x mb-3 text-primary"></i>
+                                    <h5>Basic Template</h5>
+                                    <p class="text-muted">Simple input/output problems with standard constraints</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="card template-card" data-template="array">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-list fa-3x mb-3 text-success"></i>
+                                    <h5>Array Template</h5>
+                                    <p class="text-muted">Array manipulation and processing problems</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="card template-card" data-template="graph">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-project-diagram fa-3x mb-3 text-warning"></i>
+                                    <h5>Graph Template</h5>
+                                    <p class="text-muted">Graph theory problems with nodes and edges</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="card template-card" data-template="math">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-calculator fa-3x mb-3 text-info"></i>
+                                    <h5>Math Template</h5>
+                                    <p class="text-muted">Mathematical computation and number theory</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="card template-card" data-template="string">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-font fa-3x mb-3 text-danger"></i>
+                                    <h5>String Template</h5>
+                                    <p class="text-muted">String processing and pattern matching</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="card template-card" data-template="custom">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-tools fa-3x mb-3 text-secondary"></i>
+                                    <h5>Custom Template</h5>
+                                    <p class="text-muted">Start from scratch with full customization</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" id="selectedTemplate" name="template" value="">
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Reference Solution -->
+        <div class="step-content" id="step3">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-code"></i> Reference Solution</h4>
+                    <small class="text-muted">Write the correct Python solution for generating test answers</small>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="solution_code" class="form-label">Python Solution Code *</label>
+                        <textarea class="form-control code-editor" id="solution_code" name="solution_code" 
+                                  rows="15" required placeholder="#!/usr/bin/env python3
+def solve():
+    # Read input
+    n = int(input())
+    arr = list(map(int, input().split()))
+    
+    # Your solution logic here
+    result = 0
+    
+    return result
+
+def main():
+    result = solve()
+    print(result)
+
+if __name__ == '__main__':
+    main()"></textarea>
+                        <div class="form-text">This solution will be used to generate correct answers for test cases</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button type="button" class="btn btn-outline-success" id="testSolution">
+                                <i class="fas fa-play"></i> Test Solution
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="formatCode">
+                                <i class="fas fa-magic"></i> Format Code
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <div id="solutionFeedback"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: Configuration -->
+        <div class="step-content" id="step4">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-cog"></i> Problem Configuration</h4>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Input Constraints -->
+                    <h5>Input Constraints</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="n_min" class="form-label">Minimum N</label>
+                            <input type="number" class="form-control" id="n_min" name="n_min" value="1">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="n_max" class="form-label">Maximum N</label>
+                            <input type="number" class="form-control" id="n_max" name="n_max" value="100000">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="val_min" class="form-label">Minimum Value</label>
+                            <input type="number" class="form-control" id="val_min" name="val_min" value="-1000000000">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="val_max" class="form-label">Maximum Value</label>
+                            <input type="number" class="form-control" id="val_max" name="val_max" value="1000000000">
+                        </div>
+                    </div>
+                    
+                    <!-- Checker Configuration -->
+                    <h5>Answer Checker</h5>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="checker_type" id="checker_diff" value="diff" checked>
+                            <label class="form-check-label" for="checker_diff">
+                                <strong>Exact Match (diff)</strong> - Output must match expected answer exactly
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="checker_type" id="checker_float" value="float">
+                            <label class="form-check-label" for="checker_float">
+                                <strong>Floating Point</strong> - Compare floating point numbers with tolerance
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="checker_type" id="checker_spj" value="spj">
+                            <label class="form-check-label" for="checker_spj">
+                                <strong>Special Judge</strong> - Multiple correct answers possible
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Test Generation -->
+                    <h5>Test Case Generation</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="small_tests" class="form-label">Small Test Cases</label>
+                            <input type="number" class="form-control" id="small_tests" name="small_tests" value="3" min="0" max="10">
+                            <div class="form-text">n ≤ 100</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="medium_tests" class="form-label">Medium Test Cases</label>
+                            <input type="number" class="form-control" id="medium_tests" name="medium_tests" value="5" min="0" max="20">
+                            <div class="form-text">100 < n ≤ 10,000</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="large_tests" class="form-label">Large Test Cases</label>
+                            <input type="number" class="form-control" id="large_tests" name="large_tests" value="7" min="0" max="50">
+                            <div class="form-text">n > 10,000</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5: Review -->
+        <div class="step-content" id="step5">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-check-circle"></i> Review & Create</h4>
+                </div>
+                <div class="card-body">
+                    <div id="reviewContent">
+                        <!-- Review content will be populated by JavaScript -->
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        Once created, the problem structure will be generated with all necessary files.
+                        You can always edit the problem later through the web interface.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="d-flex justify-content-between mt-4">
+            <button type="button" class="btn btn-outline-secondary" id="prevStep" style="display: none;">
+                <i class="fas fa-arrow-left"></i> Previous
+            </button>
+            
+            <div class="ms-auto">
+                <button type="button" class="btn btn-primary" id="nextStep">
+                    Next <i class="fas fa-arrow-right"></i>
+                </button>
+                <button type="button" class="btn btn-success" id="createProblem" style="display: none;">
+                    <i class="fas fa-plus-circle"></i> Create Problem
+                </button>
+            </div>
+        </div>
+    </form>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentStep = 1;
+    const totalSteps = 5;
+    
+    // Auto-generate slug from title
+    document.getElementById('title').addEventListener('input', function() {
+        const slug = this.value.toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        document.getElementById('slug').value = slug;
+    });
+    
+    // Template selection
+    document.querySelectorAll('.template-card').forEach(card => {
+        card.addEventListener('click', function() {
+            // Remove previous selection
+            document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+            // Select this template
+            this.classList.add('selected');
+            document.getElementById('selectedTemplate').value = this.dataset.template;
+        });
+    });
+    
+    // Step navigation
+    function updateStepIndicator() {
+        document.querySelectorAll('.step').forEach((step, index) => {
+            step.classList.remove('active', 'completed', 'inactive');
+            const stepNumber = index + 1;
+            
+            if (stepNumber < currentStep) {
+                step.classList.add('completed');
+            } else if (stepNumber === currentStep) {
+                step.classList.add('active');
+            } else {
+                step.classList.add('inactive');
+            }
+        });
+        
+        // Update content visibility
+        document.querySelectorAll('.step-content').forEach((content, index) => {
+            content.classList.toggle('active', index + 1 === currentStep);
+        });
+        
+        // Update button visibility
+        document.getElementById('prevStep').style.display = currentStep > 1 ? 'inline-block' : 'none';
+        document.getElementById('nextStep').style.display = currentStep < totalSteps ? 'inline-block' : 'none';
+        document.getElementById('createProblem').style.display = currentStep === totalSteps ? 'inline-block' : 'none';
+    }
+    
+    document.getElementById('nextStep').addEventListener('click', function() {
+        if (validateCurrentStep()) {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                if (currentStep === 5) {
+                    populateReview();
+                }
+                updateStepIndicator();
+            }
+        }
+    });
+    
+    document.getElementById('prevStep').addEventListener('click', function() {
+        if (currentStep > 1) {
+            currentStep--;
+            updateStepIndicator();
+        }
+    });
+    
+    function validateCurrentStep() {
+        switch(currentStep) {
+            case 1:
+                const title = document.getElementById('title').value.trim();
+                const slug = document.getElementById('slug').value.trim();
+                const difficulty = document.getElementById('difficulty').value;
+                
+                if (!title || !slug || !difficulty) {
+                    alert('Please fill in all required fields (Title, Slug, Difficulty)');
+                    return false;
+                }
+                return true;
+                
+            case 2:
+                const template = document.getElementById('selectedTemplate').value;
+                if (!template) {
+                    alert('Please select a problem template');
+                    return false;
+                }
+                return true;
+                
+            case 3:
+                const solution = document.getElementById('solution_code').value.trim();
+                if (!solution) {
+                    alert('Please provide a reference solution');
+                    return false;
+                }
+                return true;
+                
+            default:
+                return true;
+        }
+    }
+    
+    function populateReview() {
+        const formData = new FormData(document.getElementById('problemForm'));
+        let reviewHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Problem Details</h5>
+                    <table class="table">
+                        <tr><td><strong>Title:</strong></td><td>${formData.get('title')}</td></tr>
+                        <tr><td><strong>Slug:</strong></td><td>${formData.get('slug')}</td></tr>
+                        <tr><td><strong>Difficulty:</strong></td><td><span class="badge bg-${getDifficultyColor(formData.get('difficulty'))}">${formData.get('difficulty')}</span></td></tr>
+                        <tr><td><strong>Tags:</strong></td><td>${formData.get('tags') || 'None'}</td></tr>
+                        <tr><td><strong>Time Limit:</strong></td><td>${formData.get('time_limit')}ms</td></tr>
+                        <tr><td><strong>Memory Limit:</strong></td><td>${formData.get('memory_limit')}MB</td></tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h5>Configuration</h5>
+                    <table class="table">
+                        <tr><td><strong>Template:</strong></td><td>${formData.get('template')}</td></tr>
+                        <tr><td><strong>Checker:</strong></td><td>${formData.get('checker_type')}</td></tr>
+                        <tr><td><strong>N Range:</strong></td><td>${formData.get('n_min')} - ${formData.get('n_max')}</td></tr>
+                        <tr><td><strong>Value Range:</strong></td><td>${formData.get('val_min')} - ${formData.get('val_max')}</td></tr>
+                        <tr><td><strong>Test Cases:</strong></td><td>${parseInt(formData.get('small_tests')) + parseInt(formData.get('medium_tests')) + parseInt(formData.get('large_tests'))} total</td></tr>
+                    </table>
+                </div>
+            </div>
+        `;
+        document.getElementById('reviewContent').innerHTML = reviewHTML;
+    }
+    
+    function getDifficultyColor(difficulty) {
+        switch(difficulty) {
+            case 'Easy': return 'success';
+            case 'Medium': return 'warning';
+            case 'Hard': return 'danger';
+            default: return 'secondary';
+        }
+    }
+    
+    // Initialize
+    updateStepIndicator();
+    
+    // Handle problem creation
+    document.getElementById('createProblem').addEventListener('click', function() {
+        const btn = this;
+        const originalText = btn.innerHTML;
+        
+        // Show loading state
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+        btn.disabled = true;
+        
+        // Collect form data
+        const formData = new FormData(document.getElementById('problemForm'));
+        
+        // Convert to JSON
+        const data = {};
+        for (let [key, value] of formData.entries()) {
+            data[key] = value;
+        }
+        
+        // Submit to API
+        fetch('/create-problem', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                showSuccessMessage(data.message);
+                
+                // Redirect after short delay
+                setTimeout(() => {
+                    window.location.href = data.redirect_url;
+                }, 2000);
+            } else {
+                // Show error message
+                showErrorMessage(data.error);
+                
+                // Restore button
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        })
+        .catch(error => {
+            showErrorMessage(`Network error: ${error.message}`);
+            
+            // Restore button
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    });
+    
+    console.log('Problem creation wizard initialized');
+});
+
+function showSuccessMessage(message) {
+    const alertHtml = `
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> <strong>Success!</strong> ${message}
+            <br><small>Redirecting to problem page...</small>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    // Insert at top of container
+    const container = document.querySelector('.container');
+    container.insertAdjacentHTML('afterbegin', alertHtml);
+    
+    // Scroll to top
+    window.scrollTo(0, 0);
+}
+
+function showErrorMessage(message) {
+    const alertHtml = `
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> <strong>Error!</strong> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    // Insert at top of container
+    const container = document.querySelector('.container');
+    container.insertAdjacentHTML('afterbegin', alertHtml);
+    
+    // Scroll to top
+    window.scrollTo(0, 0);
+}
+</script>
+{% endblock %}

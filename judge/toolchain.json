@@ -1,0 +1,7 @@
+{
+  "compile": "g++ -std=c++17 -O2 {src} -o {out}",
+  "default_time_limit_ms": 1000,
+  "default_memory_limit_mb": 256,
+  "supported_languages": ["cpp"],
+  "compile_timeout_s": 30
+}
