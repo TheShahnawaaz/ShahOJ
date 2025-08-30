@@ -569,34 +569,14 @@ class SolutionTester:
                     shutil.copy2(other_testlib, testlib_path)
                     return
 
-        # If no testlib.h found, create a minimal placeholder
-        # This shouldn't happen in a properly set up system, but provides fallback
-        placeholder_content = '''// Placeholder testlib.h - replace with actual testlib.h
-#ifndef _TESTLIB_H_
-#define _TESTLIB_H_
-#include <iostream>
-#include <string>
-#include <cstdlib>
-using namespace std;
-
-// Minimal testlib placeholders
-#define _ok 0
-#define _wa 1
-#define _pe 2
-
-void quitf(int exitCode, const char* format, ...) {
-    // This is a minimal placeholder - use real testlib.h for full functionality
-    if (exitCode == _ok) {
-        fprintf(stderr, "ok");
-    } else if (exitCode == _wa) {
-        fprintf(stderr, "wrong answer");
-    } else if (exitCode == _pe) {
-        fprintf(stderr, "presentation error");
-    }
-    exit(exitCode);
-}
-#endif
-'''
-
-        with open(testlib_path, 'w') as f:
-            f.write(placeholder_content)
+        # If no testlib.h found, copy from the main judge directory
+        import shutil
+        import sys
+        from pathlib import Path
+        judge_testlib = Path(__file__).parent.parent / 'judge' / 'testlib.h'
+        if judge_testlib.exists():
+            shutil.copy2(judge_testlib, testlib_path)
+            return
+        else:
+            raise FileNotFoundError(
+                "testlib.h not found in judge/ directory. Please ensure it exists.")
