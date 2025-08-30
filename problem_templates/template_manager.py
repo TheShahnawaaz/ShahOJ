@@ -73,29 +73,18 @@ import random
 import sys
 
 def main():
-    if len(sys.argv) != 4:
-        print("Usage: python generator.py <pattern> <case_num> <seed>")
+    if len(sys.argv) != 3:
+        print("Usage: python generator.py <case_num> <seed>")
         sys.exit(1)
-    
-    pattern = sys.argv[1]
-    case_num = int(sys.argv[2])
-    seed = int(sys.argv[3])
-    
+
+    case_num = int(sys.argv[1])
+    seed = int(sys.argv[2])
+
     random.seed(seed)
-    
-    if pattern == 'small':
-        n = random.randint(1, 100)
-        values = [random.randint(-1000, 1000) for _ in range(n)]
-    elif pattern == 'medium':
-        n = random.randint(101, 10000)
-        values = [random.randint(-1000000, 1000000) for _ in range(n)]
-    elif pattern == 'large':
-        n = random.randint(10001, 100000)
-        values = [random.randint(-1000000000, 1000000000) for _ in range(n)]
-    else:
-        print(f"Unknown pattern: {pattern}")
-        sys.exit(1)
-    
+
+    n = random.randint(1, 100000)
+    values = [random.randint(-1000000000, 1000000000) for _ in range(n)]
+
     print(n)
     print(' '.join(map(str, values)))
 
@@ -227,41 +216,28 @@ import random
 import sys
 
 def main():
-    if len(sys.argv) != 4:
-        print("Usage: python generator.py <pattern> <case_num> <seed>")
+    if len(sys.argv) != 3:
+        print("Usage: python generator.py <case_num> <seed>")
         sys.exit(1)
-    
-    pattern = sys.argv[1]
-    case_num = int(sys.argv[2])
-    seed = int(sys.argv[3])
-    
+
+    case_num = int(sys.argv[1])
+    seed = int(sys.argv[2])
+
     random.seed(seed)
-    
-    if pattern == 'small':
-        n = random.randint(1, 100)
-    elif pattern == 'medium':
-        n = random.randint(101, 10000)
-    elif pattern == 'large':
-        n = random.randint(10001, 200000)
-    else:
-        print(f"Unknown pattern: {pattern}")
-        sys.exit(1)
-    
+
+    n = random.randint(1, 200000)
+
     # Array-specific generation patterns
     if case_num % 4 == 0:
-        # Sorted array
         values = sorted([random.randint(-1000000000, 1000000000) for _ in range(n)])
     elif case_num % 4 == 1:
-        # Reverse sorted array
         values = sorted([random.randint(-1000000000, 1000000000) for _ in range(n)], reverse=True)
     elif case_num % 4 == 2:
-        # All same values
         val = random.randint(-1000000000, 1000000000)
         values = [val] * n
     else:
-        # Random values
         values = [random.randint(-1000000000, 1000000000) for _ in range(n)]
-    
+
     print(n)
     print(' '.join(map(str, values)))
 
@@ -284,39 +260,27 @@ import random
 import sys
 
 def main():
-    if len(sys.argv) != 4:
-        print("Usage: python generator.py <pattern> <case_num> <seed>")
+    if len(sys.argv) != 3:
+        print("Usage: python generator.py <case_num> <seed>")
         sys.exit(1)
-    
-    pattern = sys.argv[1]
-    case_num = int(sys.argv[2])
-    seed = int(sys.argv[3])
-    
+
+    case_num = int(sys.argv[1])
+    seed = int(sys.argv[2])
+
     random.seed(seed)
-    
-    if pattern == 'small':
-        n = random.randint(2, 50)   # nodes
-        m = random.randint(1, min(100, n * (n-1) // 2))  # edges
-    elif pattern == 'medium':
-        n = random.randint(51, 1000)
-        m = random.randint(n-1, min(5000, n * (n-1) // 2))
-    elif pattern == 'large':
-        n = random.randint(1001, 100000)
-        m = random.randint(n-1, min(500000, n * 5))  # Sparse graph
-    else:
-        print(f"Unknown pattern: {pattern}")
-        sys.exit(1)
-    
+
+    n = random.randint(2, 100000)
+    m = random.randint(n-1, min(500000, n * 5))
+
     print(n, m)
-    
-    # Generate edges (avoid self-loops and duplicates for simplicity)
+
     edges = set()
     while len(edges) < m:
         u = random.randint(1, n)
         v = random.randint(1, n)
         if u != v:
             edges.add((min(u, v), max(u, v)))
-    
+
     for u, v in edges:
         print(u, v)
 
@@ -409,30 +373,20 @@ import sys
 import string
 
 def main():
-    if len(sys.argv) != 4:
-        print("Usage: python generator.py <pattern> <case_num> <seed>")
+    if len(sys.argv) != 3:
+        print("Usage: python generator.py <case_num> <seed>")
         sys.exit(1)
-    
-    pattern = sys.argv[1]
-    case_num = int(sys.argv[2])
-    seed = int(sys.argv[3])
-    
+
+    case_num = int(sys.argv[1])
+    seed = int(sys.argv[2])
+
     random.seed(seed)
-    
-    if pattern == 'small':
-        length = random.randint(1, 100)
-    elif pattern == 'medium':
-        length = random.randint(101, 10000)
-    elif pattern == 'large':
-        length = random.randint(10001, 1000000)
-    else:
-        print(f"Unknown pattern: {pattern}")
-        sys.exit(1)
-    
-    # Generate random string
-    chars = string.ascii_lowercase  # Can be customized based on problem
+
+    length = random.randint(1, 1000000)
+
+    chars = string.ascii_lowercase
     test_string = ''.join(random.choice(chars) for _ in range(length))
-    
+
     print(length)
     print(test_string)
 
@@ -455,36 +409,19 @@ import random
 import sys
 
 def main():
-    if len(sys.argv) != 4:
-        print("Usage: python generator.py <pattern> <case_num> <seed>")
+    if len(sys.argv) != 3:
+        print("Usage: python generator.py <case_num> <seed>")
         sys.exit(1)
-    
-    pattern = sys.argv[1]
-    case_num = int(sys.argv[2])
-    seed = int(sys.argv[3])
-    
+
+    case_num = int(sys.argv[1])
+    seed = int(sys.argv[2])
+
     random.seed(seed)
-    
-    # Basic custom generation - can be modified per problem
-    
-    if pattern == 'small':
-        # Generate small test case
-        n = random.randint(1, 10)
-        print(f"{n}")
-        print(' '.join(str(random.randint(1, 100)) for _ in range(n)))
-    elif pattern == 'medium':
-        # Generate medium test case  
-        n = random.randint(11, 1000)
-        print(f"{n}")
-        print(' '.join(str(random.randint(1, 10000)) for _ in range(n)))
-    elif pattern == 'large':
-        # Generate large test case
-        n = random.randint(1001, 100000)
-        print(f"{n}")
-        print(' '.join(str(random.randint(1, 1000000)) for _ in range(n)))
-    else:
-        print(f"Unknown pattern: {pattern}")
-        sys.exit(1)
+
+    # Basic custom generation - modify as needed
+    n = random.randint(1, 100)
+    print(f"{n}")
+    print(' '.join(str(random.randint(1, 1000)) for _ in range(n)))
 
 if __name__ == "__main__":
     main()

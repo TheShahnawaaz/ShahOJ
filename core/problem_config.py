@@ -51,12 +51,7 @@ class ProblemConfig:
             'tests': {
                 'sample_count': 3,    # Manual examples
                 'system_count': 20    # Generated tests
-            },
-
-            # Generation patterns (defined by generator.py)
-            'patterns': [
-                'small', 'medium', 'large'  # Default patterns
-            ]
+            }
         }
 
         return cls(config_data)

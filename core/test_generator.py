@@ -20,43 +20,39 @@ class TestGenerator:
         self.generator_file = self.problem_dir / 'generator.py'
         self.validator_file = self.problem_dir / 'validator.py'
 
-    def generate_test_case(self, pattern: str, case_num: int, seed: int) -> Tuple[str, str]:
+    def generate_test_case(self, case_num: int, seed: int) -> Tuple[str, str]:
         """
-        Generate a single test case and its answer
+        Generate a single test case and its answer.
         Returns (input_text, answer_text)
         """
         # Generate input using the problem's generator
-        input_text = self._run_generator(pattern, case_num, seed)
+        input_text = self._run_generator(case_num, seed)
+        
+        print("Generated input: ", input_text)
 
         # Validate the generated input
         if not self._validate_input(input_text):
-            raise ValueError(
-                f"Generated input failed validation for pattern {pattern}")
+            raise ValueError("Generated input failed validation")
 
         # Generate answer using reference solution
         answer_text = self._run_solution(input_text)
 
         return input_text.strip(), answer_text.strip()
 
-    def generate_pattern(self, pattern_config: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """
-        Generate multiple test cases for a pattern
-        Returns list of test case info dicts
-        """
-        pattern_name = pattern_config['name']
-        count = pattern_config['count']
-
+    def generate_cases(self, count: int) -> List[Dict[str, Any]]:
+        """Generate multiple test cases"""
         test_cases = []
         base_seed = random.randint(10000, 99999)
 
         for i in range(count):
             seed = base_seed + i
             try:
-                input_text, answer_text = self.generate_test_case(
-                    pattern_name, i + 1, seed)
+                print(f"Trying to generate case {i + 1} with seed {seed}")
+                input_text, answer_text = self.generate_test_case(i + 1, seed)
+                
+                print(f"Generated case {i + 1} with seed {seed}")
 
                 test_case_info = {
-                    'pattern': pattern_name,
                     'case_num': i + 1,
                     'seed': seed,
                     'input': input_text,
@@ -68,50 +64,12 @@ class TestGenerator:
                 test_cases.append(test_case_info)
 
             except Exception as e:
-                print(
-                    f"Warning: Failed to generate {pattern_name} case {i+1}: {e}")
+                print(f"Warning: Failed to generate case {i+1}: {e}")
                 continue
 
         return test_cases
 
-    def generate_all_patterns(self, custom_patterns: List[Dict[str, Any]] = None) -> Dict[str, List[Dict[str, Any]]]:
-        """
-        Generate test cases for specified patterns  
-        custom_patterns: if provided, use these instead of config patterns
-        Returns dict mapping pattern names to test case lists
-        """
-        if custom_patterns:
-            patterns = custom_patterns
-        else:
-            config = self.problem.config
-            patterns = config.get('test_generation', {}).get('patterns', [])
-
-        all_test_cases = {}
-
-        for pattern_config in patterns:
-            pattern_name = pattern_config['name']
-            count = pattern_config.get('count', 1)
-
-            if count <= 0:
-                continue  # Skip patterns with 0 count
-
-            print(f"Generating {count} {pattern_name} test cases...")
-
-            try:
-                test_cases = self.generate_pattern(pattern_config)
-                all_test_cases[pattern_name] = test_cases
-                print(
-                    f"✅ Generated {len(test_cases)} {pattern_name} test cases")
-
-            except Exception as e:
-                print(f"❌ Failed to generate {pattern_name} pattern: {e}")
-                import traceback
-                traceback.print_exc()
-                all_test_cases[pattern_name] = []
-
-        return all_test_cases
-
-    def save_test_cases(self, test_cases: Dict[str, List[Dict[str, Any]]],
+    def save_test_cases(self, test_cases: List[Dict[str, Any]],
                         test_category: str = 'system', replace_existing: bool = False):
         """
         Save generated test cases to files
@@ -141,20 +99,19 @@ class TestGenerator:
 
         total_saved = 0
 
-        for pattern_name, cases in test_cases.items():
-            for test_case in cases:
-                # Save input file
-                in_file = test_dir / f"{test_num:02d}.in"
-                with open(in_file, 'w') as f:
-                    f.write(test_case['input'] + '\n')
+        for test_case in test_cases:
+            # Save input file
+            in_file = test_dir / f"{test_num:02d}.in"
+            with open(in_file, 'w') as f:
+                f.write(test_case['input'] + '\n')
 
-                # Save answer file
-                ans_file = test_dir / f"{test_num:02d}.ans"
-                with open(ans_file, 'w') as f:
-                    f.write(test_case['answer'] + '\n')
+            # Save answer file
+            ans_file = test_dir / f"{test_num:02d}.ans"
+            with open(ans_file, 'w') as f:
+                f.write(test_case['answer'] + '\n')
 
-                test_num += 1
-                total_saved += 1
+            test_num += 1
+            total_saved += 1
 
         return total_saved
 
@@ -199,17 +156,16 @@ class TestGenerator:
             print(f"Error adding manual test case: {e}")
             return False
 
-    def _run_generator(self, pattern: str, case_num: int, seed: int) -> str:
+    def _run_generator(self, case_num: int, seed: int) -> str:
         """Run the problem's generator script"""
         if not self.generator_file.exists():
             raise FileNotFoundError(
                 f"Generator not found: {self.generator_file}")
 
         try:
-            # Use relative path for generator within problem directory
             generator_name = self.generator_file.name
             result = subprocess.run(
-                ['python3', generator_name, pattern, str(case_num), str(seed)],
+                ['python3', generator_name, str(case_num), str(seed)],
                 cwd=str(self.problem_dir),
                 capture_output=True,
                 text=True,

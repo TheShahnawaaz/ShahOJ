@@ -203,27 +203,10 @@ def create_problem():
                 'type': form_data['checker_type']
             },
 
-            # Test generation settings
-            'test_generation': {
-                'enabled': True,
-                'auto_generate': True,
-                'patterns': [
-                    {
-                        'name': 'small',
-                        'count': form_data['small_tests'],
-                        'n_range': [1, 100]
-                    },
-                    {
-                        'name': 'medium',
-                        'count': form_data['medium_tests'],
-                        'n_range': [101, 10000]
-                    },
-                    {
-                        'name': 'large',
-                        'count': form_data['large_tests'],
-                        'n_range': [10001, form_data['n_max']]
-                    }
-                ]
+            # Test case counts
+            'tests': {
+                'sample_count': 3,
+                'system_count': form_data['small_tests'] + form_data['medium_tests'] + form_data['large_tests']
             },
 
             # Validation settings
@@ -309,20 +292,15 @@ def generate_tests_api(slug):
         # Get generation parameters
         data = request.get_json() or {}
         test_category = data.get('category', 'system')
-        custom_patterns = data.get('patterns', None)
+        count = int(data.get('count', problem.config.get('tests.system_count', 20)))
         replace_existing = data.get('replace_existing', False)
-
-        # Use custom patterns if provided, otherwise use configured patterns
-        if custom_patterns is None:
-            patterns = problem.config.get(
-                'test_generation', {}).get('patterns', [])
-        else:
-            patterns = custom_patterns
+        
+        print(f"Generating {count} test cases for {test_category} category")
 
         # Generate test cases
         from core.test_generator import TestGenerator
         test_generator = TestGenerator(problem)
-        generated_cases = test_generator.generate_all_patterns(patterns)
+        generated_cases = test_generator.generate_cases(count)
 
         # Save test cases (append by default, replace only if explicitly requested)
         saved_count = test_generator.save_test_cases(
@@ -559,13 +537,7 @@ def create_problem_v2_api():
             test_gen = TestGenerator(problem)
 
             # Generate system test cases using the provided generator
-            pattern_configs = [
-                {'name': 'small', 'count': metadata['system_count'] // 3},
-                {'name': 'large',
-                    'count': metadata['system_count'] - (metadata['system_count'] // 3)}
-            ]
-
-            generated_cases = test_gen.generate_all_patterns(pattern_configs)
+            generated_cases = test_gen.generate_cases(metadata['system_count'])
             saved_count = test_gen.save_test_cases(
                 generated_cases, 'system', replace_existing=True)
 

@@ -261,22 +261,15 @@ if __name__ == '__main__':
 import random, sys
 
 def main():
-    pattern, case_num, seed = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
+    case_num, seed = int(sys.argv[1]), int(sys.argv[2])
     random.seed(seed)
-    
-    # Define YOUR patterns
-    if pattern == 'small':
-        # Generate small test case in YOUR format
-        pass
-    elif pattern == 'large':
-        # Generate large test case in YOUR format  
-        pass
-    else:
-        sys.exit(1)
+
+    # Generate test case in YOUR format
+    pass
 
 if __name__ == '__main__':
     main()"></textarea>
-                        <div class="form-text">Must follow interface: python generator.py &lt;pattern&gt; &lt;case_num&gt; &lt;seed&gt;</div>
+                        <div class="form-text">Must follow interface: python generator.py &lt;case_num&gt; &lt;seed&gt;</div>
                     </div>
                     
                     <!-- Optional Files -->

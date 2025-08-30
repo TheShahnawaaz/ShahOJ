@@ -200,7 +200,7 @@ class FileManager:
             try:
                 # Test generator with standard parameters
                 result = subprocess.run(
-                    ['python3', tmp_path, 'small', '1', '12345'],
+                    ['python3', tmp_path, '1', '12345'],
                     capture_output=True,
                     text=True,
                     timeout=5

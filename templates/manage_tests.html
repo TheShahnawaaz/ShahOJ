@@ -16,10 +16,6 @@
         font-size: 0.8rem;
     }
     
-    .pattern-badge {
-        font-size: 0.75rem;
-    }
-    
     .code-input {
         font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
         font-size: 14px;
@@ -169,32 +165,10 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">Generation Patterns</label>
-                        <div class="row" id="patternsContainer">
-                            {% for pattern in (problem.config.get('test_generation.patterns') or []) %}
-                            <div class="col-md-4 mb-2">
-                                <div class="card pattern-config">
-                                    <div class="card-body">
-                                        <h6>{{ pattern.name|title }}</h6>
-                                        <div class="mb-2">
-                                            <label class="form-label small">Count:</label>
-                                            <input type="number" class="form-control form-control-sm pattern-count" 
-                                                   data-pattern="{{ pattern.name }}" 
-                                                   value="{{ pattern.count }}" min="0" max="50">
-                                        </div>
-                                        <small class="text-muted">Range: {{ pattern.get('n_range', ['auto', 'auto'])[0] }}-{{ pattern.get('n_range', ['auto', 'auto'])[1] }}</small>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        
-                        <div class="alert alert-info small">
-                            <i class="fas fa-info-circle"></i>
-                            Set count to 0 to skip a pattern. Your generator.py will be called with each pattern name.
-                        </div>
+                        <label for="testCount" class="form-label">Number of Test Cases</label>
+                        <input type="number" class="form-control" id="testCount" name="count" value="1" min="1" max="50">
                     </div>
-                    
+
                     <div class="mb-3">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="replaceExisting" name="replace_existing">
@@ -204,14 +178,13 @@
                             <div class="form-text">If unchecked, new test cases will be appended to existing ones</div>
                         </div>
                     </div>
-                    
+
                     <div class="alert alert-warning">
                         <h6><i class="fas fa-exclamation-triangle"></i> Generator Interface Rules</h6>
                         <p class="mb-2">Your <code>generator.py</code> must follow this interface:</p>
-                        <pre class="small bg-light p-2">python generator.py &lt;pattern&gt; &lt;case_num&gt; &lt;seed&gt;</pre>
+                        <pre class="small bg-light p-2">python generator.py &lt;case_num&gt; &lt;seed&gt;</pre>
                         <ul class="small mb-0">
-                            <li><strong>pattern</strong>: Pattern name (e.g., 'small', 'large', 'uniform')</li>
-                            <li><strong>case_num</strong>: Case number within pattern (1, 2, 3, ...)</li>
+                            <li><strong>case_num</strong>: Case number (1, 2, 3, ...)</li>
                             <li><strong>seed</strong>: Random seed for reproducible generation</li>
                             <li><strong>Output</strong>: Print test case to stdout in exact problem format</li>
                         </ul>
@@ -297,26 +270,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const category = document.getElementById('testCategory').value;
         const replaceExisting = document.getElementById('replaceExisting').checked;
-        
-        // Collect custom pattern counts
-        const patterns = [];
-        document.querySelectorAll('.pattern-config').forEach(card => {
-            const patternName = card.querySelector('.pattern-count').dataset.pattern;
-            const count = parseInt(card.querySelector('.pattern-count').value) || 0;
-            
-            if (count > 0) {
-                patterns.push({
-                    name: patternName,
-                    count: count
-                });
-            }
-        });
-        
-        if (patterns.length === 0) {
-            alert('Please set at least one pattern count > 0');
+
+        const count = parseInt(document.getElementById('testCount').value) || 0;
+        if (count <= 0) {
+            alert('Please specify test case count > 0');
             return;
         }
-        
+
         fetch(`/api/problem/{{ problem.slug }}/generate-tests`, {
             method: 'POST',
             headers: {
@@ -324,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify({
                 category: category,
-                patterns: patterns,
+                count: count,
                 replace_existing: replaceExisting
             })
         })
