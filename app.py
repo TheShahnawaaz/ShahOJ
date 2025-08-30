@@ -281,6 +281,19 @@ def test_solution_page(slug):
         return f"Error loading solution tester: {e}", 500
 
 
+@app.route('/api/problem/<slug>/delete', methods=['DELETE'])
+def delete_problem_api(slug):
+    """API endpoint to delete a problem"""
+    try:
+        success = problem_manager.delete_problem(slug)
+        if success:
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': 'Problem not found'}), 404
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/api/problem/<slug>/generate-tests', methods=['POST'])
 def generate_tests_api(slug):
     """API endpoint to generate test cases"""

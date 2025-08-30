@@ -179,12 +179,12 @@
                                     <a href="{{ url_for('problem_detail', slug=problem.slug) }}" class="btn btn-outline-primary btn-sm">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <button class="btn btn-outline-secondary btn-sm" title="Generate Tests">
+                                    <a href="{{ url_for('manage_test_cases', slug=problem.slug) }}" class="btn btn-outline-secondary btn-sm" title="Generate Tests">
                                         <i class="fas fa-cog"></i>
-                                    </button>
-                                    <button class="btn btn-outline-success btn-sm" title="Test Solution">
+                                    </a>
+                                    <a href="{{ url_for('test_solution_page', slug=problem.slug) }}" class="btn btn-outline-success btn-sm" title="Test Solution">
                                         <i class="fas fa-play"></i>
-                                    </button>
+                                    </a>
                                 </div>
                             </td>
                         </tr>

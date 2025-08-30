@@ -61,7 +61,7 @@
                 <button class="btn btn-outline-info">
                     <i class="fas fa-download"></i> Export
                 </button>
-                <button class="btn btn-outline-danger">
+                <button class="btn btn-outline-danger" id="deleteProblemBtn">
                     <i class="fas fa-trash"></i> Delete
                 </button>
             </div>
@@ -260,12 +260,12 @@
                         <div class="card-header d-flex justify-content-between">
                             <h6>Test Cases Management</h6>
                             <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary">
+                                <a href="{{ url_for('manage_test_cases', slug=problem.slug) }}" class="btn btn-outline-primary">
                                     <i class="fas fa-plus"></i> Add Manual
-                                </button>
-                                <button class="btn btn-outline-success">
+                                </a>
+                                <a href="{{ url_for('manage_test_cases', slug=problem.slug) }}" class="btn btn-outline-success">
                                     <i class="fas fa-cog"></i> Generate
-                                </button>
+                                </a>
                             </div>
                         </div>
                         <div class="card-body">
@@ -316,7 +316,35 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Load problem statement
     loadProblemStatement();
-    
+
+    // Delete problem
+    const deleteBtn = document.getElementById('deleteProblemBtn');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to delete this problem? This action cannot be undone.')) {
+                fetch('{{ url_for('delete_problem_api', slug=problem.slug) }}', { method: 'DELETE' })
+                    .then(async response => {
+                        const text = await response.text();
+                        try {
+                            return JSON.parse(text);
+                        } catch (err) {
+                            throw new Error(text);
+                        }
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = '{{ url_for('dashboard') }}';
+                        } else {
+                            alert(data.error || 'Failed to delete problem');
+                        }
+                    })
+                    .catch(error => {
+                        alert('Error deleting problem: ' + error);
+                    });
+            }
+        });
+    }
+
     console.log('Problem detail page loaded for: {{ problem.slug }}');
 });
 
