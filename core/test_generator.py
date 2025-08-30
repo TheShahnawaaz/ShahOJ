@@ -27,8 +27,7 @@ class TestGenerator:
         """
         # Generate input using the problem's generator
         input_text = self._run_generator(case_num, seed)
-        
-        print("Generated input: ", input_text)
+
 
         # Validate the generated input
         if not self._validate_input(input_text):
@@ -47,10 +46,7 @@ class TestGenerator:
         for i in range(count):
             seed = base_seed + i
             try:
-                print(f"Trying to generate case {i + 1} with seed {seed}")
                 input_text, answer_text = self.generate_test_case(i + 1, seed)
-                
-                print(f"Generated case {i + 1} with seed {seed}")
 
                 test_case_info = {
                     'case_num': i + 1,
@@ -209,8 +205,16 @@ class TestGenerator:
 
     def _validate_input(self, input_text: str) -> bool:
         """Validate input using the problem's validator"""
+        # Check if validation is enabled in config
+        validation_enabled = self.problem.config.get(
+            'validation.enabled', False)
+
+        if not validation_enabled:
+            return True  # Skip validation if disabled
+
         if not self.validator_file.exists():
-            print(f"Warning: No validator found at {self.validator_file}")
+            print(
+                f"Warning: Validation enabled but no validator found at {self.validator_file}")
             return True  # Skip validation if no validator
 
         try:

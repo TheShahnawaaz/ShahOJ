@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block title %}Create New Problem - PocketOJ{% endblock %}
+
+{% block extra_css %}
+<style>
+    .code-editor {
+        font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+        font-size: 14px;
+        min-height: 400px;
+    }
+    
+    .form-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .required-field {
+        color: #dc3545;
+        font-weight: bold;
+    }
+    
+    .help-text {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1><i class="fas fa-plus-circle"></i> Create New Problem</h1>
+            <p class="text-muted">Quick and easy problem creation - just provide the problem statement to get started</p>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <strong>Streamlined Workflow:</strong> Create the problem with just basic info and statement. 
+                You can add solution, generator, and other files later through the edit interface.
+            </div>
+        </div>
+    </div>
+
+    <!-- Problem Creation Form -->
+    <form id="problemForm">
+        
+        <!-- Basic Information -->
+        <div class="form-section">
+            <h4><i class="fas fa-info-circle"></i> Basic Information</h4>
+            <p class="text-muted">Essential problem metadata</p>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Problem Title <span class="required-field">*</span></label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               placeholder="e.g., Maximum Element in Array" required>
+                        <div class="help-text">Clear, descriptive title for your problem</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="slug" class="form-label">Problem Slug <span class="required-field">*</span></label>
+                        <input type="text" class="form-control" id="slug" name="slug" 
+                               placeholder="e.g., maximum-element-array" required>
+                        <div class="help-text">URL-friendly identifier (auto-generated from title)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="difficulty" class="form-label">Difficulty <span class="required-field">*</span></label>
+                        <select class="form-select" id="difficulty" name="difficulty" required>
+                            <option value="">Select difficulty</option>
+                            <option value="Easy">Easy</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="Hard">Hard</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="time_limit" class="form-label">Time Limit (ms)</label>
+                        <input type="number" class="form-control" id="time_limit" name="time_limit" 
+                               value="1000" min="100" max="10000">
+                        <div class="help-text">Maximum execution time per test case</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="memory_limit" class="form-label">Memory Limit (MB)</label>
+                        <input type="number" class="form-control" id="memory_limit" name="memory_limit" 
+                               value="256" min="16" max="1024">
+                        <div class="help-text">Maximum memory usage</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="tags" class="form-label">Tags</label>
+                        <input type="text" class="form-control" id="tags" name="tags" 
+                               placeholder="e.g., array, search, basic">
+                        <div class="help-text">Comma-separated tags for categorization</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="checker_type" class="form-label">Answer Checker</label>
+                        <select class="form-select" id="checker_type" name="checker_type">
+                            <option value="diff" selected>Exact Match (diff)</option>
+                            <option value="float">Floating Point</option>
+                            <option value="spj">Special Judge (custom)</option>
+                        </select>
+                        <div class="help-text">How to compare solution outputs</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="description" class="form-label">Short Description</label>
+                <textarea class="form-control" id="description" name="description" rows="2"
+                          placeholder="Brief internal description of the problem..."></textarea>
+                <div class="help-text">Internal notes about the problem (not shown to users)</div>
+            </div>
+        </div>
+
+        <!-- Problem Statement -->
+        <div class="form-section">
+            <h4><i class="fas fa-file-text"></i> Problem Statement <span class="required-field">*</span></h4>
+            <p class="text-muted">Write your problem statement in Markdown format</p>
+            <div class="alert alert-success">
+                <i class="fas fa-lightbulb"></i>
+                <strong>Template Provided:</strong> A complete example problem statement is loaded below. 
+                Use it as a guide and replace with your own problem details.
+            </div>
+            
+            <div class="mb-3">
+                <textarea class="form-control code-editor" id="statement_content" name="statement_content" 
+                          rows="20" required># Your Problem Title
+
+## Problem Statement
+
+Describe your problem clearly and concisely. Explain what the user needs to accomplish.
+
+## Input Format
+
+- First line: integer `n` (describe what n represents and its constraints)
+- Second line: describe the format of additional input
+- Add more lines as needed for your specific problem
+
+## Output Format
+
+Describe exactly what the program should output and in what format.
+
+## Sample Test Cases
+
+### Input 1
+```
+3
+1 2 3
+```
+
+### Output 1
+```
+6
+```
+
+**Explanation**: Explain why this input produces this output.
+
+### Input 2
+```
+4
+-1 5 0 2
+```
+
+### Output 2
+```
+6
+```
+
+**Explanation**: Explain the second example case.
+
+## Constraints
+
+- 1 ≤ n ≤ 100,000 (adjust range as needed)
+- Add constraints for other variables
+- Mention any special conditions or edge cases
+
+## Notes
+
+Add any additional hints, clarifications, or important information here."></textarea>
+                <div class="help-text">
+                    <strong>Template Provided:</strong> A complete example problem statement is provided above as a guide. 
+                    Replace it with your own problem details, following the same structure for best results.
+                    <br><strong>Tip:</strong> Include clear examples, constraints, and explanations. 
+                    You can edit this later through the problem editor.
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-between">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            
+            <button type="submit" class="btn btn-success btn-lg" id="createProblemBtn">
+                <i class="fas fa-plus-circle"></i> Create Problem
+            </button>
+        </div>
+    </form>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // Auto-generate slug from title
+    document.getElementById('title').addEventListener('input', function() {
+        const slug = this.value.toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        document.getElementById('slug').value = slug;
+    });
+    
+    // Handle form submission
+    document.getElementById('problemForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('createProblemBtn');
+        const originalText = btn.innerHTML;
+        
+        // Show loading state
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Problem...';
+        btn.disabled = true;
+        
+        // Collect form data
+        const formData = new FormData(this);
+        const data = {};
+        for (let [key, value] of formData.entries()) {
+            data[key] = value;
+        }
+        
+        // Add statement content
+        data.statement = document.getElementById('statement_content').value;
+        
+        // Create problem via API
+        fetch('/api/create-problem-simple', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showSuccessMessage(data.message);
+                setTimeout(() => {
+                    window.location.href = data.redirect_url;
+                }, 2000);
+            } else {
+                showErrorMessage(data.error);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Problem creation error:', error);
+            showErrorMessage(`Network error: ${error.message}`);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    });
+    
+    function showSuccessMessage(message) {
+        const alertHtml = `
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle"></i> <strong>Success!</strong> ${message}
+                <br><small>Redirecting to problem editor...</small>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        const container = document.querySelector('.container');
+        container.insertAdjacentHTML('afterbegin', alertHtml);
+        window.scrollTo(0, 0);
+    }
+    
+    function showErrorMessage(message) {
+        const alertHtml = `
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle"></i> <strong>Error!</strong> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        const container = document.querySelector('.container');
+        container.insertAdjacentHTML('afterbegin', alertHtml);
+        window.scrollTo(0, 0);
+    }
+    
+    console.log('Simplified problem creation form initialized');
+});
+</script>
+{% endblock %}

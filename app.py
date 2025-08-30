@@ -108,14 +108,21 @@ def api_problem_detail(slug):
 
 @app.route('/create-problem')
 def create_problem_form():
-    """Show create problem form (new file-centric version)"""
-    return render_template('create_problem_v2.html')
+    """Show simplified create problem form"""
+    return render_template('create_problem_simple.html')
+
+
+# Deprecated routes - redirect to main create form
+@app.route('/create-problem-advanced')
+def create_problem_form_advanced():
+    """Deprecated: Redirect to simplified create form"""
+    return redirect(url_for('create_problem_form'))
 
 
 @app.route('/create-problem-legacy')
 def create_problem_form_legacy():
-    """Show legacy create problem form"""
-    return render_template('create_problem.html')
+    """Deprecated: Redirect to simplified create form"""
+    return redirect(url_for('create_problem_form'))
 
 
 @app.route('/create-problem', methods=['POST'])
@@ -305,9 +312,10 @@ def generate_tests_api(slug):
         # Get generation parameters
         data = request.get_json() or {}
         test_category = data.get('category', 'system')
-        count = int(data.get('count', problem.config.get('tests.system_count', 20)))
+        count = int(
+            data.get('count', problem.config.get('tests.system_count', 20)))
         replace_existing = data.get('replace_existing', False)
-        
+
         print(f"Generating {count} test cases for {test_category} category")
 
         # Generate test cases
@@ -576,6 +584,71 @@ def create_problem_v2_api():
         }), 500
 
 
+@app.route('/api/create-problem-simple', methods=['POST'])
+def create_problem_simple_api():
+    """API endpoint for simplified problem creation - only requires statement"""
+    try:
+        data = request.get_json()
+
+        # Extract metadata
+        metadata = {
+            'title': data.get('title', '').strip(),
+            'slug': data.get('slug', '').strip(),
+            'difficulty': data.get('difficulty', 'Medium'),
+            'tags': [tag.strip() for tag in data.get('tags', '').split(',') if tag.strip()],
+            'description': data.get('description', '').strip(),
+            'time_limit_ms': int(data.get('time_limit', 1000)),
+            'memory_limit_mb': int(data.get('memory_limit', 256)),
+            'checker_type': data.get('checker_type', 'diff'),
+        }
+
+        statement_content = data.get('statement', '').strip()
+
+        # Validate required fields
+        if not metadata['title'] or not metadata['slug'] or not statement_content:
+            return jsonify({'success': False, 'error': 'Title, slug, and statement are required'}), 400
+
+        # Check if problem already exists
+        if problem_manager.problem_exists(metadata['slug']):
+            return jsonify({
+                'success': False,
+                'error': f"Problem '{metadata['slug']}' already exists",
+                'suggestion': f"Try: {metadata['slug']}-v2 or delete existing problem first",
+                'existing_problem_url': url_for('problem_detail', slug=metadata['slug'])
+            }), 400
+
+        # Create problem structure
+        problem = problem_manager.create_problem_structure(
+            metadata['slug'], metadata)
+
+        # Save only the statement file
+        from core.file_manager import FileManager
+        file_manager = FileManager(problem.problem_dir)
+
+        if not file_manager.save_file('statement.md', statement_content):
+            return jsonify({'success': False, 'error': 'Failed to save statement.md'}), 500
+
+        # Update config with file status
+        problem.config.update_file_status(problem.problem_dir)
+        problem.save_config(problem.config)
+
+        return jsonify({
+            'success': True,
+            'problem_slug': metadata['slug'],
+            'message': 'Problem created successfully! You can now edit it to add solution, generator, and other files.',
+            'redirect_url': url_for('edit_problem_page', slug=metadata['slug'])
+        })
+
+    except Exception as e:
+        print(f"Error creating simple problem: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': f'Error creating problem: {str(e)}'
+        }), 500
+
+
 @app.route('/api/problem/<slug>/validate-input', methods=['POST'])
 def validate_input_api(slug):
     """API endpoint to validate test case input"""
@@ -714,6 +787,7 @@ def save_problem_all_api(slug):
         data = request.get_json()
         config_data = data.get('config', {})
         files_data = data.get('files', {})
+        validator_enabled = data.get('validator_enabled', False)
 
         # Update configuration
         for key, value in config_data.items():
@@ -728,26 +802,59 @@ def save_problem_all_api(slug):
             else:
                 problem.config.set(key, value)
 
+        # Set validator configuration
+        problem.config.set('validation.enabled', validator_enabled)
+
         # Save files
         from core.file_manager import FileManager
         file_manager = FileManager(problem.problem_dir)
 
         saved_files = []
+        deleted_files = []
+
         for filename, content in files_data.items():
-            if content.strip():  # Only save non-empty files
+            if content and content.strip():  # Save non-empty files
                 if file_manager.save_file(filename, content):
                     saved_files.append(filename)
                 else:
                     return jsonify({'success': False, 'error': f'Failed to save {filename}'}), 500
+            else:
+                # Delete empty files
+                file_path = problem.problem_dir / filename
+                if file_path.exists():
+                    try:
+                        file_path.unlink()
+                        deleted_files.append(filename)
+                    except Exception as e:
+                        print(f"Warning: Could not delete {filename}: {e}")
+
+        # Handle validator file specifically
+        if not validator_enabled and 'validator.py' not in files_data:
+            validator_path = problem.problem_dir / 'validator.py'
+            if validator_path.exists():
+                try:
+                    validator_path.unlink()
+                    deleted_files.append('validator.py')
+                except Exception as e:
+                    print(f"Warning: Could not delete validator.py: {e}")
 
         # Update config with new file status
         problem.config.update_file_status(problem.problem_dir)
         problem.save_config(problem.config)
 
+        message_parts = []
+        if saved_files:
+            message_parts.append(f'Saved {len(saved_files)} files')
+        if deleted_files:
+            message_parts.append(f'Removed {len(deleted_files)} files')
+        message_parts.append('Updated configuration')
+
         return jsonify({
             'success': True,
-            'message': f'Saved {len(saved_files)} files and configuration',
-            'saved_files': saved_files
+            'message': ', '.join(message_parts),
+            'saved_files': saved_files,
+            'deleted_files': deleted_files,
+            'validator_enabled': validator_enabled
         })
 
     except Exception as e:

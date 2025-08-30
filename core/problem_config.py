@@ -51,6 +51,12 @@ class ProblemConfig:
             'tests': {
                 'sample_count': 3,    # Manual examples
                 'system_count': 20    # Generated tests
+            },
+
+            # Validation settings
+            'validation': {
+                'enabled': False,  # Default to disabled for simplified workflow
+                'strict_mode': True
             }
         }
 

@@ -291,17 +291,44 @@
             <!-- Validator Editor -->
             <div class="file-content" id="validator-content">
                 <div class="card">
-                    <div class="card-header d-flex justify-content-between">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <h5><i class="fas fa-shield-alt"></i> Input Validator</h5>
-                        <button class="btn btn-outline-secondary btn-sm" id="resetValidatorBtn">
-                            <i class="fas fa-undo"></i> Reset
-                        </button>
+                        <div>
+                            <div class="form-check form-switch d-inline-block me-3">
+                                <input class="form-check-input" type="checkbox" id="validatorEnabled" 
+                                       {{ 'checked' if problem.config.get('validation.enabled', False) else '' }}>
+                                <label class="form-check-label" for="validatorEnabled">
+                                    Enable Validation
+                                </label>
+                            </div>
+                            <button class="btn btn-outline-secondary btn-sm" id="resetValidatorBtn">
+                                <i class="fas fa-undo"></i> Reset
+                            </button>
+                        </div>
                     </div>
-                    <div class="card-body p-0">
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Validator Control:</strong> 
+                            <span id="validatorStatusText">
+                                {% if problem.config.get('validation.enabled', False) %}
+                                    Validation is <strong>enabled</strong>. Generated test cases will be validated.
+                                {% else %}
+                                    Validation is <strong>disabled</strong>. Test cases will be generated without validation.
+                                {% endif %}
+                            </span>
+                        </div>
                         <textarea class="form-control code-editor" id="validator_editor" 
                                   rows="15" placeholder="#!/usr/bin/env python3
 # Input validator (optional)
-# Exit 0 = valid, 1 = invalid">{{ validator_content or '' }}</textarea>
+# Exit 0 = valid, 1 = invalid
+# Only runs if validation is enabled">{{ validator_content or '' }}</textarea>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <strong>Note:</strong> The validator will only be used if validation is enabled above. 
+                                You can create problems without validators and add them later.
+                            </small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -484,7 +511,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 'generator.py': document.getElementById('generator_editor').value,
                 'validator.py': document.getElementById('validator_editor').value,
                 'checker/spj.cpp': document.getElementById('checker_editor').value
-            }
+            },
+            validator_enabled: document.getElementById('validatorEnabled').checked
         };
         
         // Save via API
@@ -617,6 +645,16 @@ document.addEventListener('DOMContentLoaded', function() {
             indicator.style.display = 'none';
         }, 5000);
     }
+    
+    // Handle validator toggle
+    document.getElementById('validatorEnabled').addEventListener('change', function() {
+        const statusText = document.getElementById('validatorStatusText');
+        if (this.checked) {
+            statusText.innerHTML = 'Validation is <strong>enabled</strong>. Generated test cases will be validated.';
+        } else {
+            statusText.innerHTML = 'Validation is <strong>disabled</strong>. Test cases will be generated without validation.';
+        }
+    });
     
     // Initialize
     switchToFile('config');
