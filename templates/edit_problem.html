@@ -1,43 +1,306 @@
 {% extends "base.html" %}
+{% from "components.html" import enhanced_breadcrumb, problem_header %}
 
 {% block title %}Edit Problem - {{ problem.config.get('title') or problem.slug }} - PocketOJ{% endblock %}
 
 {% block extra_css %}
+<!-- Monaco Editor CSS -->
+<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/editor/editor.main.css">
+
 <style>
-    .code-editor {
-        font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
-        font-size: 14px;
-        line-height: 1.4;
+    :root {
+        --primary-color: #007bff;
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+        --light-color: #f8f9fa;
+        --dark-color: #343a40;
+        --border-radius: 8px;
+        --box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        --transition: all 0.3s ease;
+    }
+
+    body {
+        background-color: #f5f7fa;
+    }
+
+    /* Enhanced Layout */
+    .edit-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        margin-bottom: 2rem;
+    }
+
+    /* Progress Bar */
+    .progress-header {
+        background: linear-gradient(135deg, var(--primary-color), #0056b3);
+        color: white;
+        padding: 1rem;
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+    }
+
+        /* Enhanced Sidebar */
+    .sidebar-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        position: sticky;
+        top: 2rem;
+        max-height: calc(100vh - 4rem);
+        overflow-y: auto;
+        border: 1px solid #e9ecef;
+    }
+
+    .sidebar-container .card-header {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-bottom: 1px solid #dee2e6;
+        padding: 1rem 1.25rem;
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+    }
+
+    .sidebar-container .card-header h5 {
+        margin: 0;
+        font-weight: 600;
+        color: var(--dark-color);
+        font-size: 1rem;
     }
     
     .file-tab {
         cursor: pointer;
-        transition: all 0.2s;
+        transition: var(--transition);
+        border: none;
+        border-left: 4px solid transparent;
+        position: relative;
+        padding: 1rem 1.25rem;
+        margin: 0;
+        border-bottom: 1px solid #f8f9fa;
     }
     
     .file-tab:hover {
-        background-color: #f8f9fa;
+        background: linear-gradient(90deg, #f8f9fa, #ffffff);
+        border-left-color: var(--primary-color);
+        transform: translateX(2px);
     }
     
     .file-tab.active {
-        background-color: #007bff;
+        background: linear-gradient(90deg, var(--primary-color), #0056b3);
         color: white;
+        border-left-color: #003d82;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .file-tab.active:hover {
+        transform: none;
     }
     
     .file-tab.modified {
-        font-weight: bold;
-        color: #dc3545;
+        font-weight: 600;
     }
     
     .file-tab.modified::after {
-        content: " •";
-        color: #dc3545;
+        content: "●";
+        color: var(--warning-color);
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.1rem;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .file-tab.active.modified::after {
+        color: #fff3cd;
+    }
+
+    .file-tab .d-flex {
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .file-tab i {
+        margin-top: 0.125rem;
+        font-size: 1.1rem;
+    }
+
+    .file-tab strong {
+        font-size: 0.95rem;
+        line-height: 1.3;
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+
+    .file-tab small {
+        font-size: 0.8rem;
+        opacity: 0.8;
+        line-height: 1.2;
+    }
+
+    .file-tab.active small {
+        opacity: 0.9;
+    }
+
+    .file-status {
+        font-size: 0.7rem;
+        margin-top: 0.375rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .file-status i {
+        font-size: 0.7rem;
+        margin-top: 0;
+    }
+
+    .status-complete { 
+        color: var(--success-color);
+    }
+    .status-incomplete { 
+        color: var(--danger-color);
+    }
+    .status-optional { 
+        color: var(--info-color);
+    }
+
+    .validation-indicator {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+        padding: 0.375rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        min-width: 2rem;
+        height: 2rem;
+    }
+
+    .sidebar-container .card-footer {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-top: 1px solid #dee2e6;
+        padding: 1rem 1.25rem;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+    }
+
+    .sidebar-container .card-footer .row {
+        margin: 0;
+    }
+
+    .sidebar-container .card-footer .col-4 {
+        padding: 0.5rem;
+        text-align: center;
+    }
+
+    .sidebar-container .card-footer .fw-bold {
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+
+    .sidebar-container .card-footer small {
+        font-size: 0.75rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    /* Enhanced Editor Container */
+    .editor-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        overflow: hidden;
+    }
+
+    .editor-header {
+        background: var(--light-color);
+        padding: 1rem;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .editor-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0;
+        font-size: 1.1rem;
+    }
+
+    .editor-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .monaco-editor-container {
+        height: 500px;
+        min-height: 500px;
+        border: 1px solid #e9ecef;
+        position: relative;
+        overflow: hidden;
     }
     
-    .validation-status {
+    .monaco-editor-container > div {
+        height: 100% !important;
+        width: 100% !important;
+    }
+    
+    /* Fallback textarea styling */
+    .code-editor {
+        font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+        font-size: 14px;
+        line-height: 1.4;
+        border: none;
+        resize: vertical;
+        background-color: #1e1e1e;
+        color: #d4d4d4;
+        padding: 10px;
+    }
+    
+    .code-editor:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px var(--primary-color);
+    }
+
+    .config-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+
+    .config-section {
+        background: var(--light-color);
+        padding: 1.5rem;
+        border-radius: var(--border-radius);
+        border: 1px solid #e9ecef;
+    }
+
+    .config-section h6 {
+        color: var(--dark-color);
+        margin-bottom: 1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Validation Indicators */
+    .validation-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
         padding: 0.25rem 0.5rem;
-        border-radius: 0.25rem;
-        font-size: 0.875rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 500;
     }
     
     .validation-valid {
@@ -55,12 +318,171 @@
         color: #856404;
     }
     
+    .validation-pending {
+        background-color: #e2e3e5;
+        color: #6c757d;
+    }
+
+
+
+    /* Enhanced Buttons */
+    .btn-enhanced {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        transition: var(--transition);
+        border: 1px solid transparent;
+    }
+
+    .btn-enhanced:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    /* Save Status */
     .save-indicator {
-        display: none;
         position: fixed;
         top: 20px;
         right: 20px;
         z-index: 1050;
+        min-width: 300px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        display: none;
+    }
+
+
+
+    /* File Templates */
+    .template-selector {
+        margin-bottom: 1rem;
+    }
+
+    .template-option {
+        padding: 0.75rem;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: var(--transition);
+        margin-bottom: 0.5rem;
+    }
+
+    .template-option:hover {
+        border-color: var(--primary-color);
+        background-color: #f8f9fa;
+    }
+
+    .template-option.selected {
+        border-color: var(--primary-color);
+        background-color: #e3f2fd;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .config-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .action-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .editor-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .sidebar-container {
+            position: relative;
+            top: 0;
+            max-height: none;
+            margin-bottom: 1rem;
+        }
+
+        .file-tab {
+            padding: 0.75rem 1rem;
+        }
+
+        .file-tab .d-flex {
+            gap: 0.5rem;
+        }
+
+        .file-tab strong {
+            font-size: 0.9rem;
+        }
+
+        .file-tab small {
+            font-size: 0.75rem;
+        }
+
+        .sidebar-container .card-footer .col-4 {
+            padding: 0.25rem;
+        }
+
+        .sidebar-container .card-footer .fw-bold {
+            font-size: 1rem;
+        }
+    }
+
+    /* Loading States */
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        border-radius: var(--border-radius);
+    }
+
+    .spinner {
+        width: 2rem;
+        height: 2rem;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Enhanced Tooltips */
+    .tooltip-enhanced {
+        position: relative;
+        cursor: help;
+    }
+
+    .tooltip-enhanced::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--dark-color);
+        color: white;
+        padding: 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: var(--transition);
+        z-index: 1000;
+    }
+
+    .tooltip-enhanced:hover::after {
+        opacity: 1;
+        visibility: visible;
     }
 </style>
 {% endblock %}
@@ -68,170 +490,267 @@
 {% block content %}
 <div class="container-fluid py-4">
     
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ url_for('problem_detail', slug=problem.slug) }}">{{ problem.config.get('title') or problem.slug }}</a></li>
-            <li class="breadcrumb-item active">Edit</li>
-        </ol>
-    </nav>
+    <!-- Enhanced Breadcrumb -->
+    {{ enhanced_breadcrumb([
+        {'text': 'Dashboard', 'url': url_for('dashboard'), 'icon': 'fas fa-home'},
+        {'text': problem.config.get('title') or problem.slug, 'url': url_for('problem_detail', slug=problem.slug), 'icon': 'fas fa-file-code'},
+        {'text': 'Edit', 'icon': 'fas fa-edit'}
+    ]) }}
 
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h1><i class="fas fa-edit"></i> Edit Problem</h1>
-            <p class="text-muted">{{ problem.config.get('title') or problem.slug }}</p>
-        </div>
-        <div class="col-md-4 text-end">
-                            <div class="btn-group">
-                    <button class="btn btn-success" id="saveAllBtn">
-                        <i class="fas fa-save"></i> Save All Changes
-                    </button>
-                    <button class="btn btn-outline-secondary" onclick="location.reload()">
-                        <i class="fas fa-undo"></i> Discard Changes
-                    </button>
-                </div>
-        </div>
-    </div>
+    <!-- Enhanced Problem Header -->
+    {{ problem_header(
+        'Edit Problem',
+        problem.config.get('title') or problem.slug,
+        [
+            {'text': 'Save All Changes', 'icon': 'fas fa-save', 'class': 'btn-light', 'id': 'saveAllBtn'},
+            {'text': 'Discard Changes', 'icon': 'fas fa-undo', 'class': 'btn-light', 'onclick': 'location.reload()'},
+            {'text': 'Back to Problem', 'icon': 'fas fa-arrow-left', 'class': 'btn-light', 'onclick': "location.href='" + url_for('problem_detail', slug=problem.slug) + "'"}
+        ]
+    ) }}
+
+
 
     <div class="row">
         
-        <!-- File Tabs Sidebar -->
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-folder-open"></i> Problem Files</h5>
+        <!-- Enhanced File Tabs Sidebar -->
+        <div class="col-lg-3 col-md-4">
+            <div class="sidebar-container">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-folder-open"></i> Problem Files</h5>
                 </div>
                 <div class="list-group list-group-flush">
                     
                     <!-- Configuration -->
-                    <div class="list-group-item file-tab active" data-file="config">
-                        <i class="fas fa-cog text-primary"></i>
+                    <div class="list-group-item file-tab active" data-file="config" data-required="true">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-cog text-primary me-2"></i>
+                                <div>
                         <strong>Configuration</strong>
-                        <small class="d-block text-muted">Basic settings & metadata</small>
+                                    <div class="file-status status-complete">
+                                        <i class="fas fa-check-circle"></i> Complete
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="validation-indicator validation-valid" id="config-validation">
+                                <i class="fas fa-check"></i>
+                            </div>
+                        </div>
+                        <small class="d-block text-muted mt-1">Basic settings & metadata</small>
                     </div>
                     
                     <!-- Statement -->
-                    <div class="list-group-item file-tab" data-file="statement">
-                        <i class="fas fa-file-alt text-info"></i>
+                    <div class="list-group-item file-tab" data-file="statement" data-required="true">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-file-alt text-info me-2"></i>
+                                <div>
                         <strong>statement.md</strong>
-                        <small class="d-block text-muted">Problem description</small>
+                                    <div class="file-status status-incomplete" id="statement-status">
+                                        <i class="fas fa-exclamation-circle"></i> Required
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="validation-indicator validation-pending" id="statement-validation">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                        </div>
+                        <small class="d-block text-muted mt-1">Problem description</small>
                     </div>
                     
                     <!-- Solution -->
-                    <div class="list-group-item file-tab" data-file="solution">
-                        <i class="fas fa-python text-success"></i>
+                    <div class="list-group-item file-tab" data-file="solution" data-required="true">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-code text-success me-2"></i>
+                                <div>
                         <strong>solution.py</strong>
-                        <small class="d-block text-muted">Reference solution</small>
+                                    <div class="file-status status-incomplete" id="solution-status">
+                                        <i class="fas fa-exclamation-circle"></i> Required
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="validation-indicator validation-pending" id="solution-validation">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                        </div>
+                        <small class="d-block text-muted mt-1">Reference solution</small>
                     </div>
                     
                     <!-- Generator -->
-                    <div class="list-group-item file-tab" data-file="generator">
-                        <i class="fas fa-random text-warning"></i>
+                    <div class="list-group-item file-tab" data-file="generator" data-required="true">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-random text-warning me-2"></i>
+                                <div>
                         <strong>generator.py</strong>
-                        <small class="d-block text-muted">Test case generator</small>
+                                    <div class="file-status status-incomplete" id="generator-status">
+                                        <i class="fas fa-exclamation-circle"></i> Required
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="validation-indicator validation-pending" id="generator-validation">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                        </div>
+                        <small class="d-block text-muted mt-1">Test case generator</small>
                     </div>
                     
                     <!-- Validator -->
-                    <div class="list-group-item file-tab" data-file="validator">
-                        <i class="fas fa-shield-alt text-secondary"></i>
+                    <div class="list-group-item file-tab" data-file="validator" data-required="false">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-shield-alt text-secondary me-2"></i>
+                                <div>
                         <strong>validator.py</strong>
-                        <small class="d-block text-muted">Input validator (optional)</small>
+                                    <div class="file-status status-optional" id="validator-status">
+                                        <i class="fas fa-info-circle"></i> Optional
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="validation-indicator validation-pending" id="validator-validation">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                        </div>
+                        <small class="d-block text-muted mt-1">Input validator (optional)</small>
                     </div>
                     
                     <!-- Custom Checker -->
-                    <div class="list-group-item file-tab" data-file="checker">
-                        <i class="fas fa-gavel text-danger"></i>
+                    <div class="list-group-item file-tab" data-file="checker" data-required="false">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-gavel text-danger me-2"></i>
+                                <div>
                         <strong>checker/spj.cpp</strong>
-                        <small class="d-block text-muted">Special judge (optional)</small>
+                                    <div class="file-status status-optional" id="checker-status">
+                                        <i class="fas fa-info-circle"></i> Optional
                     </div>
-                    
                 </div>
+                            </div>
+                            <div class="validation-indicator validation-pending" id="checker-validation">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                        </div>
+                        <small class="d-block text-muted mt-1">Special judge (optional)</small>
             </div>
             
-            <!-- File Actions -->
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h6><i class="fas fa-tools"></i> File Actions</h6>
                 </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-outline-success btn-sm" id="testIntegrationBtn">
-                            <i class="fas fa-flask"></i> Test Integration
-                        </button>
-                        <button class="btn btn-outline-info btn-sm" id="previewTestBtn">
-                            <i class="fas fa-eye"></i> Preview Test Case
-                        </button>
+                
+                <!-- File Statistics -->
+                <div class="card-footer bg-light">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="fw-bold text-success" id="validFilesCount">0</div>
+                            <small class="text-muted">Valid</small>
+                    </div>
+                        <div class="col-4">
+                            <div class="fw-bold text-warning" id="pendingFilesCount">6</div>
+                            <small class="text-muted">Pending</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="fw-bold text-danger" id="errorFilesCount">0</div>
+                            <small class="text-muted">Errors</small>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- File Editor -->
-        <div class="col-md-9">
+        <!-- Enhanced File Editor -->
+        <div class="col-lg-9 col-md-8">
             
             <!-- Configuration Editor -->
             <div class="file-content active" id="config-content">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between">
-                        <h5><i class="fas fa-cog"></i> Problem Configuration</h5>
-                        <button class="btn btn-sm btn-outline-secondary" id="resetConfigBtn">
+                <div class="editor-container">
+                    <div class="editor-header">
+                        <h5 class="editor-title">
+                            <i class="fas fa-cog text-primary"></i> Problem Configuration
+                        </h5>
+                        <div class="editor-actions">
+                            <button class="btn btn-sm btn-outline-secondary btn-enhanced" id="resetConfigBtn">
                             <i class="fas fa-undo"></i> Reset
                         </button>
+                            <button class="btn btn-sm btn-outline-primary btn-enhanced" id="validateConfigBtn">
+                                <i class="fas fa-check"></i> Validate
+                        </button>
                     </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
+                    </div>
+                    <div class="config-grid">
+                        <!-- Basic Information -->
+                        <div class="config-section">
+                            <h6><i class="fas fa-info-circle"></i> Basic Information</h6>
                                 <div class="mb-3">
-                                    <label for="edit_title" class="form-label">Title</label>
+                                <label for="edit_title" class="form-label">Problem Title *</label>
                                     <input type="text" class="form-control" id="edit_title" 
-                                           value="{{ problem.config.get('title') or '' }}">
+                                       value="{{ problem.config.get('title') or '' }}"
+                                       placeholder="Enter a descriptive problem title">
+                                <div class="form-text">This will be displayed as the main problem title</div>
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label for="edit_difficulty" class="form-label">Difficulty</label>
+                                <label for="edit_difficulty" class="form-label">Difficulty Level</label>
                                     <select class="form-select" id="edit_difficulty">
-                                        <option value="Easy" {% if problem.config.get('difficulty') == 'Easy' %}selected{% endif %}>Easy</option>
-                                        <option value="Medium" {% if problem.config.get('difficulty') == 'Medium' %}selected{% endif %}>Medium</option>
-                                        <option value="Hard" {% if problem.config.get('difficulty') == 'Hard' %}selected{% endif %}>Hard</option>
+                                    <option value="Easy" {% if problem.config.get('difficulty') == 'Easy' %}selected{% endif %}>🟢 Easy</option>
+                                    <option value="Medium" {% if problem.config.get('difficulty') == 'Medium' %}selected{% endif %}>🟡 Medium</option>
+                                    <option value="Hard" {% if problem.config.get('difficulty') == 'Hard' %}selected{% endif %}>🔴 Hard</option>
                                     </select>
                                 </div>
                                 
                                 <div class="mb-3">
                                     <label for="edit_tags" class="form-label">Tags</label>
                                     <input type="text" class="form-control" id="edit_tags" 
-                                           value="{{ (problem.config.get('tags') or [])|join(', ') }}">
+                                       value="{{ (problem.config.get('tags') or [])|join(', ') }}"
+                                       placeholder="array, sorting, dynamic-programming">
+                                <div class="form-text">Comma-separated tags for categorization</div>
+                            </div>
+                            
+                            <div class="mb-0">
+                                <label for="edit_description" class="form-label">Short Description</label>
+                                <textarea class="form-control" id="edit_description" rows="3" 
+                                          placeholder="Brief description of the problem">{{ problem.config.get('description') or '' }}</textarea>
                                 </div>
                             </div>
                             
-                            <div class="col-md-6">
+                        <!-- Limits & Constraints -->
+                        <div class="config-section">
+                            <h6><i class="fas fa-stopwatch"></i> Limits & Constraints</h6>
                                 <div class="mb-3">
                                     <label for="edit_time_limit" class="form-label">Time Limit (ms)</label>
+                                <div class="input-group">
                                     <input type="number" class="form-control" id="edit_time_limit" 
-                                           value="{{ problem.config.get('limits.time_ms') or 1000 }}">
+                                           value="{{ problem.config.get('limits.time_ms') or 1000 }}"
+                                           min="100" max="10000" step="100">
+                                    <span class="input-group-text">ms</span>
+                                </div>
+                                <div class="form-text">Typical: 1000ms for most problems</div>
                                 </div>
                                 
                                 <div class="mb-3">
                                     <label for="edit_memory_limit" class="form-label">Memory Limit (MB)</label>
+                                <div class="input-group">
                                     <input type="number" class="form-control" id="edit_memory_limit" 
-                                           value="{{ problem.config.get('limits.memory_mb') or 256 }}">
+                                           value="{{ problem.config.get('limits.memory_mb') or 256 }}"
+                                           min="64" max="1024" step="64">
+                                    <span class="input-group-text">MB</span>
+                                </div>
+                                <div class="form-text">Typical: 256MB for most problems</div>
                                 </div>
                                 
-                                <div class="mb-3">
-                                    <label for="edit_checker_type" class="form-label">Checker Type</label>
+                            <div class="mb-0">
+                                <label for="edit_checker_type" class="form-label">Output Checker</label>
                                     <select class="form-select" id="edit_checker_type">
-                                        <option value="diff" {% if problem.config.get('checker.type') == 'diff' %}selected{% endif %}>Exact Match (diff)</option>
-                                        <option value="float" {% if problem.config.get('checker.type') == 'float' %}selected{% endif %}>Floating Point</option>
-                                        <option value="spj" {% if problem.config.get('checker.type') == 'spj' %}selected{% endif %}>Special Judge</option>
+                                    <option value="diff" {% if problem.config.get('checker.type') == 'diff' %}selected{% endif %}>
+                                        📝 Exact Match (diff)
+                                    </option>
+                                    <option value="float" {% if problem.config.get('checker.type') == 'float' %}selected{% endif %}>
+                                        🔢 Floating Point (1e-6 tolerance)
+                                    </option>
+                                    <option value="spj" {% if problem.config.get('checker.type') == 'spj' %}selected{% endif %}>
+                                        ⚖️ Special Judge (Custom)
+                                    </option>
                                     </select>
+                                <div class="form-text">How to compare solution output with expected answer</div>
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="edit_description" class="form-label">Description</label>
-                            <textarea class="form-control" id="edit_description" rows="2">{{ problem.config.get('description') or '' }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -239,75 +758,143 @@
 
             <!-- Statement Editor -->
             <div class="file-content" id="statement-content">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between">
-                        <h5><i class="fas fa-file-alt"></i> Problem Statement</h5>
-                        <button class="btn btn-outline-secondary btn-sm" id="resetStatementBtn">
+                <div class="editor-container">
+                    <div class="editor-header">
+                        <h5 class="editor-title">
+                            <i class="fas fa-file-alt text-info"></i> Problem Statement
+                        </h5>
+                        <div class="editor-actions">
+                            <button class="btn btn-sm btn-outline-secondary btn-enhanced" id="resetStatementBtn">
                             <i class="fas fa-undo"></i> Reset
                         </button>
+                            <button class="btn btn-sm btn-outline-info btn-enhanced" id="previewStatementBtn">
+                                <i class="fas fa-eye"></i> Preview
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary btn-enhanced" id="validateStatementBtn">
+                                <i class="fas fa-check"></i> Validate
+                        </button>
                     </div>
-                    <div class="card-body p-0">
-                        <textarea class="form-control code-editor" id="statement_editor" 
-                                  rows="20" placeholder="# Problem Title
+                    </div>
+                    
+                    <!-- Template Selector -->
+                    <div class="template-selector p-3 bg-light border-bottom" id="statement-templates">
+                        <h6 class="mb-2">Quick Templates:</h6>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-sm btn-outline-secondary" data-template="basic">Basic Problem</button>
+                            <button class="btn btn-sm btn-outline-secondary" data-template="array">Array Problem</button>
+                            <button class="btn btn-sm btn-outline-secondary" data-template="graph">Graph Problem</button>
+                            <button class="btn btn-sm btn-outline-secondary" data-template="math">Math Problem</button>
+                    </div>
+                    </div>
+                    
+                    <div class="monaco-editor-container" id="statement-monaco-container">
+                        <div id="statement-monaco-editor"></div>
+                    </div>
 
-## Problem Statement
-...">{{ statement_content or '' }}</textarea>
-                    </div>
                 </div>
             </div>
 
             <!-- Solution Editor -->
             <div class="file-content" id="solution-content">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between">
-                        <h5><i class="fas fa-python"></i> Reference Solution</h5>
-                        <button class="btn btn-outline-secondary btn-sm" id="resetSolutionBtn">
+                <div class="editor-container">
+                    <div class="editor-header">
+                        <h5 class="editor-title">
+                            <i class="fas fa-code text-success"></i> Reference Solution
+                        </h5>
+                        <div class="editor-actions">
+                            <button class="btn btn-sm btn-outline-secondary btn-enhanced" id="resetSolutionBtn">
                             <i class="fas fa-undo"></i> Reset
                         </button>
+                            <button class="btn btn-sm btn-outline-success btn-enhanced" id="testSolutionBtn">
+                                <i class="fas fa-play"></i> Test Run
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary btn-enhanced" id="validateSolutionBtn">
+                                <i class="fas fa-check"></i> Validate
+                        </button>
                     </div>
-                    <div class="card-body p-0">
-                        <textarea class="form-control code-editor" id="solution_editor" 
-                                  rows="20">{{ solution_content or '' }}</textarea>
                     </div>
+                    
+                    <!-- Template Selector -->
+                    <div class="template-selector p-3 bg-light border-bottom" id="solution-templates">
+                        <h6 class="mb-2">Solution Templates:</h6>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-sm btn-outline-secondary" data-template="basic">Basic I/O</button>
+                            <button class="btn btn-sm btn-outline-secondary" data-template="array">Array Processing</button>
+                            <button class="btn btn-sm btn-outline-secondary" data-template="interactive">Interactive</button>
+                        </div>
+                    </div>
+                    
+                    <div class="monaco-editor-container" id="solution-monaco-container">
+                        <div id="solution-monaco-editor"></div>
+                    </div>
+
                 </div>
             </div>
 
             <!-- Generator Editor -->
             <div class="file-content" id="generator-content">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between">
-                        <h5><i class="fas fa-random"></i> Test Generator</h5>
-                        <button class="btn btn-outline-secondary btn-sm" id="resetGeneratorBtn">
+                <div class="editor-container">
+                    <div class="editor-header">
+                        <h5 class="editor-title">
+                            <i class="fas fa-random text-warning"></i> Test Generator
+                        </h5>
+                        <div class="editor-actions">
+                            <button class="btn btn-sm btn-outline-secondary btn-enhanced" id="resetGeneratorBtn">
                             <i class="fas fa-undo"></i> Reset
                         </button>
+                            <button class="btn btn-sm btn-outline-warning btn-enhanced" id="testGeneratorBtn">
+                                <i class="fas fa-play"></i> Test Generate
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary btn-enhanced" id="validateGeneratorBtn">
+                                <i class="fas fa-check"></i> Validate
+                        </button>
                     </div>
-                    <div class="card-body p-0">
-                        <textarea class="form-control code-editor" id="generator_editor" 
-                                  rows="20">{{ generator_content or '' }}</textarea>
                     </div>
+                    
+                    <!-- Template Selector -->
+                    <div class="template-selector p-3 bg-light border-bottom" id="generator-templates">
+                        <h6 class="mb-2">Generator Templates:</h6>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-sm btn-outline-secondary" data-template="basic">Basic Generator</button>
+                            <button class="btn btn-sm btn-outline-secondary" data-template="array">Array Generator</button>
+                            <button class="btn btn-sm btn-outline-secondary" data-template="graph">Graph Generator</button>
+                            <button class="btn btn-sm btn-outline-secondary" data-template="tree">Tree Generator</button>
+                        </div>
+                    </div>
+                    
+                    <div class="monaco-editor-container" id="generator-monaco-container">
+                        <div id="generator-monaco-editor"></div>
+                    </div>
+
                 </div>
             </div>
 
             <!-- Validator Editor -->
             <div class="file-content" id="validator-content">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5><i class="fas fa-shield-alt"></i> Input Validator</h5>
-                        <div>
-                            <div class="form-check form-switch d-inline-block me-3">
+                <div class="editor-container">
+                    <div class="editor-header">
+                        <h5 class="editor-title">
+                            <i class="fas fa-shield-alt text-secondary"></i> Input Validator
+                        </h5>
+                        <div class="editor-actions">
+                            <div class="form-check form-switch me-3">
                                 <input class="form-check-input" type="checkbox" id="validatorEnabled" 
                                        {{ 'checked' if problem.config.get('validation.enabled', False) else '' }}>
                                 <label class="form-check-label" for="validatorEnabled">
                                     Enable Validation
                                 </label>
                             </div>
-                            <button class="btn btn-outline-secondary btn-sm" id="resetValidatorBtn">
+                            <button class="btn btn-sm btn-outline-secondary btn-enhanced" id="resetValidatorBtn">
                                 <i class="fas fa-undo"></i> Reset
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary btn-enhanced" id="validateValidatorBtn">
+                                <i class="fas fa-check"></i> Validate
                             </button>
                         </div>
                     </div>
-                    <div class="card-body">
-                        <div class="alert alert-info">
+                    
+                    <div class="p-3 bg-light border-bottom">
+                        <div class="alert alert-info mb-0">
                             <i class="fas fa-info-circle"></i>
                             <strong>Validator Control:</strong> 
                             <span id="validatorStatusText">
@@ -318,41 +905,59 @@
                                 {% endif %}
                             </span>
                         </div>
-                        <textarea class="form-control code-editor" id="validator_editor" 
-                                  rows="15" placeholder="#!/usr/bin/env python3
-# Input validator (optional)
-# Exit 0 = valid, 1 = invalid
-# Only runs if validation is enabled">{{ validator_content or '' }}</textarea>
-                        <div class="mt-2">
-                            <small class="text-muted">
-                                <strong>Note:</strong> The validator will only be used if validation is enabled above. 
-                                You can create problems without validators and add them later.
-                            </small>
                         </div>
+                    
+                    <!-- Template Selector -->
+                    <div class="template-selector p-3 bg-light border-bottom" id="validator-templates">
+                        <h6 class="mb-2">Validator Templates:</h6>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-sm btn-outline-secondary" data-template="basic">Basic Validator</button>
+                            <button class="btn btn-sm btn-outline-secondary" data-template="range">Range Validator</button>
+                            <button class="btn btn-sm btn-outline-secondary" data-template="array">Array Validator</button>
                     </div>
+                    </div>
+                    
+                    <div class="monaco-editor-container" id="validator-monaco-container">
+                        <div id="validator-monaco-editor"></div>
+                    </div>
+
                 </div>
             </div>
 
             <!-- Checker Editor -->
             <div class="file-content" id="checker-content">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between">
-                        <h5><i class="fas fa-gavel"></i> Custom Checker (SPJ)</h5>
-                        <button class="btn btn-outline-secondary btn-sm" id="resetCheckerBtn">
+                <div class="editor-container">
+                    <div class="editor-header">
+                        <h5 class="editor-title">
+                            <i class="fas fa-gavel text-danger"></i> Custom Checker (SPJ)
+                        </h5>
+                        <div class="editor-actions">
+                            <button class="btn btn-sm btn-outline-secondary btn-enhanced" id="resetCheckerBtn">
                             <i class="fas fa-undo"></i> Reset
                         </button>
+                            <button class="btn btn-sm btn-outline-danger btn-enhanced" id="compileCheckerBtn">
+                                <i class="fas fa-hammer"></i> Compile
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary btn-enhanced" id="validateCheckerBtn">
+                                <i class="fas fa-check"></i> Validate
+                        </button>
                     </div>
-                    <div class="card-body p-0">
-                        <textarea class="form-control code-editor" id="checker_editor" 
-                                  rows="15" placeholder='#include "testlib.h"
-using namespace std;
+                    </div>
+                    
+                    <!-- Template Selector -->
+                    <div class="template-selector p-3 bg-light border-bottom" id="checker-templates">
+                        <h6 class="mb-2">Checker Templates:</h6>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-sm btn-outline-secondary" data-template="basic">Basic SPJ</button>
+                            <button class="btn btn-sm btn-outline-secondary" data-template="float">Float Comparison</button>
+                            <button class="btn btn-sm btn-outline-secondary" data-template="multiple">Multiple Answers</button>
+                    </div>
+                    </div>
+                    
+                    <div class="monaco-editor-container" id="checker-monaco-container">
+                        <div id="checker-monaco-editor"></div>
+                    </div>
 
-int main(int argc, char* argv[]) {
-    registerTestlibCmd(argc, argv);
-    // Your SPJ logic here
-    quitf(_ok, "correct");
-}'>{{ checker_content or '' }}</textarea>
-                    </div>
                 </div>
             </div>
 
@@ -382,69 +987,634 @@ int main(int argc, char* argv[]) {
         <!-- Save status messages -->
     </div>
 
+    <!-- Hidden elements to store initial content safely -->
+    <script type="application/json" id="initial-content-data">
+    {
+        "statement": {{ (statement_content or '')|tojson }},
+        "solution": {{ (solution_content or '')|tojson }},
+        "generator": {{ (generator_content or '')|tojson }},
+        "validator": {{ (validator_content or '')|tojson }},
+        "checker": {{ (checker_content or '')|tojson }}
+    }
+    </script>
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
+<!-- Monaco Editor JS -->
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+// Enhanced Problem Editor with Monaco Integration
+class ProblemEditor {
+    constructor() {
+        this.currentFile = 'config';
+        this.originalContents = {};
+        this.modifiedFiles = new Set();
+        this.monacoEditors = {};
+
+        this.validationCache = new Map();
+        
+        this.fileTemplates = {
+            statement: {
+                basic: `# Problem Title
+
+## Problem Statement
+
+Write a clear and concise problem statement here.
+
+## Input Format
+
+Describe the input format.
+
+## Output Format
+
+Describe the expected output format.
+
+## Constraints
+
+- List constraints here
+- 1 ≤ n ≤ 10^5
+
+## Sample Input
+\`\`\`
+3
+1 2 3
+\`\`\`
+
+## Sample Output
+\`\`\`
+6
+\`\`\`
+
+## Explanation
+
+Explain the sample case.`,
+                array: `# Array Problem
+
+## Problem Statement
+
+Given an array of n integers, solve the following problem...
+
+## Input Format
+
+First line contains integer n.
+Second line contains n space-separated integers.
+
+## Output Format
+
+Output the result.
+
+## Constraints
+
+- 1 ≤ n ≤ 10^5
+- 1 ≤ arr[i] ≤ 10^9
+
+## Sample Input
+\`\`\`
+5
+1 2 3 4 5
+\`\`\`
+
+## Sample Output
+\`\`\`
+15
+\`\`\``,
+                graph: `# Graph Problem
+
+## Problem Statement
+
+Given a graph with n vertices and m edges...
+
+## Input Format
+
+First line: n (vertices) and m (edges)
+Next m lines: u v (edge from u to v)
+
+## Output Format
+
+Output the result.
+
+## Constraints
+
+- 1 ≤ n ≤ 10^5
+- 1 ≤ m ≤ 2*10^5
+
+## Sample Input
+\`\`\`
+4 3
+1 2
+2 3
+3 4
+\`\`\`
+
+## Sample Output
+\`\`\`
+3
+\`\`\``
+            },
+            solution: {
+                basic: `#!/usr/bin/env python3
+
+def solve():
+    # Read input
+    n = int(input())
+    arr = list(map(int, input().split()))
     
-    let currentFile = 'config';
-    let originalContents = {};
-    let modifiedFiles = new Set();
+    # Solve the problem
+    result = sum(arr)
     
-    // Load initial file contents
-    loadFileContents();
+    # Output result
+    print(result)
+
+if __name__ == "__main__":
+    solve()`,
+                array: `#!/usr/bin/env python3
+
+def solve():
+    n = int(input())
+    arr = list(map(int, input().split()))
     
-    // File tab switching
-    document.querySelectorAll('.file-tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-            const fileName = this.dataset.file;
-            switchToFile(fileName);
-        });
-    });
+    # Process array
+    result = 0
+    for i in range(n):
+        result += arr[i]
     
-    // Track modifications
-    ['statement_editor', 'solution_editor', 'generator_editor', 'validator_editor', 'checker_editor'].forEach(editorId => {
-        const editor = document.getElementById(editorId);
-        if (editor) {
-            editor.addEventListener('input', function() {
-                const fileName = editorId.split('_')[0];
-                markFileModified(fileName);
+    print(result)
+
+if __name__ == "__main__":
+    solve()`,
+                interactive: `#!/usr/bin/env python3
+import sys
+
+def solve():
+    # Interactive problem template
+    def query(x):
+        print(f"? {x}")
+        sys.stdout.flush()
+        return int(input())
+    
+    def answer(x):
+        print(f"! {x}")
+        sys.stdout.flush()
+    
+    # Your interactive solution here
+    n = int(input())
+    
+    # Example: binary search
+    left, right = 1, n
+    while left < right:
+        mid = (left + right) // 2
+        response = query(mid)
+        if response == 1:
+            left = mid + 1
+        else:
+            right = mid
+    
+    answer(left)
+
+if __name__ == "__main__":
+    solve()`
+            },
+            generator: {
+                basic: `#!/usr/bin/env python3
+import random
+import sys
+
+def generate_test_case(test_num, seed):
+    random.seed(seed)
+    
+    # Generate test case based on test_num
+    if test_num <= 3:  # Small cases
+        n = random.randint(1, 10)
+    elif test_num <= 7:  # Medium cases
+        n = random.randint(10, 1000)
+    else:  # Large cases
+        n = random.randint(1000, 100000)
+    
+    # Generate array
+    arr = [random.randint(1, 1000000) for _ in range(n)]
+    
+    # Output test case
+    print(n)
+    print(' '.join(map(str, arr)))
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: python generator.py <test_num> <seed>")
+        sys.exit(1)
+    
+    test_num = int(sys.argv[1])
+    seed = int(sys.argv[2])
+    
+    generate_test_case(test_num, seed)`,
+                array: `#!/usr/bin/env python3
+import random
+import sys
+
+def generate_array_test(test_num, seed):
+    random.seed(seed)
+    
+    # Scale based on test number
+    if test_num <= 3:
+        n = random.randint(1, 10)
+        max_val = 100
+    elif test_num <= 7:
+        n = random.randint(10, 1000)
+        max_val = 10000
+    else:
+        n = random.randint(1000, 100000)
+        max_val = 1000000000
+    
+    # Generate array with specific properties
+    arr = []
+    for i in range(n):
+        arr.append(random.randint(1, max_val))
+    
+    print(n)
+    print(' '.join(map(str, arr)))
+
+if __name__ == "__main__":
+    test_num = int(sys.argv[1])
+    seed = int(sys.argv[2])
+    generate_array_test(test_num, seed)`
+            },
+            validator: {
+                basic: `#!/usr/bin/env python3
+import sys
+
+def validate():
+    try:
+        # Read and validate input
+        n = int(input())
+        
+        # Check constraints
+        if not (1 <= n <= 100000):
+            return False
+        
+        arr = list(map(int, input().split()))
+        
+        if len(arr) != n:
+            return False
+        
+        for x in arr:
+            if not (1 <= x <= 1000000000):
+                return False
+        
+        return True
+    except:
+        return False
+
+if __name__ == "__main__":
+    if validate():
+        sys.exit(0)  # Valid
+    else:
+        sys.exit(1)  # Invalid`,
+                range: `#!/usr/bin/env python3
+import sys
+
+def validate():
+    try:
+        lines = sys.stdin.read().strip().split('\\n')
+        
+        # Validate first line
+        n = int(lines[0])
+        if not (1 <= n <= 100000):
+            return False
+        
+        # Validate second line
+        if len(lines) < 2:
+            return False
+        
+        values = list(map(int, lines[1].split()))
+        if len(values) != n:
+            return False
+        
+        # Check value ranges
+        for val in values:
+            if not (1 <= val <= 1000000000):
+                return False
+        
+        return True
+    except:
+        return False
+
+if __name__ == "__main__":
+    sys.exit(0 if validate() else 1)`
+            },
+            checker: {
+                basic: `#include "testlib.h"
+using namespace std;
+
+int main(int argc, char* argv[]) {
+    registerTestlibCmd(argc, argv);
+    
+    // Read expected answer
+    int expected = ans.readInt();
+    
+    // Read participant output
+    int result = ouf.readInt();
+    
+    // Compare
+    if (expected == result) {
+        quitf(_ok, "Correct answer: %d", result);
+    } else {
+        quitf(_wa, "Wrong answer: expected %d, got %d", expected, result);
+    }
+    
+    return 0;
+}`,
+                float: `#include "testlib.h"
+using namespace std;
+
+int main(int argc, char* argv[]) {
+    registerTestlibCmd(argc, argv);
+    
+    double expected = ans.readDouble();
+    double result = ouf.readDouble();
+    
+    double eps = 1e-6;
+    
+    if (abs(expected - result) <= eps) {
+        quitf(_ok, "Correct answer: %.6f", result);
+    } else {
+        quitf(_wa, "Wrong answer: expected %.6f, got %.6f", expected, result);
+    }
+    
+    return 0;
+}`
+            }
+        };
+        
+        this.init();
+    }
+    
+    async init() {
+        try {
+            console.log('Initializing Problem Editor...');
+            
+            // Wait for DOM to be fully ready
+            await new Promise(resolve => {
+                if (document.readyState === 'complete') {
+                    resolve();
+                } else {
+                    window.addEventListener('load', resolve);
+                }
             });
+            
+            this.setupEventListeners();
+            this.loadFileContents();
+            
+            // Initialize Monaco with delay to ensure containers are rendered
+            setTimeout(async () => {
+                await this.initMonaco();
+                this.switchToFile('config');
+                // Update file statuses after Monaco is initialized
+                setTimeout(() => {
+                    this.updateAllFileStatuses();
+                }, 200);
+                console.log('Enhanced Problem Editor initialized for: {{ problem.slug }}');
+            }, 100);
+            
+        } catch (error) {
+            console.error('Failed to initialize Problem Editor:', error);
+            // Create fallback editors if initialization fails
+            this.createFallbackEditors();
+            this.switchToFile('config');
+            // Update file statuses for fallback editors
+            setTimeout(() => {
+                this.updateAllFileStatuses();
+            }, 100);
         }
-    });
+    }
     
-    // Track config modifications
+    async initMonaco() {
+        return new Promise((resolve, reject) => {
+            try {
+                // Configure Monaco loader
+                require.config({ 
+                    paths: { 
+                        vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' 
+                    }
+                });
+                
+                // Load Monaco Editor
+                require(['vs/editor/editor.main'], () => {
+                    console.log('Monaco Editor loaded successfully');
+                    this.createMonacoEditors();
+                    resolve();
+                }, (error) => {
+                    console.error('Failed to load Monaco Editor:', error);
+                    this.createFallbackEditors();
+                    resolve(); // Still resolve to continue with fallback
+                });
+            } catch (error) {
+                console.error('Monaco initialization error:', error);
+                this.createFallbackEditors();
+                resolve();
+            }
+        });
+    }
+    
+        createMonacoEditors() {
+        const editorConfigs = {
+            statement: { language: 'markdown', theme: 'vs-light' },
+            solution: { language: 'python', theme: 'vs-dark' },
+            generator: { language: 'python', theme: 'vs-dark' },
+            validator: { language: 'python', theme: 'vs-dark' },
+            checker: { language: 'cpp', theme: 'vs-dark' }
+        };
+        
+        Object.keys(editorConfigs).forEach(fileType => {
+            const container = document.getElementById(`${fileType}-monaco-editor`);
+            if (container) {
+                try {
+                    // Ensure container has proper dimensions
+                    container.style.width = '100%';
+                    container.style.height = '500px';
+                    
+                    const config = editorConfigs[fileType];
+                    const initialContent = this.getInitialContent(fileType);
+                    
+                    console.log(`Creating Monaco editor for ${fileType} with ${initialContent.length} chars`);
+                    
+                    this.monacoEditors[fileType] = monaco.editor.create(container, {
+                        value: initialContent,
+                        language: config.language,
+                        theme: config.theme,
+                        automaticLayout: true,
+                        minimap: { enabled: false }, // Disable minimap for better performance
+                        scrollBeyondLastLine: false,
+                        fontSize: 14,
+                        lineNumbers: 'on',
+                        renderWhitespace: 'selection',
+                        wordWrap: 'on',
+                        folding: true,
+                        bracketMatching: 'always',
+                        autoIndent: 'full',
+                        formatOnPaste: true,
+                        formatOnType: true,
+                        readOnly: false,
+                        selectOnLineNumbers: true,
+                        roundedSelection: false,
+                        cursorStyle: 'line',
+                        glyphMargin: true
+                    });
+                    
+                    // Force layout after creation
+                    setTimeout(() => {
+                        this.monacoEditors[fileType].layout();
+                    }, 100);
+                    
+                                    // Add change listener
+                this.monacoEditors[fileType].onDidChangeModelContent(() => {
+                    this.markFileModified(fileType);
+                    this.validateFileContent(fileType);
+                });
+                    
+                    console.log(`Monaco editor created successfully for ${fileType}`);
+                } catch (error) {
+                    console.error(`Failed to create Monaco editor for ${fileType}:`, error);
+                    this.createFallbackEditor(fileType, container);
+                }
+            } else {
+                console.warn(`Container not found for ${fileType}-monaco-editor`);
+            }
+        });
+    }
+    
+    createFallbackEditors() {
+        console.log('Creating fallback textarea editors');
+        const fileTypes = ['statement', 'solution', 'generator', 'validator', 'checker'];
+        
+        fileTypes.forEach(fileType => {
+            const container = document.getElementById(`${fileType}-monaco-editor`);
+            if (container) {
+                this.createFallbackEditor(fileType, container);
+            }
+        });
+        
+        // Update file statuses after creating fallback editors
+        setTimeout(() => {
+            this.updateAllFileStatuses();
+        }, 100);
+    }
+    
+    createFallbackEditor(fileType, container) {
+        // Create a textarea as fallback
+        const textarea = document.createElement('textarea');
+        textarea.className = 'form-control code-editor';
+        textarea.style.width = '100%';
+        textarea.style.height = '500px';
+        textarea.style.fontFamily = 'Monaco, Consolas, "Courier New", monospace';
+        textarea.style.fontSize = '14px';
+        textarea.style.lineHeight = '1.4';
+        textarea.value = this.getInitialContent(fileType);
+        
+        // Clear container and add textarea
+        container.innerHTML = '';
+        container.appendChild(textarea);
+        
+        // Store reference for getFileContent method
+        this.monacoEditors[fileType] = {
+            getValue: () => textarea.value,
+            setValue: (value) => { textarea.value = value; },
+            focus: () => textarea.focus(),
+            layout: () => {} // No-op for textarea
+        };
+        
+        // Add change listener
+        textarea.addEventListener('input', () => {
+            this.markFileModified(fileType);
+            this.validateFileContent(fileType);
+        });
+        
+        console.log(`Fallback editor created for ${fileType}`);
+    }
+    
+    getInitialContent(fileType) {
+        // Get content from JSON data element
+        try {
+            const dataElement = document.getElementById('initial-content-data');
+            if (dataElement) {
+                const contentData = JSON.parse(dataElement.textContent);
+                return contentData[fileType] || '';
+            }
+        } catch (error) {
+            console.warn('Failed to parse initial content data:', error);
+        }
+        return '';
+    }
+    
+    setupEventListeners() {
+        // File tab switching
+        document.querySelectorAll('.file-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const fileName = tab.dataset.file;
+                this.switchToFile(fileName);
+            });
+        });
+        
+        // Config field changes
     ['edit_title', 'edit_difficulty', 'edit_tags', 'edit_time_limit', 'edit_memory_limit', 'edit_checker_type', 'edit_description'].forEach(fieldId => {
         const field = document.getElementById(fieldId);
         if (field) {
-            field.addEventListener('input', function() {
-                markFileModified('config');
+                field.addEventListener('input', () => {
+                    this.markFileModified('config');
+                    this.validateConfig();
             });
         }
     });
     
-    // Save all changes
-    document.getElementById('saveAllBtn').addEventListener('click', function() {
-        saveAllChanges();
-    });
+        // Action buttons
+        document.getElementById('saveAllBtn')?.addEventListener('click', () => this.saveAllChanges());
+        
+        // Template buttons
+        document.querySelectorAll('[data-template]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const template = e.target.dataset.template;
+                const fileType = e.target.closest('.file-content').id.replace('-content', '');
+                this.applyTemplate(fileType, template);
+            });
+        });
+        
+        // Validator toggle
+        document.getElementById('validatorEnabled')?.addEventListener('change', (e) => {
+            const statusText = document.getElementById('validatorStatusText');
+            if (e.target.checked) {
+                statusText.innerHTML = 'Validation is <strong>enabled</strong>. Generated test cases will be validated.';
+            } else {
+                statusText.innerHTML = 'Validation is <strong>disabled</strong>. Test cases will be generated without validation.';
+            }
+            this.markFileModified('config');
+        });
+        
+        // Window resize handler for Monaco editors
+        window.addEventListener('resize', () => {
+            this.handleWindowResize();
+        });
+    }
     
-    // Test integration
-    document.getElementById('testIntegrationBtn').addEventListener('click', function() {
-        testFileIntegration();
-    });
+    handleWindowResize() {
+        // Debounce resize events
+        clearTimeout(this.resizeTimeout);
+        this.resizeTimeout = setTimeout(() => {
+            Object.values(this.monacoEditors).forEach(editor => {
+                if (editor && typeof editor.layout === 'function') {
+                    try {
+                        editor.layout();
+                    } catch (error) {
+                        console.warn('Error during resize layout:', error);
+                    }
+                }
+            });
+        }, 100);
+    }
     
-    // SPJ compilation
-    document.getElementById('compileCheckerBtn').addEventListener('click', function() {
-        compileSpj();
-    });
-    
-    document.getElementById('testCheckerBtn').addEventListener('click', function() {
-        testSpjCompilation();
-    });
-    
-    function switchToFile(fileName) {
+    switchToFile(fileName) {
+        console.log(`Switching to file: ${fileName}`);
+        
         // Update tab appearance
         document.querySelectorAll('.file-tab').forEach(tab => {
             tab.classList.toggle('active', tab.dataset.file === fileName);
@@ -455,22 +1625,87 @@ document.addEventListener('DOMContentLoaded', function() {
             content.style.display = content.id === fileName + '-content' ? 'block' : 'none';
         });
         
-        currentFile = fileName;
+        this.currentFile = fileName;
+        
+        // Focus and layout Monaco editor if available
+        if (this.monacoEditors[fileName]) {
+            setTimeout(() => {
+                try {
+                    if (typeof this.monacoEditors[fileName].layout === 'function') {
+                        this.monacoEditors[fileName].layout();
+                    }
+                    if (typeof this.monacoEditors[fileName].focus === 'function') {
+                        this.monacoEditors[fileName].focus();
+                    }
+                } catch (error) {
+                    console.warn(`Error focusing/layouting editor for ${fileName}:`, error);
+                }
+            }, 150);
+        }
+        
+        // Also trigger a global layout update for Monaco
+        setTimeout(() => {
+            if (window.monaco && window.monaco.editor) {
+                try {
+                    window.monaco.editor.getEditors().forEach(editor => {
+                        if (editor.getContainerDomNode().offsetParent !== null) {
+                            editor.layout();
+                        }
+                    });
+                } catch (error) {
+                    console.warn('Error during global Monaco layout:', error);
+                }
+            }
+        }, 200);
     }
     
-    function loadFileContents() {
+    loadFileContents() {
         // Store original contents for reset functionality
-        originalContents = {
-            statement: document.getElementById('statement_editor').value,
-            solution: document.getElementById('solution_editor').value,
-            generator: document.getElementById('generator_editor').value,
-            validator: document.getElementById('validator_editor').value,
-            checker: document.getElementById('checker_editor').value
+        this.originalContents = {
+            statement: this.getInitialContent('statement'),
+            solution: this.getInitialContent('solution'),
+            generator: this.getInitialContent('generator'),
+            validator: this.getInitialContent('validator'),
+            checker: this.getInitialContent('checker')
         };
+        
+        // Validate that we have the initial content
+        console.log('Loaded initial contents:', {
+            statement: this.originalContents.statement.length + ' chars',
+            solution: this.originalContents.solution.length + ' chars',
+            generator: this.originalContents.generator.length + ' chars',
+            validator: this.originalContents.validator.length + ' chars',
+            checker: this.originalContents.checker.length + ' chars'
+        });
+        
+        // Update file statuses based on content
+        this.updateAllFileStatuses();
     }
     
-    function markFileModified(fileName) {
-        modifiedFiles.add(fileName);
+    updateAllFileStatuses() {
+        const fileTypes = ['statement', 'solution', 'generator', 'validator', 'checker'];
+        const requiredFiles = ['statement', 'solution', 'generator'];
+        
+        fileTypes.forEach(fileType => {
+            const content = this.getFileContent(fileType);
+            const hasContent = content && content.trim().length > 0;
+            const isRequired = requiredFiles.includes(fileType);
+            
+            if (hasContent) {
+                this.updateFileStatus(fileType, 'complete');
+            } else if (isRequired) {
+                this.updateFileStatus(fileType, 'incomplete');
+            } else {
+                this.updateFileStatus(fileType, 'optional');
+            }
+        });
+        
+        // Also update config status (always complete)
+        this.updateFileStatus('config', 'complete');
+    }
+    
+    markFileModified(fileName) {
+        this.modifiedFiles.add(fileName);
         const tab = document.querySelector(`[data-file="${fileName}"]`);
         if (tab) {
             tab.classList.add('modified');
@@ -478,22 +1713,149 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update save button
         const saveBtn = document.getElementById('saveAllBtn');
-        if (modifiedFiles.size > 0) {
-            saveBtn.innerHTML = `<i class="fas fa-save"></i> Save ${modifiedFiles.size} Modified File${modifiedFiles.size > 1 ? 's' : ''}`;
-            saveBtn.classList.remove('btn-success');
+        if (this.modifiedFiles.size > 0) {
+            saveBtn.innerHTML = `<i class="fas fa-save"></i> Save ${this.modifiedFiles.size} Modified File${this.modifiedFiles.size > 1 ? 's' : ''}`;
+            saveBtn.classList.remove('btn-light');
             saveBtn.classList.add('btn-warning');
+        }
+        
+        // Update modified files counter  
+        const modifiedElement = document.getElementById('modifiedFiles');
+        if (modifiedElement) {
+            modifiedElement.textContent = this.modifiedFiles.size;
+        }
+        
+        // Update file status based on content
+        if (fileName !== 'config') {
+            const content = this.getFileContent(fileName);
+            const hasContent = content && content.trim().length > 0;
+            const requiredFiles = ['statement', 'solution', 'generator'];
+            const isRequired = requiredFiles.includes(fileName);
+            
+            if (hasContent) {
+                this.updateFileStatus(fileName, 'complete');
+            } else if (isRequired) {
+                this.updateFileStatus(fileName, 'incomplete');
+            } else {
+                this.updateFileStatus(fileName, 'optional');
+            }
+        }
+    }
+    
+    async validateFileContent(fileType) {
+        const content = this.getFileContent(fileType);
+        const validationIndicator = document.getElementById(`${fileType}-validation`);
+        
+        if (!content.trim()) {
+            this.updateValidationStatus(validationIndicator, 'pending', 'Empty');
+            return;
+        }
+        
+        this.updateValidationStatus(validationIndicator, 'loading', 'Validating...');
+        
+        try {
+            const response = await fetch('/api/validate-file', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    filename: this.getFileName(fileType),
+                    content: content
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success && result.valid) {
+                this.updateValidationStatus(validationIndicator, 'valid', 'Valid');
+                this.updateFileStatus(fileType, 'complete');
+            } else {
+                this.updateValidationStatus(validationIndicator, 'invalid', result.error || 'Invalid');
+                this.updateFileStatus(fileType, 'incomplete');
+            }
+        } catch (error) {
+            this.updateValidationStatus(validationIndicator, 'invalid', 'Validation failed');
+        }
+    }
+    
+    updateValidationStatus(indicator, status, message) {
+        if (!indicator) return;
+        
+        indicator.className = `validation-indicator validation-${status}`;
+        
+        const icons = {
+            valid: 'fas fa-check',
+            invalid: 'fas fa-times',
+            loading: 'fas fa-spinner fa-spin',
+            pending: 'fas fa-clock'
+        };
+        
+        indicator.innerHTML = `<i class="${icons[status]}"></i>`;
+        indicator.title = message;
+    }
+    
+    updateFileStatus(fileType, status) {
+        const statusElement = document.getElementById(`${fileType}-status`);
+        if (!statusElement) return;
+        
+        const statusConfig = {
+            complete: { class: 'status-complete', icon: 'fas fa-check-circle', text: 'Complete' },
+            incomplete: { class: 'status-incomplete', icon: 'fas fa-exclamation-circle', text: 'Required' },
+            optional: { class: 'status-optional', icon: 'fas fa-info-circle', text: 'Optional' }
+        };
+        
+        const config = statusConfig[status];
+        statusElement.className = `file-status ${config.class}`;
+        statusElement.innerHTML = `<i class="${config.icon}"></i> ${config.text}`;
+    }
+    
+
+    
+    getFileContent(fileType) {
+        if (fileType === 'config') {
+            return 'config-data'; // Config is always considered as having content
+        }
+        
+        if (this.monacoEditors[fileType]) {
+            return this.monacoEditors[fileType].getValue();
+        }
+        
+        return '';
+    }
+    
+    getFileName(fileType) {
+        const fileNames = {
+            statement: 'statement.md',
+            solution: 'solution.py',
+            generator: 'generator.py',
+            validator: 'validator.py',
+            checker: 'checker/spj.cpp'
+        };
+        return fileNames[fileType] || `${fileType}.txt`;
+    }
+    
+    applyTemplate(fileType, templateName) {
+        if (this.fileTemplates[fileType] && this.fileTemplates[fileType][templateName]) {
+            const template = this.fileTemplates[fileType][templateName];
+            if (this.monacoEditors[fileType]) {
+                this.monacoEditors[fileType].setValue(template);
+            }
         }
     }
     
 
     
-    function saveAllChanges() {
+
+    
+    async saveAllChanges(silent = false) {
         const btn = document.getElementById('saveAllBtn');
         const originalText = btn.innerHTML;
         
+        if (!silent) {
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
         btn.disabled = true;
+        }
         
+        try {
         // Collect all data
         const data = {
             config: {
@@ -506,30 +1868,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 description: document.getElementById('edit_description').value.trim()
             },
             files: {
-                'statement.md': document.getElementById('statement_editor').value,
-                'solution.py': document.getElementById('solution_editor').value,
-                'generator.py': document.getElementById('generator_editor').value,
-                'validator.py': document.getElementById('validator_editor').value,
-                'checker/spj.cpp': document.getElementById('checker_editor').value
+                    'statement.md': this.getFileContent('statement'),
+                    'solution.py': this.getFileContent('solution'),
+                    'generator.py': this.getFileContent('generator'),
+                    'validator.py': this.getFileContent('validator'),
+                    'checker/spj.cpp': this.getFileContent('checker')
             },
             validator_enabled: document.getElementById('validatorEnabled').checked
         };
         
-        // Save via API
-        fetch(`/api/problem/{{ problem.slug }}/save-all`, {
+            const response = await fetch(`/api/problem/{{ problem.slug }}/save-all`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+                headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showSaveStatus('success', 'All changes saved successfully!');
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                if (!silent) {
+                    this.showSaveStatus('success', 'All changes saved successfully!');
+                }
                 
                 // Clear modification markers
-                modifiedFiles.clear();
+                this.modifiedFiles.clear();
                 document.querySelectorAll('.file-tab').forEach(tab => {
                     tab.classList.remove('modified');
                 });
@@ -537,58 +1899,51 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Reset save button
                 btn.innerHTML = '<i class="fas fa-save"></i> Save All Changes';
                 btn.classList.remove('btn-warning');
-                btn.classList.add('btn-success');
-                
-                // Reload page after short delay to reflect changes
-                setTimeout(() => location.reload(), 2000);
+                btn.classList.add('btn-light');
                 
             } else {
-                showSaveStatus('error', `Save failed: ${data.error}`);
+                this.showSaveStatus('error', `Save failed: ${result.error}`);
             }
-        })
-        .catch(error => {
-            showSaveStatus('error', `Network error: ${error.message}`);
-        })
-        .finally(() => {
+        } catch (error) {
+            this.showSaveStatus('error', `Network error: ${error.message}`);
+        } finally {
+            if (!silent) {
             btn.innerHTML = originalText;
             btn.disabled = false;
-        });
+            }
+        }
     }
     
-    function testFileIntegration() {
+    async testFileIntegration() {
         const modal = new bootstrap.Modal(document.getElementById('integrationModal'));
         const resultsDiv = document.getElementById('integrationResults');
         
-        resultsDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Testing file integration...</p></div>';
+        resultsDiv.innerHTML = '<div class="text-center"><div class="spinner"></div><p>Testing file integration...</p></div>';
         modal.show();
         
-        // Collect current file contents
+        try {
         const files = {
-            'statement.md': document.getElementById('statement_editor').value,
-            'solution.py': document.getElementById('solution_editor').value,  
-            'generator.py': document.getElementById('generator_editor').value,
-            'validator.py': document.getElementById('validator_editor').value,
-            'checker/spj.cpp': document.getElementById('checker_editor').value
-        };
-        
-        // Test integration
-        fetch('/api/test-file-integration', {
+                'statement.md': this.getFileContent('statement'),
+                'solution.py': this.getFileContent('solution'),
+                'generator.py': this.getFileContent('generator'),
+                'validator.py': this.getFileContent('validator'),
+                'checker/spj.cpp': this.getFileContent('checker')
+            };
+            
+            const response = await fetch('/api/test-file-integration', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+                headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ files: files })
-        })
-        .then(response => response.json())
-        .then(data => {
-            displayIntegrationResults(data);
-        })
-        .catch(error => {
+            });
+            
+            const data = await response.json();
+            this.displayIntegrationResults(data);
+        } catch (error) {
             resultsDiv.innerHTML = `<div class="alert alert-danger">Integration test failed: ${error.message}</div>`;
-        });
+        }
     }
     
-    function displayIntegrationResults(data) {
+    displayIntegrationResults(data) {
         const resultsDiv = document.getElementById('integrationResults');
         let html = '';
         
@@ -600,11 +1955,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="row">
                         <div class="col-md-6">
                             <h6>Generated Test Case:</h6>
-                            <pre class="bg-light p-3">${data.preview.input}</pre>
+                            <pre class="bg-light p-3 rounded">${data.preview.input}</pre>
                         </div>
                         <div class="col-md-6">
                             <h6>Solution Output:</h6>
-                            <pre class="bg-light p-3">${data.preview.output}</pre>
+                            <pre class="bg-light p-3 rounded">${data.preview.output}</pre>
                             ${data.preview.valid ? '<span class="badge bg-success">✓ Validator Passed</span>' : ''}
                         </div>
                     </div>
@@ -634,7 +1989,7 @@ document.addEventListener('DOMContentLoaded', function() {
         resultsDiv.innerHTML = html;
     }
     
-    function showSaveStatus(type, message) {
+    showSaveStatus(type, message) {
         const indicator = document.getElementById('saveIndicator');
         
         indicator.className = `save-indicator alert alert-${type === 'success' ? 'success' : 'danger'} show`;
@@ -646,20 +2001,56 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     }
     
-    // Handle validator toggle
-    document.getElementById('validatorEnabled').addEventListener('change', function() {
-        const statusText = document.getElementById('validatorStatusText');
-        if (this.checked) {
-            statusText.innerHTML = 'Validation is <strong>enabled</strong>. Generated test cases will be validated.';
+    validateConfig() {
+        // Simple config validation
+        const title = document.getElementById('edit_title').value.trim();
+        const timeLimit = parseInt(document.getElementById('edit_time_limit').value);
+        const memoryLimit = parseInt(document.getElementById('edit_memory_limit').value);
+        
+        const configValidation = document.getElementById('config-validation');
+        
+                if (title && timeLimit > 0 && memoryLimit > 0) {
+            this.updateValidationStatus(configValidation, 'valid', 'Configuration is valid');
         } else {
-            statusText.innerHTML = 'Validation is <strong>disabled</strong>. Test cases will be generated without validation.';
+            this.updateValidationStatus(configValidation, 'invalid', 'Missing required configuration');
         }
+    }
+}
+    
+// Initialize the enhanced editor when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing Problem Editor...');
+    
+    // Add some debugging information
+    console.log('Monaco Editor script loaded:', typeof require !== 'undefined');
+    console.log('Bootstrap loaded:', typeof bootstrap !== 'undefined');
+    
+    // Check if containers exist
+    const containers = ['statement', 'solution', 'generator', 'validator', 'checker'];
+    containers.forEach(type => {
+        const container = document.getElementById(`${type}-monaco-editor`);
+        console.log(`Container ${type}-monaco-editor exists:`, !!container);
     });
     
-    // Initialize
-    switchToFile('config');
-    
-    console.log('Problem editor initialized for: {{ problem.slug }}');
+    try {
+        window.problemEditor = new ProblemEditor();
+    } catch (error) {
+        console.error('Failed to initialize Problem Editor:', error);
+        
+        // Fallback: Create simple textarea editors
+        containers.forEach(type => {
+            const container = document.getElementById(`${type}-monaco-editor`);
+            if (container) {
+                const textarea = document.createElement('textarea');
+                textarea.className = 'form-control code-editor';
+                textarea.style.width = '100%';
+                textarea.style.height = '500px';
+                textarea.style.fontFamily = 'Monaco, Consolas, "Courier New", monospace';
+                textarea.placeholder = `Enter ${type} content here...`;
+                container.appendChild(textarea);
+            }
+        });
+    }
 });
 </script>
 {% endblock %}

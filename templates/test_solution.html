@@ -1,13 +1,79 @@
 {% extends "base.html" %}
+{% from "components.html" import enhanced_breadcrumb, problem_header, enhanced_card %}
 
 {% block title %}Test Solution - {{ problem.config.get('title', problem.slug) }} - PocketOJ{% endblock %}
 
 {% block extra_css %}
 <style>
+    :root {
+        --primary-color: #007bff;
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+        --light-color: #f8f9fa;
+        --dark-color: #343a40;
+        --border-radius: 8px;
+        --box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        --transition: all 0.3s ease;
+    }
+
+    body {
+        background-color: #f5f7fa;
+    }
+
+    /* Enhanced Layout */
+    .edit-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        margin-bottom: 2rem;
+    }
+
+    /* Progress Bar */
+    .progress-header {
+        background: linear-gradient(135deg, var(--primary-color), #0056b3);
+        color: white;
+        padding: 1rem;
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+    }
+
+    /* Enhanced Buttons */
+    .btn-enhanced {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        transition: var(--transition);
+        border: 1px solid transparent;
+    }
+
+    .btn-enhanced:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .card {
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        border: 1px solid #e9ecef;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-bottom: 1px solid #dee2e6;
+        font-weight: 600;
+    }
+
     .code-editor {
         font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
         font-size: 14px;
         line-height: 1.4;
+        border: none;
+        resize: vertical;
     }
     
     .verdict-AC { color: #28a745; font-weight: bold; }
@@ -33,51 +99,157 @@
     .results-container {
         display: none;
     }
+
+    /* Enhanced Code Editor Container */
+    .code-editor-container {
+        background: #f8f9fa;
+        border-radius: var(--border-radius);
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .code-editor-container textarea {
+        background: white;
+        border: none;
+        border-radius: 0;
+    }
+
+    /* Enhanced Statistics Cards */
+    .stats-card {
+        background: linear-gradient(135deg, var(--primary-color), #0056b3);
+        color: white;
+        border: none;
+        text-align: center;
+    }
+
+    .stats-card.success {
+        background: linear-gradient(135deg, var(--success-color), #1e7e34);
+    }
+
+    .stats-card.info {
+        background: linear-gradient(135deg, var(--info-color), #117a8b);
+    }
+
+    .stats-card.warning {
+        background: linear-gradient(135deg, var(--warning-color), #d39e00);
+        color: var(--dark-color);
+    }
+
+    /* Sidebar Container (matching edit page) */
+    .sidebar-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        position: sticky;
+        top: 2rem;
+        max-height: calc(100vh - 4rem);
+        overflow-y: auto;
+        border: 1px solid #e9ecef;
+    }
+
+    .sidebar-container .card-header {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-bottom: 1px solid #dee2e6;
+        padding: 1rem 1.25rem;
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+    }
+
+    .sidebar-container .card-header h5 {
+        margin: 0;
+        font-weight: 600;
+        color: var(--dark-color);
+        font-size: 1rem;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
     
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ url_for('problem_detail', slug=problem.slug) }}">{{ problem.config.get('title', problem.slug) }}</a></li>
-            <li class="breadcrumb-item active">Test Solution</li>
-        </ol>
-    </nav>
+    <!-- Enhanced Breadcrumb -->
+    {{ enhanced_breadcrumb([
+        {'text': 'Dashboard', 'url': url_for('dashboard'), 'icon': 'fas fa-home'},
+        {'text': problem.config.get('title', problem.slug), 'url': url_for('problem_detail', slug=problem.slug), 'icon': 'fas fa-file-code'},
+        {'text': 'Test Solution', 'icon': 'fas fa-play'}
+    ]) }}
 
-    <!-- Page Header -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h1><i class="fas fa-play"></i> Test Solution</h1>
-            <p class="text-muted">{{ problem.config.get('title') or problem.slug }}</p>
-        </div>
-        <div class="col-md-4 text-end">
-            <span class="badge bg-info fs-6">
-                {{ problem.config.get('limits.time_ms') or 1000 }}ms / {{ problem.config.get('limits.memory_mb') or 256 }}MB
-            </span>
-        </div>
-    </div>
+    <!-- Enhanced Problem Header -->
+    {{ problem_header(
+        'Test Solution',
+        problem.config.get('title') or problem.slug,
+        [
+            {'text': 'Back to Problem', 'icon': 'fas fa-arrow-left', 'class': 'btn-light', 'onclick': "location.href='" + url_for('problem_detail', slug=problem.slug) + "'"},
+        ]
+    ) }}
 
     <div class="row">
         
-        <!-- Code Editor Panel -->
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5><i class="fas fa-code"></i> C++ Solution</h5>
-                    <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-secondary" id="clearCodeBtn">
-                            <i class="fas fa-trash"></i> Clear
-                        </button>
-                        <button class="btn btn-outline-info" id="loadTemplateBtn">
-                            <i class="fas fa-file-code"></i> Template
-                        </button>
+        <!-- Problem Info Panel (Sidebar First - matching edit page) -->
+        <div class="col-lg-3 col-md-4">
+            <div class="sidebar-container">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> Problem Information</h5>
+                </div>
+                
+                <!-- Problem Overview -->
+                <div class="p-3 border-bottom">
+                    <table class="table table-sm mb-0">
+                        <tr>
+                            <td><strong>Time Limit:</strong></td>
+                            <td><span class="badge bg-primary">{{ problem.config.get('limits.time_ms') or 1000 }}ms</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Memory Limit:</strong></td>
+                            <td><span class="badge bg-info">{{ problem.config.get('limits.memory_mb') or 256 }}MB</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Test Cases:</strong></td>
+                            <td>
+                                {% set counts = problem.get_test_cases_count() %}
+                                <span class="badge bg-success">{{ counts.samples + counts.system }}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Checker:</strong></td>
+                            <td><span class="badge bg-secondary">{{ (problem.config.get('checker.type') or 'diff')|upper }}</span></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Test Categories -->
+                <div class="p-3">
+                    <h6 class="mb-3"><i class="fas fa-vial"></i> Test Categories</h6>
+                    {% set test_counts = problem.get_test_cases_count() %}
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="testSamples" value="samples" checked>
+                            <label class="form-check-label" for="testSamples">
+                                <strong><i class="fas fa-eye text-primary me-1"></i>Samples</strong> 
+                                <span class="badge bg-primary ms-1">{{ test_counts.samples }}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-0">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="testSystem" value="system" checked>
+                            <label class="form-check-label" for="testSystem">
+                                <strong><i class="fas fa-server text-success me-1"></i>System Tests</strong> 
+                                <span class="badge bg-success ms-1">{{ test_counts.system }}</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
-                <div class="card-body p-0">
+            </div>
+        </div>
+
+        <!-- Code Editor Panel (Main Content Second - matching edit page) -->
+        <div class="col-lg-9 col-md-8">
+            {% call enhanced_card("C++ Solution", "fas fa-code", [
+                {'text': 'Clear', 'icon': 'fas fa-trash', 'class': 'btn-outline-secondary btn-sm', 'id': 'clearCodeBtn'},
+                {'text': 'Template', 'icon': 'fas fa-file-code', 'class': 'btn-outline-info btn-sm', 'id': 'loadTemplateBtn'}
+            ]) %}
+                <div class="code-editor-container">
                     <textarea class="form-control code-editor" id="cppCode" rows="20" 
                               placeholder="#include <iostream>
 #include <vector>
@@ -90,83 +262,24 @@ int main() {
     return 0;
 }"></textarea>
                 </div>
-                <div class="card-footer">
+                <div class="mt-3 pt-3 border-top">
                     <div class="row align-items-center">
                         <div class="col-md-6">
-                            <button class="btn btn-success me-2" id="runTestsBtn">
+                            <button class="btn btn-success btn-enhanced me-2" id="runTestsBtn">
                                 <i class="fas fa-play"></i> Run All Tests
                             </button>
-                            <button class="btn btn-outline-primary" id="quickTestBtn" data-bs-toggle="modal" data-bs-target="#quickTestModal">
+                            <button class="btn btn-outline-primary btn-enhanced" id="quickTestBtn" data-bs-toggle="modal" data-bs-target="#quickTestModal">
                                 <i class="fas fa-bolt"></i> Quick Test
                             </button>
                         </div>
                         <div class="col-md-6 text-end">
                             <small class="text-muted">
-                                Compile with: <code>g++ -std=c++17 -O2</code>
+                                <i class="fas fa-cog"></i> Compile with: <code>g++ -std=c++17 -O2</code>
                             </small>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Problem Info Panel -->
-        <div class="col-md-4">
-            
-            <!-- Problem Overview -->
-            <div class="card mb-3">
-                <div class="card-header">
-                    <h6><i class="fas fa-info-circle"></i> Problem Info</h6>
-                </div>
-                <div class="card-body">
-                    <table class="table table-sm">
-                        <tr>
-                            <td><strong>Time Limit:</strong></td>
-                            <td>{{ problem.config.get('limits.time_ms') or 1000 }}ms</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Memory Limit:</strong></td>
-                            <td>{{ problem.config.get('limits.memory_mb') or 256 }}MB</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Test Cases:</strong></td>
-                            <td>{% set counts = problem.get_test_cases_count() %}{{ counts.samples + counts.system }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Checker:</strong></td>
-                            <td>{{ (problem.config.get('checker.type') or 'diff')|upper }}</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Test Categories -->
-            <div class="card">
-                <div class="card-header">
-                    <h6><i class="fas fa-vial"></i> Test Categories</h6>
-                </div>
-                <div class="card-body">
-                    {% set test_counts = problem.get_test_cases_count() %}
-                    <div class="mb-2">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="testSamples" value="samples" checked>
-                            <label class="form-check-label" for="testSamples">
-                                <strong>Samples</strong> ({{ test_counts.samples }})
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="mb-2">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="testSystem" value="system" checked>
-                            <label class="form-check-label" for="testSystem">
-                                <strong>System Tests</strong> ({{ test_counts.system }})
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+            {% endcall %}
         </div>
     </div>
 

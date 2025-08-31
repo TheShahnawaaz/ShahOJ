@@ -1,207 +1,224 @@
 {% extends "base.html" %}
+{% from "components.html" import enhanced_breadcrumb, problem_detail_header, enhanced_card, file_status_indicator, test_case_summary %}
 
 {% block title %}{{ problem.config.get('title', problem.slug) }} - PocketOJ{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #007bff;
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+        --light-color: #f8f9fa;
+        --dark-color: #343a40;
+        --border-radius: 8px;
+        --box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        --transition: all 0.3s ease;
+    }
+
+    body {
+        background-color: #f5f7fa;
+    }
+
+    /* Enhanced Layout */
+    .edit-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        margin-bottom: 2rem;
+    }
+
+    /* Progress Bar */
+    .progress-header {
+        background: linear-gradient(135deg, var(--primary-color), #0056b3);
+        color: white;
+        padding: 1rem;
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+    }
+
+    /* Enhanced Buttons */
+    .btn-enhanced {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        transition: var(--transition);
+        border: 1px solid transparent;
+    }
+
+    .btn-enhanced:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .card {
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        border: 1px solid #e9ecef;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-bottom: 1px solid #dee2e6;
+        font-weight: 600;
+    }
+
+    .nav-tabs {
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .nav-tabs .nav-link {
+        border: none;
+        border-bottom: 3px solid transparent;
+        background: none;
+        color: #6c757d;
+        font-weight: 500;
+        padding: 1rem 1.5rem;
+        transition: var(--transition);
+    }
+
+    .nav-tabs .nav-link:hover {
+        border-bottom-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .nav-tabs .nav-link.active {
+        border-bottom-color: var(--primary-color);
+        color: var(--primary-color);
+        background: none;
+    }
+
+    .tab-content {
+        background: white;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        box-shadow: var(--box-shadow);
+    }
+
+    .markdown-content {
+        line-height: 1.6;
+    }
+
+    .markdown-content h1, .markdown-content h2, .markdown-content h3 {
+        color: var(--dark-color);
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .markdown-content pre {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        padding: 1rem;
+        overflow-x: auto;
+    }
+
+    .markdown-content code {
+        background: #f8f9fa;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-size: 0.9em;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
     
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active">{{ problem.config.get('title', problem.slug) }}</li>
-        </ol>
-    </nav>
+    <!-- Enhanced Breadcrumb -->
+    {{ enhanced_breadcrumb([
+        {'text': 'Dashboard', 'url': url_for('dashboard'), 'icon': 'fas fa-home'},
+        {'text': problem.config.get('title', problem.slug), 'icon': 'fas fa-file-code'}
+    ]) }}
 
-    <!-- Problem Header -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h1>{{ problem.config.get('title') or problem.slug }}</h1>
-            <p class="text-muted">{{ problem.slug }}</p>
-        </div>
-        <div class="col-md-4 text-end">
-            {% set difficulty = problem.config.get('difficulty') or 'Medium' %}
-            <span class="badge fs-6 
-                {% if difficulty == 'Easy' %}bg-success
-                {% elif difficulty == 'Medium' %}bg-warning
-                {% else %}bg-danger{% endif %}">
-                {{ difficulty }}
-            </span>
-            
-            <div class="mt-2">
-                {% for tag in (problem.config.get('tags') or []) %}
-                <span class="badge bg-secondary me-1">{{ tag }}</span>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="row mb-4">
-        <div class="col">
-            <div class="btn-group me-2">
-                <a href="{{ url_for('test_solution_page', slug=problem.slug) }}" class="btn btn-primary">
-                    <i class="fas fa-play"></i> Test Solution
-                </a>
-                <a href="{{ url_for('manage_test_cases', slug=problem.slug) }}" class="btn btn-outline-primary">
-                    <i class="fas fa-cog"></i> Manage Tests
-                </a>
-            </div>
-            
-            <div class="btn-group me-2">
-                <a href="{{ url_for('edit_problem_page', slug=problem.slug) }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-edit"></i> Edit Problem
-                </a>
-                <button class="btn btn-outline-secondary">
-                    <i class="fas fa-file-alt"></i> Edit Statement
-                </button>
-            </div>
-            
-            <div class="btn-group">
-                <button class="btn btn-outline-info">
-                    <i class="fas fa-download"></i> Export
-                </button>
-                <button class="btn btn-outline-danger" id="deleteProblemBtn">
-                    <i class="fas fa-trash"></i> Delete
-                </button>
-            </div>
-        </div>
-    </div>
+    <!-- Enhanced Problem Header -->
+    {{ problem_detail_header(problem) }}
 
     <!-- Problem Information -->
     <div class="row">
         
         <!-- Configuration Panel -->
-        <div class="col-md-4">
+        <div class="col-lg-3 col-md-4">
             
             <!-- Basic Info -->
-            <div class="card mb-3">
-                <div class="card-header">
-                    <h5><i class="fas fa-info-circle"></i> Problem Information</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-sm">
-                        <tr>
-                            <td><strong>Time Limit:</strong></td>
-                            <td>{{ problem.config.get('limits.time_ms') or 1000 }}ms</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Memory Limit:</strong></td>
-                            <td>{{ problem.config.get('limits.memory_mb') or 256 }}MB</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Checker:</strong></td>
-                            <td>
-                                {% set checker_type = problem.config.get('checker.type') or 'diff' %}
-                                <span class="badge 
-                                    {% if checker_type == 'diff' %}bg-primary
-                                    {% elif checker_type == 'float' %}bg-info
-                                    {% else %}bg-warning{% endif %}">
-                                    {{ checker_type|upper }}
-                                </span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Created:</strong></td>
-                            <td>{{ (problem.config.get('created_date') or 'Unknown')[:10] }}</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
+            {% call enhanced_card("Problem Information", "fas fa-info-circle") %}
+                <table class="table table-sm mb-0">
+                    <tr>
+                        <td><strong>Time Limit:</strong></td>
+                        <td><span class="badge bg-primary">{{ problem.config.get('limits.time_ms') or 1000 }}ms</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Memory Limit:</strong></td>
+                        <td><span class="badge bg-info">{{ problem.config.get('limits.memory_mb') or 256 }}MB</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Checker:</strong></td>
+                        <td>
+                            {% set checker_type = problem.config.get('checker.type') or 'diff' %}
+                            <span class="badge 
+                                {% if checker_type == 'diff' %}bg-primary
+                                {% elif checker_type == 'float' %}bg-info
+                                {% else %}bg-warning text-dark{% endif %}">
+                                {{ checker_type|upper }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Created:</strong></td>
+                        <td><small class="text-muted">{{ (problem.config.get('created_date') or 'Unknown')[:10] }}</small></td>
+                    </tr>
+                </table>
+            {% endcall %}
 
             <!-- File Status -->
-            <div class="card mb-3">
-                <div class="card-header">
-                    <h5><i class="fas fa-file-code"></i> File Status</h5>
-                </div>
-                <div class="card-body">
-                    {% set files = problem.get_files_info() %}
-                    <div class="list-group list-group-flush">
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            config.yaml
-                            {% if files.config_exists %}
-                                <i class="fas fa-check-circle text-success"></i>
-                            {% else %}
-                                <i class="fas fa-times-circle text-danger"></i>
-                            {% endif %}
-                        </div>
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            statement.md
-                            {% if files.statement_exists %}
-                                <i class="fas fa-check-circle text-success"></i>
-                            {% else %}
-                                <i class="fas fa-times-circle text-danger"></i>
-                            {% endif %}
-                        </div>
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            solution.py
-                            {% if files.solution_exists %}
-                                <i class="fas fa-check-circle text-success"></i>
-                            {% else %}
-                                <i class="fas fa-times-circle text-danger"></i>
-                            {% endif %}
-                        </div>
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            generator.py
-                            {% if files.generator_exists %}
-                                <i class="fas fa-check-circle text-success"></i>
-                            {% else %}
-                                <i class="fas fa-times-circle text-danger"></i>
-                            {% endif %}
-                        </div>
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            validator.py
-                            {% if files.validator_exists %}
-                                <i class="fas fa-check-circle text-success"></i>
-                            {% else %}
-                                <i class="fas fa-times-circle text-danger"></i>
-                            {% endif %}
-                        </div>
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            checker/
-                            {% if files.checker_exists %}
-                                <i class="fas fa-check-circle text-success"></i>
-                            {% else %}
-                                <i class="fas fa-times-circle text-danger"></i>
-                            {% endif %}
-                        </div>
+            {% call enhanced_card("File Status", "fas fa-file-code") %}
+                {% set files = problem.get_files_info() %}
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 border-0">
+                        <span><i class="fas fa-cog text-muted me-2"></i>config.yaml</span>
+                        {{ file_status_indicator(files.config_exists, true) }}
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 border-0">
+                        <span><i class="fas fa-file-alt text-muted me-2"></i>statement.md</span>
+                        {{ file_status_indicator(files.statement_exists, true) }}
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 border-0">
+                        <span><i class="fas fa-code text-muted me-2"></i>solution.py</span>
+                        {{ file_status_indicator(files.solution_exists, true) }}
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 border-0">
+                        <span><i class="fas fa-random text-muted me-2"></i>generator.py</span>
+                        {{ file_status_indicator(files.generator_exists, true) }}
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 border-0">
+                        <span><i class="fas fa-shield-alt text-muted me-2"></i>validator.py</span>
+                        {{ file_status_indicator(files.validator_exists, false) }}
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 border-0">
+                        <span><i class="fas fa-gavel text-muted me-2"></i>checker/</span>
+                        {{ file_status_indicator(files.checker_exists, false) }}
                     </div>
                 </div>
-            </div>
+            {% endcall %}
 
             <!-- Test Cases Summary -->
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-vial"></i> Test Cases</h5>
-                </div>
-                <div class="card-body">
-                    {% set test_counts = problem.get_test_cases_count() %}
-                    <div class="row text-center">
-                        <div class="col-6">
-                            <h4 class="text-primary">{{ test_counts.samples }}</h4>
-                            <small class="text-muted">Samples</small>
-                        </div>
-                        <div class="col-6">
-                            <h4 class="text-success">{{ test_counts.system }}</h4>
-                            <small class="text-muted">System</small>
-                        </div>
-                    </div>
-                    
-                    <hr>
-                    
-                    <div class="text-center">
-                        <h5>{{ test_counts.samples + test_counts.system }}</h5>
-                        <small class="text-muted">Total Test Cases</small>
-                    </div>
-                </div>
-            </div>
+            {% call enhanced_card("Test Cases", "fas fa-vial", [
+                {'text': 'Manage', 'icon': 'fas fa-cog', 'class': 'btn-outline-primary btn-sm', 'onclick': "location.href='" + url_for('manage_test_cases', slug=problem.slug) + "'"}
+            ]) %}
+                {% set test_counts = problem.get_test_cases_count() %}
+                {{ test_case_summary(test_counts) }}
+            {% endcall %}
 
         </div>
 
         <!-- Main Content Panel -->
-        <div class="col-md-8">
+        <div class="col-lg-9 col-md-8">
             
-            <!-- Tabs Navigation -->
+            <!-- Enhanced Tabs Navigation -->
             <ul class="nav nav-tabs" id="problemTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="statement-tab" data-bs-toggle="tab" data-bs-target="#statement" type="button">
@@ -220,76 +237,47 @@
                 </li>
             </ul>
 
-            <!-- Tab Content -->
-            <div class="tab-content border border-top-0 p-3" id="problemTabsContent">
+            <!-- Enhanced Tab Content -->
+            <div class="tab-content border-0 p-0" id="problemTabsContent">
                 
                 <!-- Statement Tab -->
                 <div class="tab-pane fade show active" id="statement" role="tabpanel">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between">
-                            <h6>Problem Statement</h6>
-                            <button class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                        </div>
-                        <div class="card-body">
-                            <div id="problemStatement">
-                                <div class="text-center">
-                                    <i class="fas fa-spinner fa-spin"></i> Loading problem statement...
-                                </div>
+                    {% call enhanced_card("Problem Statement", "fas fa-file-alt", [
+                        {'text': 'Edit', 'icon': 'fas fa-edit', 'class': 'btn-outline-primary btn-sm', 'onclick': "location.href='" + url_for('edit_problem_page', slug=problem.slug) + "'"}
+                    ]) %}
+                        <div id="problemStatement">
+                            <div class="text-center py-4">
+                                <i class="fas fa-spinner fa-spin text-primary"></i>
+                                <p class="mt-2 text-muted">Loading problem statement...</p>
                             </div>
                         </div>
-                    </div>
+                    {% endcall %}
                 </div>
 
                 <!-- Configuration Tab -->
                 <div class="tab-pane fade" id="config" role="tabpanel">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6>Problem Configuration</h6>
-                        </div>
-                        <div class="card-body">
-                            <pre class="bg-light p-3"><code>{{ problem.config.data | tojson(indent=2) }}</code></pre>
-                        </div>
-                    </div>
+                    {% call enhanced_card("Problem Configuration", "fas fa-cog", [
+                        {'text': 'Edit Config', 'icon': 'fas fa-edit', 'class': 'btn-outline-primary btn-sm', 'onclick': "location.href='" + url_for('edit_problem_page', slug=problem.slug) + "'"}
+                    ]) %}
+                        <pre class="bg-light border rounded p-3 mb-0"><code>{{ problem.config.data | tojson(indent=2) }}</code></pre>
+                    {% endcall %}
                 </div>
 
                 <!-- Test Cases Tab -->
                 <div class="tab-pane fade" id="tests" role="tabpanel">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between">
-                            <h6>Test Cases Management</h6>
-                            <div class="btn-group btn-group-sm">
-                                <a href="{{ url_for('manage_test_cases', slug=problem.slug) }}" class="btn btn-outline-primary">
-                                    <i class="fas fa-plus"></i> Add Manual
-                                </a>
-                                <a href="{{ url_for('manage_test_cases', slug=problem.slug) }}" class="btn btn-outline-success">
-                                    <i class="fas fa-cog"></i> Generate
-                                </a>
-                            </div>
+                    {% call enhanced_card("Test Cases Management", "fas fa-vial", [
+                        {'text': 'Add Manual', 'icon': 'fas fa-plus', 'class': 'btn-outline-primary btn-sm', 'onclick': "location.href='" + url_for('manage_test_cases', slug=problem.slug) + "'"},
+                        {'text': 'Generate', 'icon': 'fas fa-cog', 'class': 'btn-outline-success btn-sm', 'onclick': "location.href='" + url_for('manage_test_cases', slug=problem.slug) + "'"}
+                    ]) %}
+                        {% set test_counts = problem.get_test_cases_count() %}
+                        {{ test_case_summary(test_counts) }}
+                        
+                        <div class="text-center mt-4 pt-3 border-top">
+                            <a href="{{ url_for('manage_test_cases', slug=problem.slug) }}" class="btn btn-primary btn-enhanced">
+                                <i class="fas fa-cog"></i> Manage All Test Cases
+                            </a>
                         </div>
-                        <div class="card-body">
-                            {% set test_counts = problem.get_test_cases_count() %}
-                            
-                            <div class="row text-center mb-3">
-                                <div class="col-4">
-                                    <h4 class="text-primary">{{ test_counts.samples }}</h4>
-                                    <small class="text-muted">Samples</small>
-                                </div>
-
-                                <div class="col-4">
-                                    <h4 class="text-success">{{ test_counts.system }}</h4>
-                                    <small class="text-muted">System</small>
-                                </div>
-                            </div>
-                            
-                            <div class="text-center">
-                                <a href="{{ url_for('manage_test_cases', slug=problem.slug) }}" class="btn btn-outline-primary">
-                                    <i class="fas fa-cog"></i> Manage All Test Cases
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                    {% endcall %}
                 </div>
                 
             </div>
@@ -317,33 +305,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load problem statement
     loadProblemStatement();
 
-    // Delete problem
-    const deleteBtn = document.getElementById('deleteProblemBtn');
-    if (deleteBtn) {
-        deleteBtn.addEventListener('click', function() {
-            if (confirm('Are you sure you want to delete this problem? This action cannot be undone.')) {
-                fetch('{{ url_for('delete_problem_api', slug=problem.slug) }}', { method: 'DELETE' })
-                    .then(async response => {
-                        const text = await response.text();
-                        try {
-                            return JSON.parse(text);
-                        } catch (err) {
-                            throw new Error(text);
-                        }
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            window.location.href = '{{ url_for('dashboard') }}';
-                        } else {
-                            alert(data.error || 'Failed to delete problem');
-                        }
-                    })
-                    .catch(error => {
-                        alert('Error deleting problem: ' + error);
-                    });
-            }
-        });
-    }
+    // Initialize enhanced buttons
+    initializeEnhancedButtons();
 
     console.log('Problem detail page loaded for: {{ problem.slug }}');
 });
@@ -398,6 +361,48 @@ function convertMarkdownToHtml(markdown) {
         .replace(/\n$/, '</p>');
     
     return `<div class="markdown-content">${html}</div>`;
+}
+
+function initializeEnhancedButtons() {
+    // Add hover effects to enhanced buttons
+    document.querySelectorAll('.btn-enhanced').forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-1px)';
+        });
+        
+        btn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+}
+
+function deleteProblem(slug) {
+    if (confirm('Are you sure you want to delete this problem? This action cannot be undone.')) {
+        fetch(`/api/problem/${slug}`, { method: 'DELETE' })
+            .then(async response => {
+                const text = await response.text();
+                try {
+                    return JSON.parse(text);
+                } catch (err) {
+                    throw new Error(text);
+                }
+            })
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '{{ url_for('dashboard') }}';
+                } else {
+                    alert(data.error || 'Failed to delete problem');
+                }
+            })
+            .catch(error => {
+                alert('Error deleting problem: ' + error);
+            });
+    }
+}
+
+function exportProblem(slug) {
+    // Placeholder for export functionality
+    alert('Export functionality will be implemented soon!');
 }
 </script>
 {% endblock %}

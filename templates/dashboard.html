@@ -1,109 +1,287 @@
 {% extends "base.html" %}
+{% from "components.html" import enhanced_breadcrumb, problem_header, enhanced_card %}
 
 {% block title %}Dashboard - PocketOJ{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #007bff;
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+        --light-color: #f8f9fa;
+        --dark-color: #343a40;
+        --border-radius: 8px;
+        --box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        --transition: all 0.3s ease;
+    }
+
+    body {
+        background-color: #f5f7fa;
+    }
+
+    /* Enhanced Layout */
+    .edit-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        margin-bottom: 2rem;
+    }
+
+    /* Progress Bar */
+    .progress-header {
+        background: linear-gradient(135deg, var(--primary-color), #0056b3);
+        color: white;
+        padding: 1rem;
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+    }
+
+    /* Enhanced Buttons */
+    .btn-enhanced {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        transition: var(--transition);
+        border: 1px solid transparent;
+    }
+
+    .btn-enhanced:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .card {
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        border: 1px solid #e9ecef;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-bottom: 1px solid #dee2e6;
+        font-weight: 600;
+    }
+
+    /* Enhanced Statistics Cards */
+    .stats-card {
+        background: linear-gradient(135deg, var(--primary-color), #0056b3);
+        color: white;
+        border: none;
+        text-align: center;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,123,255,0.3);
+    }
+
+    .stats-card.success {
+        background: linear-gradient(135deg, var(--success-color), #1e7e34);
+    }
+
+    .stats-card.success:hover {
+        box-shadow: 0 8px 25px rgba(40,167,69,0.3);
+    }
+
+    .stats-card.info {
+        background: linear-gradient(135deg, var(--info-color), #117a8b);
+    }
+
+    .stats-card.info:hover {
+        box-shadow: 0 8px 25px rgba(23,162,184,0.3);
+    }
+
+    .stats-card.warning {
+        background: linear-gradient(135deg, var(--warning-color), #d39e00);
+        color: var(--dark-color);
+    }
+
+    .stats-card.warning:hover {
+        box-shadow: 0 8px 25px rgba(255,193,7,0.3);
+    }
+
+    .stats-card .card-body {
+        padding: 2rem 1.5rem;
+    }
+
+    .stats-card i {
+        opacity: 0.8;
+        margin-bottom: 1rem;
+    }
+
+    .stats-card h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .stats-card p {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Enhanced Table */
+    .table-hover tbody tr:hover {
+        background-color: rgba(0,123,255,0.05);
+        transition: var(--transition);
+    }
+
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: var(--dark-color);
+        background-color: #f8f9fa;
+    }
+
+    /* Problem Title Links */
+    .problem-title-link {
+        color: var(--primary-color);
+        font-weight: 600;
+        transition: var(--transition);
+    }
+
+    .clickable-row {
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .clickable-row:hover {
+        background-color: rgba(0,123,255,0.1) !important;
+    }
+
+    .clickable-row:hover .problem-title-link {
+        color: #0056b3;
+        text-decoration: underline;
+    }
+
+    /* Action Buttons */
+    .action-btn-group .btn {
+        transition: var(--transition);
+    }
+
+    .action-btn-group .btn:hover {
+        transform: translateY(-1px);
+    }
+
+    /* Empty State */
+    .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+    }
+
+    .empty-state i {
+        color: #dee2e6;
+        margin-bottom: 2rem;
+    }
+
+    .empty-state h4 {
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state p {
+        color: #6c757d;
+        margin-bottom: 2rem;
+    }
+
+    /* Difficulty Progress Bars */
+    .difficulty-progress {
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        background-color: #e9ecef;
+        margin-top: 0.5rem;
+    }
+
+    .difficulty-progress .progress-bar {
+        transition: width 0.6s ease;
+    }
+
+    /* System Info Cards */
+    .system-info-item {
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 6px;
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .system-info-item strong {
+        color: var(--dark-color);
+    }
+
+    .system-info-item code {
+        background: white;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.9em;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
     
-    <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
-        <div>
-            <a href="{{ url_for('create_problem_form') }}" class="btn btn-primary me-2">
-                <i class="fas fa-plus"></i> Create Problem
-            </a>
-            <button class="btn btn-outline-secondary" onclick="location.reload()">
-                <i class="fas fa-sync"></i> Refresh
-            </button>
-        </div>
-    </div>
+    <!-- Enhanced Dashboard Header -->
+    {{ problem_header(
+        'Dashboard',
+        'Manage your competitive programming problems',
+        [
+            {'text': 'Create Problem', 'icon': 'fas fa-plus', 'class': 'btn-light', 'onclick': "location.href='" + url_for('create_problem_form') + "'"},
+            {'text': 'Refresh', 'icon': 'fas fa-sync', 'class': 'btn-outline-light', 'onclick': 'location.reload()'}
+        ]
+    ) }}
 
-    <!-- Statistics Cards -->
+    <!-- Enhanced Statistics Cards -->
     <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-6 mb-3">
             <div class="card stats-card">
-                <div class="card-body text-center">
-                    <i class="fas fa-file-code fa-2x mb-2"></i>
-                    <h3>{{ stats.total_problems }}</h3>
-                    <p class="mb-0">Total Problems</p>
+                <div class="card-body">
+                    <i class="fas fa-file-code fa-3x"></i>
+                    <h2>{{ stats.total_problems }}</h2>
+                    <p>Total Problems</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body text-center">
-                    <i class="fas fa-check-circle fa-2x mb-2"></i>
-                    <h3>{{ stats.total_test_cases }}</h3>
-                    <p class="mb-0">Test Cases</p>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card success">
+                <div class="card-body">
+                    <i class="fas fa-check-circle fa-3x"></i>
+                    <h2>{{ stats.total_test_cases }}</h2>
+                    <p>Test Cases</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
-                <div class="card-body text-center">
-                    <i class="fas fa-chart-line fa-2x mb-2"></i>
-                    <h3>{{ stats.difficulty_breakdown.Easy + stats.difficulty_breakdown.Medium + stats.difficulty_breakdown.Hard }}</h3>
-                    <p class="mb-0">Problems Ready</p>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card info">
+                <div class="card-body">
+                    <i class="fas fa-chart-line fa-3x"></i>
+                    <h2>{{ stats.difficulty_breakdown.Easy + stats.difficulty_breakdown.Medium + stats.difficulty_breakdown.Hard }}</h2>
+                    <p>Problems Ready</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body text-center">
-                    <i class="fas fa-clock fa-2x mb-2"></i>
-                    <h3>{{ stats.recent_problems|length }}</h3>
-                    <p class="mb-0">Recent</p>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card warning">
+                <div class="card-body">
+                    <i class="fas fa-clock fa-3x"></i>
+                    <h2>{{ stats.recent_problems|length }}</h2>
+                    <p>Recent Problems</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Difficulty Breakdown -->
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-chart-pie"></i> Difficulty Breakdown</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-2">
-                        <span class="badge bg-success me-2">Easy</span>
-                        <span class="text-muted">{{ stats.difficulty_breakdown.Easy }} problems</span>
-                    </div>
-                    <div class="mb-2">
-                        <span class="badge bg-warning me-2">Medium</span>
-                        <span class="text-muted">{{ stats.difficulty_breakdown.Medium }} problems</span>
-                    </div>
-                    <div class="mb-2">
-                        <span class="badge bg-danger me-2">Hard</span>
-                        <span class="text-muted">{{ stats.difficulty_breakdown.Hard }} problems</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-info-circle"></i> System Information</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Problems Directory:</strong> <code>problems/</code></p>
-                            <p><strong>Judge Directory:</strong> <code>judge/</code></p>
-                            <p><strong>Default Time Limit:</strong> 1000ms</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Default Memory Limit:</strong> 256MB</p>
-                            <p><strong>Supported Languages:</strong> C++17</p>
-                            <p><strong>API Status:</strong> <span class="badge bg-success">Active</span></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 
     <!-- Problems List -->
     <div class="card">
@@ -120,66 +298,47 @@
                             <th>Title</th>
                             <th>Difficulty</th>
                             <th>Tags</th>
-                            <th>Test Cases</th>
-                            <th>Files Status</th>
                             <th>Created</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for problem in problems %}
-                        <tr>
+                        <tr class="clickable-row" onclick="location.href='{{ url_for('problem_detail', slug=problem.slug) }}'">
                             <td>
-                                <a href="{{ url_for('problem_detail', slug=problem.slug) }}" class="text-decoration-none">
-                                    <strong>{{ problem.config.get('title') or problem.slug }}</strong>
-                                </a>
-                                <br>
-                                <small class="text-muted">{{ problem.slug }}</small>
+                                <div class="problem-title-link">
+                                    {{ problem.config.get('title') or problem.slug }}
+                                </div>
+                                <small class="text-muted"><i class="fas fa-hashtag"></i> {{ problem.slug }}</small>
                             </td>
                             <td>
                                 {% set difficulty = problem.config.get('difficulty') or 'Medium' %}
                                 <span class="badge 
                                     {% if difficulty == 'Easy' %}bg-success
-                                    {% elif difficulty == 'Medium' %}bg-warning
+                                    {% elif difficulty == 'Medium' %}bg-warning text-dark
                                     {% else %}bg-danger{% endif %}">
                                     {{ difficulty }}
                                 </span>
                             </td>
                             <td>
                                 {% for tag in (problem.config.get('tags') or []) %}
-                                <span class="badge bg-secondary me-1">{{ tag }}</span>
+                                <span class="badge bg-light text-dark border me-1">{{ tag }}</span>
                                 {% endfor %}
-                            </td>
-                            <td>
-                                {% set test_counts = problem.get_test_cases_count() %}
-                                <small>
-                                    <i class="fas fa-vial"></i> {{ test_counts.samples + test_counts.system }}
-                                    <br>
-                                    <span class="text-muted">
-                                        S:{{ test_counts.samples }} 
-                                        Sys:{{ test_counts.system }}
-                                    </span>
-                                </small>
-                            </td>
-                            <td>
-                                {% set files = problem.get_files_info() %}
-                                <div class="small">
-                                    {% if files.config_exists %}<i class="fas fa-check text-success"></i>{% else %}<i class="fas fa-times text-danger"></i>{% endif %} Config
-                                    {% if files.solution_exists %}<i class="fas fa-check text-success"></i>{% else %}<i class="fas fa-times text-danger"></i>{% endif %} Solution
-                                    {% if files.generator_exists %}<i class="fas fa-check text-success"></i>{% else %}<i class="fas fa-times text-danger"></i>{% endif %} Generator
-                                </div>
+                                {% if not problem.config.get('tags') %}
+                                <small class="text-muted">No tags</small>
+                                {% endif %}
                             </td>
                             <td>
                                 <small class="text-muted">
-                                    {{ (problem.config.get('created_date') or 'Unknown')[:10] }}
+                                    <i class="fas fa-calendar"></i> {{ (problem.config.get('created_date') or 'Unknown')[:10] }}
                                 </small>
                             </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{{ url_for('problem_detail', slug=problem.slug) }}" class="btn btn-outline-primary btn-sm">
+                            <td onclick="event.stopPropagation()">
+                                <div class="btn-group btn-group-sm action-btn-group">
+                                    <a href="{{ url_for('problem_detail', slug=problem.slug) }}" class="btn btn-outline-primary btn-sm" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ url_for('manage_test_cases', slug=problem.slug) }}" class="btn btn-outline-secondary btn-sm" title="Generate Tests">
+                                    <a href="{{ url_for('manage_test_cases', slug=problem.slug) }}" class="btn btn-outline-secondary btn-sm" title="Manage Tests">
                                         <i class="fas fa-cog"></i>
                                     </a>
                                     <a href="{{ url_for('test_solution_page', slug=problem.slug) }}" class="btn btn-outline-success btn-sm" title="Test Solution">
@@ -193,11 +352,11 @@
                 </table>
             </div>
             {% else %}
-            <div class="text-center py-5">
-                <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
-                <h4 class="text-muted">No problems found</h4>
-                <p class="text-muted">Get started by creating your first problem!</p>
-                <a href="{{ url_for('create_problem_form') }}" class="btn btn-primary">
+            <div class="empty-state">
+                <i class="fas fa-folder-open fa-5x"></i>
+                <h4>No problems found</h4>
+                <p>Get started by creating your first competitive programming problem!</p>
+                <a href="{{ url_for('create_problem_form') }}" class="btn btn-primary btn-enhanced">
                     <i class="fas fa-plus"></i> Create Your First Problem
                 </a>
             </div>

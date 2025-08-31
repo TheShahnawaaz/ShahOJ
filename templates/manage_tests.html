@@ -1,9 +1,73 @@
 {% extends "base.html" %}
+{% from "components.html" import enhanced_breadcrumb, problem_header, enhanced_card %}
 
 {% block title %}Test Cases - {{ problem.config.get('title', problem.slug) }} - PocketOJ{% endblock %}
 
 {% block extra_css %}
 <style>
+    :root {
+        --primary-color: #007bff;
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+        --light-color: #f8f9fa;
+        --dark-color: #343a40;
+        --border-radius: 8px;
+        --box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        --transition: all 0.3s ease;
+    }
+
+    body {
+        background-color: #f5f7fa;
+    }
+
+    /* Enhanced Layout */
+    .edit-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        margin-bottom: 2rem;
+    }
+
+    /* Progress Bar */
+    .progress-header {
+        background: linear-gradient(135deg, var(--primary-color), #0056b3);
+        color: white;
+        padding: 1rem;
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+    }
+
+    /* Enhanced Buttons */
+    .btn-enhanced {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        transition: var(--transition);
+        border: 1px solid transparent;
+    }
+
+    .btn-enhanced:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .card {
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        border: 1px solid #e9ecef;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-bottom: 1px solid #dee2e6;
+        font-weight: 600;
+    }
+
     .test-case-card {
         transition: transform 0.2s;
     }
@@ -20,115 +84,176 @@
         font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
         font-size: 14px;
     }
+
+    /* Enhanced Statistics Cards */
+    .stats-card {
+        background: linear-gradient(135deg, var(--primary-color), #0056b3);
+        color: white;
+        border: none;
+        text-align: center;
+        transition: var(--transition);
+    }
+
+    .stats-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,123,255,0.3);
+    }
+
+    .stats-card.success {
+        background: linear-gradient(135deg, var(--success-color), #1e7e34);
+    }
+
+    .stats-card.success:hover {
+        box-shadow: 0 8px 25px rgba(40,167,69,0.3);
+    }
+
+    .stats-card.info {
+        background: linear-gradient(135deg, var(--info-color), #117a8b);
+    }
+
+    .stats-card.info:hover {
+        box-shadow: 0 8px 25px rgba(23,162,184,0.3);
+    }
+
+    .stats-card.warning {
+        background: linear-gradient(135deg, var(--warning-color), #d39e00);
+        color: var(--dark-color);
+    }
+
+    .stats-card.warning:hover {
+        box-shadow: 0 8px 25px rgba(255,193,7,0.3);
+    }
+
+    /* Category Cards */
+    .category-card {
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .category-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
     
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ url_for('problem_detail', slug=problem.slug) }}">{{ problem.config.get('title', problem.slug) }}</a></li>
-            <li class="breadcrumb-item active">Test Cases</li>
-        </ol>
-    </nav>
+    <!-- Enhanced Breadcrumb -->
+    {{ enhanced_breadcrumb([
+        {'text': 'Dashboard', 'url': url_for('dashboard'), 'icon': 'fas fa-home'},
+        {'text': problem.config.get('title', problem.slug), 'url': url_for('problem_detail', slug=problem.slug), 'icon': 'fas fa-file-code'},
+        {'text': 'Test Cases', 'icon': 'fas fa-vial'}
+    ]) }}
 
-    <!-- Page Header -->
+    <!-- Enhanced Problem Header -->
+    {{ problem_header(
+        'Test Case Management',
+        problem.config.get('title', problem.slug),
+        [
+            {'text': 'Generate Tests', 'icon': 'fas fa-cog', 'class': 'btn-light', 'id': 'generateTestsHeaderBtn'},
+            {'text': 'Add Manual', 'icon': 'fas fa-plus', 'class': 'btn-light', 'id': 'addManualHeaderBtn'},
+            {'text': 'Back to Problem', 'icon': 'fas fa-arrow-left', 'class': 'btn-light', 'onclick': "location.href='" + url_for('problem_detail', slug=problem.slug) + "'"}
+        ]
+    ) }}
+
+    <!-- Enhanced Statistics Overview -->
     <div class="row mb-4">
-        <div class="col-md-8">
-            <h1><i class="fas fa-vial"></i> Test Case Management</h1>
-            <p class="text-muted">{{ problem.config.get('title', problem.slug) }}</p>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <i class="fas fa-eye fa-3x mb-3 opacity-75"></i>
+                    <h2 class="mb-2">{{ stats.categories.samples.count }}</h2>
+                    <p class="mb-1 fw-bold">Sample Cases</p>
+                    <small class="opacity-75">{{ "%.1f"|format(stats.categories.samples.size_bytes/1024) }}KB</small>
+                </div>
+            </div>
         </div>
-        <div class="col-md-4 text-end">
-            <div class="btn-group">
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateModal">
-                    <i class="fas fa-cog"></i> Generate Tests
-                </button>
-                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#manualModal">
-                    <i class="fas fa-plus"></i> Add Manual
-                </button>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card success">
+                <div class="card-body">
+                    <i class="fas fa-server fa-3x mb-3 opacity-75"></i>
+                    <h2 class="mb-2">{{ stats.categories.system.count }}</h2>
+                    <p class="mb-1 fw-bold">System Tests</p>
+                    <small class="opacity-75">{{ "%.1f"|format(stats.categories.system.size_bytes/1024) }}KB</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card info">
+                <div class="card-body">
+                    <i class="fas fa-list-ol fa-3x mb-3 opacity-75"></i>
+                    <h2 class="mb-2">{{ stats.total_cases }}</h2>
+                    <p class="mb-1 fw-bold">Total Cases</p>
+                    <small class="opacity-75">All categories</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stats-card warning">
+                <div class="card-body">
+                    <i class="fas fa-hdd fa-3x mb-3 opacity-75"></i>
+                    <h2 class="mb-2">{{ "%.1f"|format(stats.total_size_bytes/1024/1024) }}</h2>
+                    <p class="mb-1 fw-bold">Total Size</p>
+                    <small class="opacity-75">MB on disk</small>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Statistics Overview -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body text-center">
-                    <i class="fas fa-eye fa-2x mb-2"></i>
-                    <h3>{{ stats.categories.samples.count }}</h3>
-                    <p class="mb-0">Samples</p>
-                    <small>{{ "%.1f"|format(stats.categories.samples.size_bytes/1024) }}KB</small>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body text-center">
-                    <i class="fas fa-server fa-2x mb-2"></i>
-                    <h3>{{ stats.categories.system.count }}</h3>
-                    <p class="mb-0">System</p>
-                    <small>{{ "%.1f"|format(stats.categories.system.size_bytes/1024) }}KB</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
-                <div class="card-body text-center">
-                    <i class="fas fa-hdd fa-2x mb-2"></i>
-                    <h3>{{ stats.total_cases }}</h3>
-                    <p class="mb-0">Total</p>
-                    <small>{{ "%.1f"|format(stats.total_size_bytes/1024/1024) }}MB</small>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Test Case Categories -->
+    <!-- Enhanced Test Case Categories -->
     <div class="row">
         
         <!-- Samples -->
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5><i class="fas fa-eye text-primary"></i> Sample Test Cases</h5>
-                    <span class="badge bg-primary">{{ stats.categories.samples.count }}</span>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted small">Examples shown in problem statement</p>
-                    <div class="d-flex justify-content-between text-small">
-                        <span>Size: {{ "%.1f"|format(stats.categories.samples.size_bytes/1024) }}KB</span>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="loadTestCases('samples')">
-                            <i class="fas fa-list"></i> View
-                        </button>
+        <div class="col-lg-6 mb-4">
+            {% call enhanced_card("Sample Test Cases", "fas fa-eye text-primary", [
+                {'text': 'View Cases', 'icon': 'fas fa-list', 'class': 'btn-outline-primary btn-sm', 'onclick': "loadTestCases('samples')"}
+            ], "category-card") %}
+                <div class="d-flex align-items-center mb-3">
+                    <div class="flex-grow-1">
+                        <p class="text-muted mb-1">Examples shown in problem statement</p>
+                        <div class="d-flex gap-3">
+                            <span class="badge bg-primary">{{ stats.categories.samples.count }} cases</span>
+                            <span class="badge bg-light text-dark">{{ "%.1f"|format(stats.categories.samples.size_bytes/1024) }}KB</span>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <i class="fas fa-eye fa-3x text-primary opacity-25"></i>
                     </div>
                 </div>
-            </div>
+                <div class="progress" style="height: 6px;">
+                    <div class="progress-bar bg-primary" style="width: {{ (stats.categories.samples.count / (stats.total_cases or 1) * 100)|round }}%"></div>
+                </div>
+                <small class="text-muted">{{ (stats.categories.samples.count / (stats.total_cases or 1) * 100)|round }}% of total cases</small>
+            {% endcall %}
         </div>
 
-
-
         <!-- System Tests -->
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5><i class="fas fa-server text-success"></i> System Tests</h5>
-                    <span class="badge bg-success">{{ stats.categories.system.count }}</span>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted small">Comprehensive final validation</p>
-                    <div class="d-flex justify-content-between text-small">
-                        <span>Size: {{ "%.1f"|format(stats.categories.system.size_bytes/1024) }}KB</span>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="loadTestCases('system')">
-                            <i class="fas fa-list"></i> View
-                        </button>
+        <div class="col-lg-6 mb-4">
+            {% call enhanced_card("System Tests", "fas fa-server text-success", [
+                {'text': 'View Cases', 'icon': 'fas fa-list', 'class': 'btn-outline-success btn-sm', 'onclick': "loadTestCases('system')"}
+            ], "category-card") %}
+                <div class="d-flex align-items-center mb-3">
+                    <div class="flex-grow-1">
+                        <p class="text-muted mb-1">Comprehensive final validation</p>
+                        <div class="d-flex gap-3">
+                            <span class="badge bg-success">{{ stats.categories.system.count }} cases</span>
+                            <span class="badge bg-light text-dark">{{ "%.1f"|format(stats.categories.system.size_bytes/1024) }}KB</span>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <i class="fas fa-server fa-3x text-success opacity-25"></i>
                     </div>
                 </div>
-            </div>
+                <div class="progress" style="height: 6px;">
+                    <div class="progress-bar bg-success" style="width: {{ (stats.categories.system.count / (stats.total_cases or 1) * 100)|round }}%"></div>
+                </div>
+                <small class="text-muted">{{ (stats.categories.system.count / (stats.total_cases or 1) * 100)|round }}% of total cases</small>
+            {% endcall %}
         </div>
 
     </div>
@@ -258,6 +383,29 @@ Example for this problem:
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    
+    // Header button event listeners
+    const generateHeaderBtn = document.getElementById('generateTestsHeaderBtn');
+    if (generateHeaderBtn) {
+        generateHeaderBtn.addEventListener('click', function() {
+            console.log('Generate Tests header button clicked');
+            const modal = new bootstrap.Modal(document.getElementById('generateModal'));
+            modal.show();
+        });
+    } else {
+        console.warn('Generate Tests header button not found');
+    }
+    
+    const addManualHeaderBtn = document.getElementById('addManualHeaderBtn');
+    if (addManualHeaderBtn) {
+        addManualHeaderBtn.addEventListener('click', function() {
+            console.log('Add Manual header button clicked');
+            const modal = new bootstrap.Modal(document.getElementById('manualModal'));
+            modal.show();
+        });
+    } else {
+        console.warn('Add Manual header button not found');
+    }
     
     // Generate tests functionality
     document.getElementById('generateTestsBtn').addEventListener('click', function() {

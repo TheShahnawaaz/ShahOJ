@@ -1,0 +1,164 @@
+{# Reusable Components for PocketOJ #}
+
+{# Enhanced Breadcrumb Component #}
+{% macro enhanced_breadcrumb(items) %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb bg-white rounded shadow-sm px-3 py-2 mb-0">
+        {% for item in items %}
+            {% if loop.last %}
+                <li class="breadcrumb-item active">
+                    {% if item.icon %}<i class="{{ item.icon }}"></i> {% endif %}{{ item.text }}
+                </li>
+            {% else %}
+                <li class="breadcrumb-item">
+                    <a href="{{ item.url }}" class="text-decoration-none">
+                        {% if item.icon %}<i class="{{ item.icon }}"></i> {% endif %}{{ item.text }}
+                    </a>
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ol>
+</nav>
+{% endmacro %}
+
+{# Enhanced Problem Header Component #}
+{% macro problem_header(title, subtitle, actions=[], show_progress=false) %}
+<div class="edit-container">
+    <div class="progress-header">
+        <div class="d-flex justify-content-between align-items-start flex-wrap">
+            <div>
+                <h1 class="mb-2">{{ title }}</h1>
+                {% if subtitle %}
+                    <p class="mb-0 opacity-75">{{ subtitle }}</p>
+                {% endif %}
+            </div>
+            {% if actions %}
+                <div class="d-flex gap-2 flex-wrap">
+                    {% for action in actions %}
+                        <button class="btn {{ action.class or 'btn-light' }} btn-enhanced" 
+                                {% if action.id %}id="{{ action.id }}"{% endif %}
+                                {% if action.onclick %}onclick="{{ action.onclick }}"{% endif %}>
+                            {% if action.icon %}<i class="{{ action.icon }}"></i> {% endif %}{{ action.text }}
+                        </button>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{# Problem Detail Header Component #}
+{% macro problem_detail_header(problem) %}
+<div class="edit-container">
+    <div class="progress-header">
+        <div class="d-flex justify-content-between align-items-start flex-wrap">
+            <div class="flex-grow-1">
+                <h1 class="mb-2">
+                    <i class="fas fa-file-code"></i> {{ problem.config.get('title') or problem.slug }}
+                </h1>
+                <p class="mb-2 opacity-75">{{ problem.slug }}</p>
+                
+                <!-- Problem Meta Information -->
+                <div class="d-flex gap-3 flex-wrap">
+                    {% set difficulty = problem.config.get('difficulty') or 'Medium' %}
+                    <span class="badge fs-6 px-3 py-2
+                        {% if difficulty == 'Easy' %}bg-success
+                        {% elif difficulty == 'Medium' %}bg-warning text-dark
+                        {% else %}bg-danger{% endif %}">
+                        {{ difficulty }}
+                    </span>
+                    
+                    <div class="d-flex gap-1 flex-wrap">
+                        {% for tag in (problem.config.get('tags') or []) %}
+                            <span class="badge bg-light text-dark border">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="text-light opacity-75">
+                        <i class="fas fa-clock"></i> {{ problem.config.get('limits.time_ms') or 1000 }}ms
+                        <i class="fas fa-memory ms-2"></i> {{ problem.config.get('limits.memory_mb') or 256 }}MB
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{{ url_for('test_solution_page', slug=problem.slug) }}" class="btn btn-light btn-enhanced">
+                    <i class="fas fa-play"></i> Test Solution
+                </a>
+                <a href="{{ url_for('manage_test_cases', slug=problem.slug) }}" class="btn btn-light btn-enhanced">
+                    <i class="fas fa-cog"></i> Manage Tests
+                </a>
+                <a href="{{ url_for('edit_problem_page', slug=problem.slug) }}" class="btn btn-light btn-enhanced">
+                    <i class="fas fa-edit"></i> Edit Problem
+                </a>
+                <button class="btn btn-light btn-enhanced" onclick="exportProblem('{{ problem.slug }}')">
+                    <i class="fas fa-download"></i> Export
+                </button>
+                <button class="btn btn-danger btn-enhanced" onclick="deleteProblem('{{ problem.slug }}')">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{# Enhanced Card Component #}
+{% macro enhanced_card(title, icon=none, actions=[], class="") %}
+<div class="card {{ class }}">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            {% if icon %}<i class="{{ icon }}"></i> {% endif %}{{ title }}
+        </h5>
+        {% if actions %}
+            <div class="d-flex gap-1">
+                {% for action in actions %}
+                    <button class="btn btn-sm {{ action.class or 'btn-outline-secondary' }}"
+                            {% if action.id %}id="{{ action.id }}"{% endif %}
+                            {% if action.onclick %}onclick="{{ action.onclick }}"{% endif %}>
+                        {% if action.icon %}<i class="{{ action.icon }}"></i> {% endif %}{{ action.text }}
+                    </button>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        {{ caller() }}
+    </div>
+</div>
+{% endmacro %}
+
+{# File Status Component #}
+{% macro file_status_indicator(exists, required=true) %}
+    {% if exists %}
+        <i class="fas fa-check-circle text-success" title="File exists"></i>
+    {% elif required %}
+        <i class="fas fa-exclamation-circle text-warning" title="Required file missing"></i>
+    {% else %}
+        <i class="fas fa-times-circle text-muted" title="Optional file not present"></i>
+    {% endif %}
+{% endmacro %}
+
+{# Test Case Summary Component #}
+{% macro test_case_summary(test_counts) %}
+<div class="row text-center">
+    <div class="col-6">
+        <div class="border rounded p-3 bg-light">
+            <h4 class="text-primary mb-1">{{ test_counts.samples or 0 }}</h4>
+            <small class="text-muted">Sample Cases</small>
+        </div>
+    </div>
+    <div class="col-6">
+        <div class="border rounded p-3 bg-light">
+            <h4 class="text-success mb-1">{{ test_counts.system or 0 }}</h4>
+            <small class="text-muted">System Cases</small>
+        </div>
+    </div>
+</div>
+
+<div class="text-center mt-3 pt-3 border-top">
+    <h5 class="text-primary">{{ (test_counts.samples or 0) + (test_counts.system or 0) }}</h5>
+    <small class="text-muted">Total Test Cases</small>
+</div>
+{% endmacro %}
