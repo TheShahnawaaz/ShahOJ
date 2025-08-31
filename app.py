@@ -27,7 +27,7 @@ def dashboard():
     try:
         problems = problem_manager.list_problems()
         stats = problem_manager.get_statistics()
-        return render_template('dashboard.html', problems=problems, stats=stats)
+        return render_template('pages/dashboard.html', problems=problems, stats=stats)
     except Exception as e:
         return f"Error loading dashboard: {e}", 500
 
@@ -76,7 +76,7 @@ def problem_detail(slug):
         if not problem:
             return "Problem not found", 404
 
-        return render_template('problem_detail.html', problem=problem)
+        return render_template('pages/problem/detail.html', problem=problem)
     except Exception as e:
         return f"Error loading problem: {e}", 500
 
@@ -109,7 +109,7 @@ def api_problem_detail(slug):
 @app.route('/create-problem')
 def create_problem_form():
     """Show simplified create problem form"""
-    return render_template('create_problem_simple.html')
+    return render_template('pages/problem/create-simple.html')
 
 
 # Deprecated routes - redirect to main create form
@@ -270,7 +270,7 @@ def manage_test_cases(slug):
         test_generator = TestGenerator(problem)
         stats = test_generator.get_test_case_statistics()
 
-        return render_template('manage_tests.html', problem=problem, stats=stats)
+        return render_template('pages/tests/manage.html', problem=problem, stats=stats)
     except Exception as e:
         return f"Error loading test management: {e}", 500
 
@@ -283,7 +283,7 @@ def test_solution_page(slug):
         if not problem:
             return "Problem not found", 404
 
-        return render_template('test_solution.html', problem=problem)
+        return render_template('pages/problem/test-solution.html', problem=problem)
     except Exception as e:
         return f"Error loading solution tester: {e}", 500
 
@@ -760,7 +760,7 @@ def edit_problem_page(slug):
             file_contents[filename.replace(
                 '/', '_').replace('.', '_')] = content or ''
 
-        return render_template('edit_problem.html',
+        return render_template('pages/problem/edit.html',
                                problem=problem,
                                statement_content=file_contents.get(
                                    'statement_md', ''),
