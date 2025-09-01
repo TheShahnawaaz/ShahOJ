@@ -6,6 +6,8 @@
 {% block extra_css %}
 <!-- Monaco Editor CSS -->
 <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/editor/editor.main.css">
+<!-- Monaco Editor Component CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/monaco-editor-component.css') }}">
 
 <style>
     :root {
@@ -239,18 +241,7 @@
         flex-wrap: wrap;
     }
 
-    .monaco-editor-container {
-        height: 500px;
-        min-height: 500px;
-        border: 1px solid #e9ecef;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .monaco-editor-container > div {
-        height: 100% !important;
-        width: 100% !important;
-    }
+
     
     /* Fallback textarea styling */
     .code-editor {
@@ -787,8 +778,9 @@
                     </div>
                     </div>
                     
-                    <div class="monaco-editor-container" id="statement-monaco-container">
-                        <div id="statement-monaco-editor"></div>
+                    <div class="editor-resize-container">
+                        <div class="monaco-editor-container" id="statement-monaco-editor"></div>
+                        <div class="editor-resize-handle" id="statement-monaco-editor-resize-handle"></div>
                     </div>
 
                 </div>
@@ -824,8 +816,9 @@
                         </div>
                     </div>
                     
-                    <div class="monaco-editor-container" id="solution-monaco-container">
-                        <div id="solution-monaco-editor"></div>
+                    <div class="editor-resize-container">
+                        <div class="monaco-editor-container" id="solution-monaco-editor"></div>
+                        <div class="editor-resize-handle" id="solution-monaco-editor-resize-handle"></div>
                     </div>
 
                 </div>
@@ -862,8 +855,9 @@
                         </div>
                     </div>
                     
-                    <div class="monaco-editor-container" id="generator-monaco-container">
-                        <div id="generator-monaco-editor"></div>
+                    <div class="editor-resize-container">
+                        <div class="monaco-editor-container" id="generator-monaco-editor"></div>
+                        <div class="editor-resize-handle" id="generator-monaco-editor-resize-handle"></div>
                     </div>
 
                 </div>
@@ -917,8 +911,9 @@
                     </div>
                     </div>
                     
-                    <div class="monaco-editor-container" id="validator-monaco-container">
-                        <div id="validator-monaco-editor"></div>
+                    <div class="editor-resize-container">
+                        <div class="monaco-editor-container" id="validator-monaco-editor"></div>
+                        <div class="editor-resize-handle" id="validator-monaco-editor-resize-handle"></div>
                     </div>
 
                 </div>
@@ -954,8 +949,9 @@
                     </div>
                     </div>
                     
-                    <div class="monaco-editor-container" id="checker-monaco-container">
-                        <div id="checker-monaco-editor"></div>
+                    <div class="editor-resize-container">
+                        <div class="monaco-editor-container" id="checker-monaco-editor"></div>
+                        <div class="editor-resize-handle" id="checker-monaco-editor-resize-handle"></div>
                     </div>
 
                 </div>
@@ -1004,15 +1000,18 @@
 {% block extra_js %}
 <!-- Monaco Editor JS -->
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
+<!-- Monaco Editor Component JS -->
+<script src="{{ url_for('static', filename='js/monaco-editor-component.js') }}"></script>
+<script src="{{ url_for('static', filename='js/monaco-editor-presets.js') }}"></script>
 
 <script>
-// Enhanced Problem Editor with Monaco Integration
+// Enhanced Problem Editor with Reusable Monaco Components
 class ProblemEditor {
     constructor() {
         this.currentFile = 'config';
         this.originalContents = {};
         this.modifiedFiles = new Set();
-        this.monacoEditors = {};
+        this.editors = {};
 
         this.validationCache = new Map();
         
@@ -1366,9 +1365,9 @@ int main(int argc, char* argv[]) {
             this.setupEventListeners();
             this.loadFileContents();
             
-            // Initialize Monaco with delay to ensure containers are rendered
-            setTimeout(async () => {
-                await this.initMonaco();
+            // Initialize Monaco Editors using our reusable components
+            setTimeout(() => {
+                this.initializeEditors();
                 this.switchToFile('config');
                 // Update file statuses after Monaco is initialized
                 setTimeout(() => {
@@ -1379,8 +1378,6 @@ int main(int argc, char* argv[]) {
             
         } catch (error) {
             console.error('Failed to initialize Problem Editor:', error);
-            // Create fallback editors if initialization fails
-            this.createFallbackEditors();
             this.switchToFile('config');
             // Update file statuses for fallback editors
             setTimeout(() => {
@@ -1389,99 +1386,80 @@ int main(int argc, char* argv[]) {
         }
     }
     
-    async initMonaco() {
-        return new Promise((resolve, reject) => {
-            try {
-                // Configure Monaco loader
-                require.config({ 
-                    paths: { 
-                        vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' 
-                    }
-                });
-                
-                // Load Monaco Editor
-                require(['vs/editor/editor.main'], () => {
-                    console.log('Monaco Editor loaded successfully');
-                    this.createMonacoEditors();
-                    resolve();
-                }, (error) => {
-                    console.error('Failed to load Monaco Editor:', error);
-                    this.createFallbackEditors();
-                    resolve(); // Still resolve to continue with fallback
-                });
-            } catch (error) {
-                console.error('Monaco initialization error:', error);
-                this.createFallbackEditors();
-                resolve();
-            }
-        });
+    initializeEditors() {
+        try {
+            console.log('Initializing editors with reusable Monaco components...');
+            
+            // 1. Statement Editor (Markdown)
+            this.editors.statement = MonacoEditorPresets.createStatementEditor('statement-monaco-editor', {
+                height: 500,
+                onReady: (editor) => {
+                    console.log('Statement editor ready');
+                    this.loadInitialContent('statement', editor);
+                }
+            });
+            
+            // 2. Solution Editor (Python)
+            this.editors.solution = MonacoEditorPresets.createPythonSolutionEditor('solution-monaco-editor', {
+                height: 500,
+                onReady: (editor) => {
+                    console.log('Solution editor ready');
+                    this.loadInitialContent('solution', editor);
+                }
+            });
+            
+            // 3. Generator Editor (Python)
+            this.editors.generator = MonacoEditorPresets.createGeneratorEditor('generator-monaco-editor', {
+                height: 400,
+                onReady: (editor) => {
+                    console.log('Generator editor ready');
+                    this.loadInitialContent('generator', editor);
+                }
+            });
+            
+            // 4. Validator Editor (Python)
+            this.editors.validator = MonacoEditorPresets.createValidatorEditor('validator-monaco-editor', {
+                height: 400,
+                onReady: (editor) => {
+                    console.log('Validator editor ready');
+                    this.loadInitialContent('validator', editor);
+                }
+            });
+            
+            // 5. Checker Editor (C++)
+            this.editors.checker = MonacoEditorPresets.createCheckerEditor('checker-monaco-editor', {
+                height: 400,
+                onReady: (editor) => {
+                    console.log('Checker editor ready');
+                    this.loadInitialContent('checker', editor);
+                }
+            });
+            
+            console.log('All editors initialized successfully');
+            
+        } catch (error) {
+            console.error('Failed to initialize editors:', error);
+        }
     }
     
-        createMonacoEditors() {
-        const editorConfigs = {
-            statement: { language: 'markdown', theme: 'vs-light' },
-            solution: { language: 'python', theme: 'vs-dark' },
-            generator: { language: 'python', theme: 'vs-dark' },
-            validator: { language: 'python', theme: 'vs-dark' },
-            checker: { language: 'cpp', theme: 'vs-dark' }
-        };
-        
-        Object.keys(editorConfigs).forEach(fileType => {
-            const container = document.getElementById(`${fileType}-monaco-editor`);
-            if (container) {
-                try {
-                    // Ensure container has proper dimensions
-                    container.style.width = '100%';
-                    container.style.height = '500px';
-                    
-                    const config = editorConfigs[fileType];
-                    const initialContent = this.getInitialContent(fileType);
-                    
-                    console.log(`Creating Monaco editor for ${fileType} with ${initialContent.length} chars`);
-                    
-                    this.monacoEditors[fileType] = monaco.editor.create(container, {
-                        value: initialContent,
-                        language: config.language,
-                        theme: config.theme,
-                        automaticLayout: true,
-                        minimap: { enabled: false }, // Disable minimap for better performance
-                        scrollBeyondLastLine: false,
-                        fontSize: 14,
-                        lineNumbers: 'on',
-                        renderWhitespace: 'selection',
-                        wordWrap: 'on',
-                        folding: true,
-                        bracketMatching: 'always',
-                        autoIndent: 'full',
-                        formatOnPaste: true,
-                        formatOnType: true,
-                        readOnly: false,
-                        selectOnLineNumbers: true,
-                        roundedSelection: false,
-                        cursorStyle: 'line',
-                        glyphMargin: true
-                    });
-                    
-                    // Force layout after creation
-                    setTimeout(() => {
-                        this.monacoEditors[fileType].layout();
-                    }, 100);
-                    
-                                    // Add change listener
-                this.monacoEditors[fileType].onDidChangeModelContent(() => {
+    loadInitialContent(fileType, editor) {
+        try {
+            const content = this.getInitialContent(fileType);
+            editor.setValue(content);
+            
+            console.log(`Loaded initial content for ${fileType}: ${content.length} characters`);
+            
+            // Add content change listener to the underlying Monaco editor
+            if (editor.editor && editor.editor.onDidChangeModelContent) {
+                editor.editor.onDidChangeModelContent(() => {
                     this.markFileModified(fileType);
                     this.validateFileContent(fileType);
                 });
-                    
-                    console.log(`Monaco editor created successfully for ${fileType}`);
-                } catch (error) {
-                    console.error(`Failed to create Monaco editor for ${fileType}:`, error);
-                    this.createFallbackEditor(fileType, container);
-                }
-            } else {
-                console.warn(`Container not found for ${fileType}-monaco-editor`);
             }
-        });
+                    
+                } catch (error) {
+            console.warn(`Failed to load initial content for ${fileType}:`, error);
+                }
     }
     
     createFallbackEditors() {
@@ -1517,7 +1495,7 @@ int main(int argc, char* argv[]) {
         container.appendChild(textarea);
         
         // Store reference for getFileContent method
-        this.monacoEditors[fileType] = {
+        this.editors[fileType] = {
             getValue: () => textarea.value,
             setValue: (value) => { textarea.value = value; },
             focus: () => textarea.focus(),
@@ -1600,7 +1578,7 @@ int main(int argc, char* argv[]) {
         // Debounce resize events
         clearTimeout(this.resizeTimeout);
         this.resizeTimeout = setTimeout(() => {
-            Object.values(this.monacoEditors).forEach(editor => {
+            Object.values(this.editors).forEach(editor => {
                 if (editor && typeof editor.layout === 'function') {
                     try {
                         editor.layout();
@@ -1628,14 +1606,14 @@ int main(int argc, char* argv[]) {
         this.currentFile = fileName;
         
         // Focus and layout Monaco editor if available
-        if (this.monacoEditors[fileName]) {
+        if (this.editors[fileName]) {
             setTimeout(() => {
                 try {
-                    if (typeof this.monacoEditors[fileName].layout === 'function') {
-                        this.monacoEditors[fileName].layout();
+                    if (typeof this.editors[fileName].layout === 'function') {
+                        this.editors[fileName].layout();
                     }
-                    if (typeof this.monacoEditors[fileName].focus === 'function') {
-                        this.monacoEditors[fileName].focus();
+                    if (typeof this.editors[fileName].focus === 'function') {
+                        this.editors[fileName].focus();
                     }
                 } catch (error) {
                     console.warn(`Error focusing/layouting editor for ${fileName}:`, error);
@@ -1815,8 +1793,8 @@ int main(int argc, char* argv[]) {
             return 'config-data'; // Config is always considered as having content
         }
         
-        if (this.monacoEditors[fileType]) {
-            return this.monacoEditors[fileType].getValue();
+        if (this.editors[fileType]) {
+            return this.editors[fileType].getValue();
         }
         
         return '';
@@ -1836,8 +1814,8 @@ int main(int argc, char* argv[]) {
     applyTemplate(fileType, templateName) {
         if (this.fileTemplates[fileType] && this.fileTemplates[fileType][templateName]) {
             const template = this.fileTemplates[fileType][templateName];
-            if (this.monacoEditors[fileType]) {
-                this.monacoEditors[fileType].setValue(template);
+            if (this.editors[fileType]) {
+                this.editors[fileType].setValue(template);
             }
         }
     }

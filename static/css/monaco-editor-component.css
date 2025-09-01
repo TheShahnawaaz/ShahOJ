@@ -1,0 +1,164 @@
+/* 
+ * Monaco Editor Component Styles for PocketOJ
+ * Reusable styles for Monaco Editor integration
+ */
+
+:root {
+    --monaco-border-radius: 8px;
+    --monaco-primary-color: #007bff;
+    --monaco-border-color: #e9ecef;
+    --monaco-bg-dark: #1e1e1e;
+    --monaco-text-light: #d4d4d4;
+}
+
+/* Monaco Editor Container */
+.monaco-editor-container {
+    height: 600px;
+    min-height: 300px;
+    max-height: 1200px;
+    border: none;
+    border-radius: var(--monaco-border-radius);
+    overflow: hidden;
+    background: var(--monaco-bg-dark);
+    position: relative;
+}
+
+.monaco-editor-container > div {
+    height: 100% !important;
+    width: 100% !important;
+}
+
+/* Resize Container and Handle */
+.editor-resize-container {
+    position: relative;
+}
+
+.editor-resize-handle {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 12px;
+    background: linear-gradient(to bottom, transparent, rgba(0,123,255,0.1));
+    cursor: ns-resize;
+    border-radius: 0 0 var(--monaco-border-radius) var(--monaco-border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+    z-index: 10;
+}
+
+.editor-resize-handle:hover {
+    background: linear-gradient(to bottom, rgba(0,123,255,0.1), rgba(0,123,255,0.2));
+}
+
+.editor-resize-handle::before {
+    content: '';
+    width: 30px;
+    height: 3px;
+    background: #ccc;
+    border-radius: 2px;
+    box-shadow: 0 2px 0 #ccc, 0 4px 0 #ccc;
+}
+
+.editor-resize-handle:hover::before {
+    background: var(--monaco-primary-color);
+    box-shadow: 0 2px 0 var(--monaco-primary-color), 0 4px 0 var(--monaco-primary-color);
+}
+
+/* Custom resizing styles */
+.monaco-editor-container.resizing {
+    user-select: none;
+    transition: none;
+}
+
+/* Fallback textarea styling */
+.code-editor {
+    font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.4;
+    border: none;
+    resize: vertical;
+    background-color: var(--monaco-bg-dark);
+    color: var(--monaco-text-light);
+    padding: 10px;
+    border-radius: var(--monaco-border-radius);
+}
+
+.code-editor:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--monaco-primary-color);
+}
+
+/* Editor toolbar integration */
+.monaco-editor-toolbar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.monaco-editor-toolbar .btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Language-specific theming */
+.monaco-editor-container.language-cpp {
+    /* C++ specific border color */
+    border-color: #0074D9;
+}
+
+.monaco-editor-container.language-python {
+    /* Python specific border color */
+    border-color: #3776ab;
+}
+
+.monaco-editor-container.language-markdown {
+    /* Markdown specific border color */
+    border-color: #083fa1;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .monaco-editor-container {
+        min-height: 250px;
+    }
+    
+    .editor-resize-handle {
+        height: 16px; /* Larger touch target on mobile */
+    }
+    
+    .monaco-editor-toolbar {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .monaco-editor-container {
+        border-color: #444;
+    }
+    
+    .editor-resize-handle {
+        background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.1));
+    }
+    
+    .editor-resize-handle:hover {
+        background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0.2));
+    }
+}
+
+/* Print styles */
+@media print {
+    .editor-resize-handle {
+        display: none;
+    }
+    
+    .monaco-editor-container {
+        border: 1px solid #000;
+        background: white !important;
+    }
+}

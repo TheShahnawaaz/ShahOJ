@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monaco Editor Component Test</title>
+
+    <!-- Monaco Editor CSS -->
+    <link rel="stylesheet" data-name="vs/editor/editor.main"
+        href="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/editor/editor.main.css">
+    <!-- Monaco Editor Component CSS -->
+    <link rel="stylesheet" href="css/monaco-editor-component.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .test-buttons {
+            margin: 10px 0;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Monaco Editor Component Test</h1>
+    <p>Testing our reusable Monaco Editor components with <strong>vs-light theme</strong> and <strong>minimap
+            enabled</strong> (matching test solution page settings)...</p>
+
+    <!-- Test 1: C++ Solution Editor -->
+    <div class="test-container">
+        <h2>📝 C++ Solution Editor</h2>
+        <div class="test-buttons">
+            <button class="btn" onclick="testCppEditor()">Get Code</button>
+            <button class="btn" onclick="cppEditor.setValue('// New code here')">Set Code</button>
+            <button class="btn" onclick="cppEditor.foldAll()">Fold All</button>
+            <button class="btn" onclick="cppEditor.unfoldAll()">Unfold All</button>
+        </div>
+        <div class="editor-resize-container">
+            <div class="monaco-editor-container" id="cpp-test-editor"></div>
+            <div class="editor-resize-handle" id="cpp-test-editor-resize-handle"></div>
+        </div>
+    </div>
+
+    <!-- Test 2: Python Editor -->
+    <div class="test-container">
+        <h2>🐍 Python Solution Editor</h2>
+        <div class="test-buttons">
+            <button class="btn" onclick="testPythonEditor()">Get Code</button>
+            <button class="btn" onclick="pythonEditor.setValue('# New Python code here')">Set Code</button>
+        </div>
+        <div class="editor-resize-container">
+            <div class="monaco-editor-container" id="python-test-editor"></div>
+            <div class="editor-resize-handle" id="python-test-editor-resize-handle"></div>
+        </div>
+    </div>
+
+    <!-- Test 3: Markdown Editor -->
+    <div class="test-container">
+        <h2>📄 Markdown Statement Editor</h2>
+        <div class="test-buttons">
+            <button class="btn" onclick="testMarkdownEditor()">Get Content</button>
+            <button class="btn"
+                onclick="markdownEditor.setValue('# New Problem Title\\n\\nNew problem statement...')">Set
+                Content</button>
+        </div>
+        <div class="editor-resize-container">
+            <div class="monaco-editor-container" id="markdown-test-editor"></div>
+            <div class="editor-resize-handle" id="markdown-test-editor-resize-handle"></div>
+        </div>
+    </div>
+
+    <!-- Console Output -->
+    <div class="test-container">
+        <h2>🖥️ Console Output</h2>
+        <pre id="console-output"
+            style="background: #f8f9fa; padding: 10px; border-radius: 4px; max-height: 200px; overflow-y: auto;"></pre>
+    </div>
+
+    <!-- Monaco Editor JS -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
+    <!-- Monaco Editor Component JS -->
+    <script src="js/monaco-editor-component.js"></script>
+    <script src="js/monaco-editor-presets.js"></script>
+
+    <script>
+        let cppEditor, pythonEditor, markdownEditor;
+
+        // Console logging
+        const originalLog = console.log;
+        const consoleOutput = document.getElementById('console-output');
+
+        console.log = function (...args) {
+            originalLog.apply(console, arguments);
+            consoleOutput.textContent += args.join(' ') + '\\n';
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+
+        // Initialize editors when page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('🚀 Initializing Monaco Editor Components...');
+
+            // Test C++ Editor
+            cppEditor = MonacoEditorPresets.createCppSolutionEditor('cpp-test-editor', {
+                height: 300,
+                onReady: (editor) => {
+                    console.log('✅ C++ Editor ready');
+                }
+            });
+
+            // Test Python Editor
+            pythonEditor = MonacoEditorPresets.createPythonSolutionEditor('python-test-editor', {
+                height: 300,
+                onReady: (editor) => {
+                    console.log('✅ Python Editor ready');
+                }
+            });
+
+            // Test Markdown Editor
+            markdownEditor = MonacoEditorPresets.createStatementEditor('markdown-test-editor', {
+                height: 300,
+                onReady: (editor) => {
+                    console.log('✅ Markdown Editor ready');
+                }
+            });
+
+            console.log('🎯 All editors initialized!');
+        });
+
+        // Test functions
+        function testCppEditor() {
+            const code = cppEditor.getValue();
+            console.log('C++ Code length:', code.length);
+            console.log('First 100 chars:', code.substring(0, 100) + '...');
+        }
+
+        function testPythonEditor() {
+            const code = pythonEditor.getValue();
+            console.log('Python Code length:', code.length);
+            console.log('First 100 chars:', code.substring(0, 100) + '...');
+        }
+
+        function testMarkdownEditor() {
+            const content = markdownEditor.getValue();
+            console.log('Markdown Content length:', content.length);
+            console.log('First 100 chars:', content.substring(0, 100) + '...');
+        }
+
+        // Test resize functionality
+        window.addEventListener('resize', () => {
+            console.log('🔄 Window resized, updating editor layouts...');
+        });
+    </script>
+</body>
+
+</html>

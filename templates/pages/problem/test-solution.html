@@ -4,6 +4,11 @@
 {% block title %}Test Solution - {{ problem.config.get('title', problem.slug) }} - PocketOJ{% endblock %}
 
 {% block extra_css %}
+<!-- Monaco Editor CSS -->
+<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/editor/editor.main.css">
+<!-- Monaco Editor Component CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/monaco-editor-component.css') }}">
+
 <style>
     :root {
         --primary-color: #007bff;
@@ -68,13 +73,7 @@
         font-weight: 600;
     }
 
-    .code-editor {
-        font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
-        font-size: 14px;
-        line-height: 1.4;
-        border: none;
-        resize: vertical;
-    }
+
     
     .verdict-AC { color: #28a745; font-weight: bold; }
     .verdict-WA { color: #dc3545; font-weight: bold; }
@@ -249,18 +248,9 @@
                 {'text': 'Clear', 'icon': 'fas fa-trash', 'class': 'btn-outline-secondary btn-sm', 'id': 'clearCodeBtn'},
                 {'text': 'Template', 'icon': 'fas fa-file-code', 'class': 'btn-outline-info btn-sm', 'id': 'loadTemplateBtn'}
             ]) %}
-                <div class="code-editor-container">
-                    <textarea class="form-control code-editor" id="cppCode" rows="20" 
-                              placeholder="#include <iostream>
-#include <vector>
-#include <algorithm>
-using namespace std;
-
-int main() {
-    // Your solution here
-    
-    return 0;
-}"></textarea>
+                <div class="editor-resize-container">
+                    <div class="monaco-editor-container" id="cpp-solution-editor"></div>
+                    <div class="editor-resize-handle" id="cpp-solution-editor-resize-handle"></div>
                 </div>
                 <div class="mt-3 pt-3 border-top">
                     <div class="row align-items-center">
@@ -381,17 +371,77 @@ Example:
 {% endblock %}
 
 {% block extra_js %}
+<!-- Monaco Editor JS -->
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
+<!-- Monaco Editor Component JS -->
+<script src="{{ url_for('static', filename='js/monaco-editor-component.js') }}"></script>
+<script src="{{ url_for('static', filename='js/monaco-editor-presets.js') }}"></script>
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+// Solution Test Page with Reusable Monaco Editor Component
+class SolutionTester {
+    constructor() {
+        this.cppEditor = null;
+        this.init();
+    }
     
-    // Load C++ template
-    document.getElementById('loadTemplateBtn').addEventListener('click', function() {
-        const template = `#include <iostream>
+    async init() {
+        try {
+            console.log('Initializing Solution Tester with reusable Monaco Editor...');
+            
+            // Create C++ Solution Editor using our reusable component
+            this.cppEditor = MonacoEditorPresets.createCppSolutionEditor('cpp-solution-editor', {
+                onReady: (editor) => {
+                    console.log('C++ Solution Editor ready');
+                    this.setupEventListeners();
+                }
+            });
+            
+        } catch (error) {
+            console.error('Failed to initialize Solution Tester:', error);
+        }
+    }
+    
+    setupEventListeners() {
+        // Load C++ template
+        document.getElementById('loadTemplateBtn')?.addEventListener('click', () => {
+            if (this.cppEditor) {
+                // Get the default template from the preset and reload it
+                const defaultTemplate = `#include <iostream>
 #include <vector>
 #include <algorithm>
+#include <map>
+#include <set>
+#include <string>
 using namespace std;
 
+// Helper function for debugging
+void debug(const vector<int>& arr) {
+    cout << "Debug: ";
+    for (int x : arr) {
+        cout << x << " ";
+    }
+    cout << endl;
+}
+
+// Main solution function
+int solve(const vector<int>& arr) {
+    int n = arr.size();
+    int result = 0;
+    
+    // Process the array
+    for (int i = 0; i < n; i++) {
+        // Add your logic here
+        result += arr[i];
+    }
+    
+    return result;
+}
+
 int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+    
     int n;
     cin >> n;
     
@@ -400,66 +450,73 @@ int main() {
         cin >> arr[i];
     }
     
-    // Your solution logic here
-    int result = 0;
+    // Optional: debug the input
+    // debug(arr);
     
-    cout << result << endl;
+    int answer = solve(arr);
+    cout << answer << endl;
+    
     return 0;
 }`;
-        document.getElementById('cppCode').value = template;
-    });
+                this.cppEditor.setValue(defaultTemplate);
+            }
+        });
+        
+        // Clear code
+        document.getElementById('clearCodeBtn')?.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear the code?')) {
+                if (this.cppEditor) {
+                    this.cppEditor.setValue('');
+                }
+            }
+        });
+        
+        // Run all tests
+        document.getElementById('runTestsBtn')?.addEventListener('click', () => {
+            const code = this.getCode();
+            
+            if (!code.trim()) {
+                alert('Please enter C++ code to test');
+                return;
+            }
+            
+            // Get selected test categories
+            const categories = [];
+            if (document.getElementById('testSamples')?.checked) categories.push('samples');
+            if (document.getElementById('testSystem')?.checked) categories.push('system');
+            
+            if (categories.length === 0) {
+                alert('Please select at least one test category');
+                return;
+            }
+            
+            this.runAllTests(code, categories);
+        });
+        
+        // Quick test
+        document.getElementById('runQuickTestBtn')?.addEventListener('click', () => {
+            const code = this.getCode();
+            const input = document.getElementById('quickTestInput')?.value.trim();
+            
+            if (!code.trim()) {
+                alert('Please enter C++ code to test');
+                return;
+            }
+            
+            if (!input) {
+                alert('Please enter test input');
+                return;
+            }
+            
+            this.runQuickTest(code, input);
+        });
+    }
     
-    // Clear code
-    document.getElementById('clearCodeBtn').addEventListener('click', function() {
-        if (confirm('Are you sure you want to clear the code?')) {
-            document.getElementById('cppCode').value = '';
-        }
-    });
+    getCode() {
+        return this.cppEditor ? this.cppEditor.getValue() : '';
+    }
     
-    // Run all tests
-    document.getElementById('runTestsBtn').addEventListener('click', function() {
-        const code = document.getElementById('cppCode').value.trim();
-        
-        if (!code) {
-            alert('Please enter C++ code to test');
-            return;
-        }
-        
-        // Get selected test categories
-        const categories = [];
-        if (document.getElementById('testSamples').checked) categories.push('samples');
-
-        if (document.getElementById('testSystem').checked) categories.push('system');
-        
-        if (categories.length === 0) {
-            alert('Please select at least one test category');
-            return;
-        }
-        
-        runAllTests(code, categories);
-    });
-    
-    // Quick test
-    document.getElementById('runQuickTestBtn').addEventListener('click', function() {
-        const code = document.getElementById('cppCode').value.trim();
-        const input = document.getElementById('quickTestInput').value.trim();
-        
-        if (!code) {
-            alert('Please enter C++ code to test');
-            return;
-        }
-        
-        if (!input) {
-            alert('Please enter test input');
-            return;
-        }
-        
-        runQuickTest(code, input);
-    });
-    
-});
-
-function runAllTests(code, categories) {
+    runAllTests(code, categories) {
     // Show progress
     document.querySelector('.progress-container').style.display = 'block';
     document.querySelector('.results-container').style.display = 'none';
@@ -505,7 +562,7 @@ function runAllTests(code, categories) {
     });
 }
 
-function runQuickTest(code, input) {
+    runQuickTest(code, input) {
     const btn = document.getElementById('runQuickTestBtn');
     const originalText = btn.innerHTML;
     
@@ -543,6 +600,20 @@ function runQuickTest(code, input) {
         btn.disabled = false;
     });
 }
+}
+
+// Initialize the solution tester when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing Solution Tester...');
+    
+    try {
+        window.solutionTester = new SolutionTester();
+    } catch (error) {
+        console.error('Failed to initialize Solution Tester:', error);
+    }
+});
+
+
 
 // Helper function to safely escape strings for JavaScript template literals
 function escapeForJs(str) {
@@ -556,6 +627,23 @@ function escapeForJs(str) {
         .replace(/\n/g, '\\n')    // Escape newlines
         .replace(/\r/g, '\\r')    // Escape carriage returns
         .replace(/\t/g, '\\t');   // Escape tabs
+}
+
+// Helper functions for displaying results (unchanged from original)
+function showFullContent(title, content) {
+    document.getElementById('contentViewerTitle').textContent = title;
+    document.getElementById('contentViewerContent').textContent = content;
+    
+    const modal = new bootstrap.Modal(document.getElementById('contentViewerModal'));
+    modal.show();
+}
+
+function copyTestCase(content) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(content).then(() => {
+            // Could add a toast notification here
+        });
+    }
 }
 
 function displayTestResults(results) {
