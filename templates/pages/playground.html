@@ -511,7 +511,6 @@ signed main()
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
     PlaygroundTester.init().then(tester => {
-        console.log('Playground initialized successfully');
         window.playgroundTester = tester; // Make it globally accessible for debugging
     }).catch(error => {
         console.error('Failed to initialize playground:', error);

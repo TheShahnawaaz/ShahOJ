@@ -889,12 +889,10 @@ class ProblemEditor {
     
     async init() {
         if (this.initialized) {
-            console.log('Problem Editor already initialized, skipping...');
             return;
         }
         
         try {
-            console.log('Initializing Problem Editor...');
             this.initialized = true;
             
             // Wait for DOM to be fully ready
@@ -913,7 +911,6 @@ class ProblemEditor {
                 setTimeout(() => {
                 this.initializeEditors();
                 this.switchToFile('config');
-                console.log('Enhanced Problem Editor initialized for: {{ problem.slug }}');
             }, 100);
             
         } catch (error) {
@@ -924,8 +921,6 @@ class ProblemEditor {
     
     initializeEditors() {
         try {
-            console.log('Initializing editors with reusable Monaco components...');
-            
             // 1. Statement Editor (Markdown)
             this.editors.statement = MonacoEditorPresets.createStatementEditor('statement-monaco-editor', {
                 height: 700,
@@ -956,8 +951,6 @@ class ProblemEditor {
                 defaultValue: this.getInitialContent('checker') // Load content directly
             });
                     
-            console.log('All editors initialized successfully');
-            
             // Add change listeners to all editors
             this.setupEditorChangeListeners();
             
@@ -990,8 +983,6 @@ class ProblemEditor {
             const content = this.getInitialContent(fileType);
             editor.setValue(content);
             
-            console.log(`Loaded initial content for ${fileType}: ${content.length} characters`);
-            
             // Add content change listener to the underlying Monaco editor
             if (editor.editor && editor.editor.onDidChangeModelContent) {
                 editor.editor.onDidChangeModelContent(() => {
@@ -1006,7 +997,6 @@ class ProblemEditor {
     }
     
     createFallbackEditors() {
-        console.log('Creating fallback textarea editors');
         const fileTypes = ['statement', 'solution', 'generator', 'validator', 'checker'];
         
         fileTypes.forEach(fileType => {
@@ -1047,8 +1037,6 @@ class ProblemEditor {
             this.markFileModified(fileType);
             this.validateFileContent(fileType);
         });
-        
-        console.log(`Fallback editor created for ${fileType}`);
     }
     
     getInitialContent(fileType) {
@@ -1127,8 +1115,6 @@ class ProblemEditor {
     }
     
     switchToFile(fileName) {
-        console.log(`Switching to file: ${fileName}`);
-        
         // Update tab appearance
         document.querySelectorAll('.file-tab').forEach(tab => {
             tab.classList.toggle('active', tab.dataset.file === fileName);
@@ -1183,14 +1169,7 @@ class ProblemEditor {
             checker: this.getInitialContent('checker')
         };
         
-        // Validate that we have the initial content
-        console.log('Loaded initial contents:', {
-            statement: this.originalContents.statement.length + ' chars',
-            solution: this.originalContents.solution.length + ' chars',
-            generator: this.originalContents.generator.length + ' chars',
-            validator: this.originalContents.validator.length + ' chars',
-            checker: this.originalContents.checker.length + ' chars'
-        });
+        // Store original contents for reset functionality
         
         // Update file statuses based on content
         this.updateAllFileStatuses();
@@ -1538,18 +1517,6 @@ class ProblemEditor {
     
 // Initialize the enhanced editor when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded, initializing Problem Editor...');
-    
-    // Add some debugging information
-    console.log('Monaco Editor script loaded:', typeof require !== 'undefined');
-    console.log('Bootstrap loaded:', typeof bootstrap !== 'undefined');
-    
-    // Check if containers exist
-    const containers = ['statement', 'solution', 'generator', 'validator', 'checker'];
-    containers.forEach(type => {
-        const container = document.getElementById(`${type}-monaco-editor`);
-        console.log(`Container ${type}-monaco-editor exists:`, !!container);
-    });
     
     try {
         window.problemEditor = new ProblemEditor();

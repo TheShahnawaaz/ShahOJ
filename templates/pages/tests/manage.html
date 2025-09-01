@@ -388,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const generateHeaderBtn = document.getElementById('generateTestsHeaderBtn');
     if (generateHeaderBtn) {
         generateHeaderBtn.addEventListener('click', function() {
-            console.log('Generate Tests header button clicked');
+
             const modal = new bootstrap.Modal(document.getElementById('generateModal'));
             modal.show();
         });
@@ -399,7 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const addManualHeaderBtn = document.getElementById('addManualHeaderBtn');
     if (addManualHeaderBtn) {
         addManualHeaderBtn.addEventListener('click', function() {
-            console.log('Add Manual header button clicked');
+
             const modal = new bootstrap.Modal(document.getElementById('manualModal'));
             modal.show();
         });
@@ -638,7 +638,6 @@ function displayTestCases(testCases, category) {
     contentDiv.innerHTML = html;
 }
 
-console.log('Test case management page loaded for: {{ problem.slug }}');
-console.log('Statistics:', {{ stats | tojson }});
+
 </script>
 {% endblock %}

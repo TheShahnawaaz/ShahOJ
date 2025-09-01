@@ -433,19 +433,13 @@ class SolutionTester {
     
     async init() {
         try {
-            console.log('Initializing Solution Tester with reusable Monaco Editor...');
-            
             // Set up event listeners after a small delay to ensure DOM is ready
             setTimeout(() => {
                 this.setupEventListeners();
             }, 100);
             
             // Create C++ Solution Editor using our reusable component
-            this.cppEditor = MonacoEditorPresets.createCppSolutionEditor('cpp-solution-editor', {
-                onReady: (editor) => {
-                    console.log('C++ Solution Editor ready');
-                }
-            });
+            this.cppEditor = MonacoEditorPresets.createCppSolutionEditor('cpp-solution-editor');
             
         } catch (error) {
             console.error('Failed to initialize Solution Tester:', error);
@@ -453,20 +447,11 @@ class SolutionTester {
     }
     
     setupEventListeners() {
-        console.log('Setting up event listeners...');
-        
         // Check if buttons exist
         const runTestsBtn = document.getElementById('runTestsBtn');
         const runQuickTestBtn = document.getElementById('runQuickTestBtn');
         const loadTemplateBtn = document.getElementById('loadTemplateBtn');
         const clearCodeBtn = document.getElementById('clearCodeBtn');
-        
-        console.log('Buttons found:', {
-            runTestsBtn: !!runTestsBtn,
-            runQuickTestBtn: !!runQuickTestBtn,
-            loadTemplateBtn: !!loadTemplateBtn,
-            clearCodeBtn: !!clearCodeBtn
-        });
         
         // Load C++ template
         document.getElementById('loadTemplateBtn')?.addEventListener('click', () => {
@@ -515,7 +500,6 @@ signed main()
         
         // Run all tests
         document.getElementById('runTestsBtn')?.addEventListener('click', () => {
-            console.log('Run all tests button clicked!');
             const code = this.getCode();
             
             if (!code.trim()) {
@@ -538,7 +522,6 @@ signed main()
         
         // Quick test
         document.getElementById('runQuickTestBtn')?.addEventListener('click', () => {
-            console.log('Quick test button clicked!');
             const code = this.getCode();
             const input = document.getElementById('quickTestInput')?.value.trim();
             
@@ -653,13 +636,10 @@ signed main()
 
 // Initialize the solution tester when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded, initializing Solution Tester...');
-    
     // Add a small delay to ensure all elements are rendered
     setTimeout(() => {
         try {
             window.solutionTester = new SolutionTester();
-            console.log('Solution Tester initialized successfully');
         } catch (error) {
             console.error('Failed to initialize Solution Tester:', error);
             
@@ -671,7 +651,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Fallback event listeners in case main initialization fails
 function setupFallbackEventListeners() {
-    console.log('Setting up fallback event listeners...');
     
     document.getElementById('runTestsBtn')?.addEventListener('click', () => {
         alert('Solution Tester not properly initialized. Please refresh the page.');
@@ -884,6 +863,6 @@ function displayError(error) {
     document.querySelector('.results-container').style.display = 'block';
 }
 
-console.log('Solution testing page loaded for: {{ problem.slug }}');
+
 </script>
 {% endblock %}
