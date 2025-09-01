@@ -91,6 +91,11 @@
                             <i class="fas fa-plus-circle"></i> Create Problem
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'playground' else '' }}" href="{{ url_for('playground') }}">
+                            <i class="fas fa-play"></i> Playground
+                        </a>
+                    </li>
                 </ul>
                 
                 <ul class="navbar-nav">

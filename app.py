@@ -32,6 +32,12 @@ def dashboard():
         return f"Error loading dashboard: {e}", 500
 
 
+@app.route('/playground')
+def playground():
+    """Code playground for testing without problem context"""
+    return render_template('pages/playground.html')
+
+
 @app.route('/api/problems')
 def api_problems():
     """API endpoint to get all problems as JSON"""
@@ -429,25 +435,22 @@ def test_solution_api(slug):
         }), 500
 
 
-@app.route('/api/problem/<slug>/quick-test', methods=['POST'])
-def quick_test_api(slug):
-    """API endpoint for quick testing against custom input"""
+@app.route('/api/quick-test', methods=['POST'])
+def independent_quick_test_api():
+    """Independent API endpoint for quick testing C++ code (no problem context needed)"""
     try:
-        problem = problem_manager.get_problem(slug)
-        if not problem:
-            return jsonify({'success': False, 'error': 'Problem not found'}), 404
-
         data = request.get_json()
         cpp_code = data.get('code', '').strip()
-        test_input = data.get('input', '').strip()
+        test_input = data.get('input', '')  # Don't strip to allow empty input
 
-        if not cpp_code or not test_input:
-            return jsonify({'success': False, 'error': 'Both code and input are required'}), 400
+        if not cpp_code:
+            return jsonify({'success': False, 'error': 'Code is required'}), 400
 
-        # Quick test
+        # Independent quick test using SolutionTester without problem context
         from core.solution_tester import SolutionTester
-        tester = SolutionTester(problem)
-        success, output, error = tester.quick_test(cpp_code, test_input)
+        tester = SolutionTester(None)  # No problem context needed
+        success, output, error = tester.independent_quick_test(
+            cpp_code, test_input)
 
         return jsonify({
             'success': success,
@@ -458,7 +461,7 @@ def quick_test_api(slug):
     except Exception as e:
         return jsonify({
             'success': False,
-            'error': f'Error in quick test: {str(e)}'
+            'error': f'Error running quick test: {str(e)}'
         }), 500
 
 

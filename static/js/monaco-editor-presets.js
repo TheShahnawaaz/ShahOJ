@@ -7,55 +7,32 @@ class MonacoEditorPresets {
     
     // C++ Solution Editor (for test-solution page)
     static createCppSolutionEditor(containerId, options = {}) {
-        const defaultTemplate = `#include <iostream>
-#include <vector>
-#include <algorithm>
-#include <map>
-#include <set>
-#include <string>
+        const defaultTemplate = `#include <bits/stdc++.h>
 using namespace std;
+#define int long long
+#define all(x) x.begin(), x.end()
+#define pb push_back
+const int MOD = 1000000007;
+int n, m, k;
+vector<int> a;
 
-// Helper function for debugging
-void debug(const vector<int>& arr) {
-    cout << "Debug: ";
-    for (int x : arr) {
-        cout << x << " ";
-    }
-    cout << endl;
-}
-
-// Main solution function
-int solve(const vector<int>& arr) {
-    int n = arr.size();
-    int result = 0;
-    
-    // Process the array
-    for (int i = 0; i < n; i++) {
-        // Add your logic here
-        result += arr[i];
-    }
-    
-    return result;
-}
-
-int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-    
-    int n;
+void solve()
+{
     cin >> n;
-    
-    vector<int> arr(n);
-    for (int i = 0; i < n; i++) {
-        cin >> arr[i];
-    }
-    
-    // Optional: debug the input
-    // debug(arr);
-    
-    int answer = solve(arr);
-    cout << answer << endl;
-    
+    a.resize(n);
+    for (auto &i : a)
+        cin >> i;
+}
+
+signed main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+    int t;
+    cin >> t;
+    while (t--)
+        solve();
     return 0;
 }`;
 

@@ -1,0 +1,535 @@
+{% extends "layouts/base.html" %}
+{% from "layouts/components.html" import enhanced_breadcrumb, problem_header, enhanced_card %}
+
+{% block title %}Code Playground - PocketOJ{% endblock %}
+
+{% block extra_css %}
+<!-- Monaco Editor CSS -->
+<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/editor/editor.main.css">
+<!-- Monaco Editor Component CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/monaco-editor-component.css') }}">
+
+<style>
+    :root {
+        --primary-color: #007bff;
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+        --light-color: #f8f9fa;
+        --dark-color: #343a40;
+        --border-radius: 8px;
+        --box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        --transition: all 0.3s ease;
+    }
+
+    body {
+        background-color: #f5f7fa;
+    }
+
+    /* Enhanced Layout */
+    .sidebar-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        border: none;
+        overflow: hidden;
+    }
+
+    .sidebar-container .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: 600;
+        border: none;
+        padding: 1rem 1.25rem;
+    }
+
+    .sidebar-container .card-header h5 {
+        margin: 0;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .sidebar-container .card-header i {
+        font-size: 1rem;
+    }
+
+
+    /* Enhanced Buttons */
+    .btn-enhanced {
+        border-radius: 25px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 500;
+        transition: var(--transition);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .btn-enhanced:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    /* Enhanced Cards */
+    .enhanced-card {
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        transition: var(--transition);
+        background: white;
+    }
+
+    /* Quick Test Input/Output Styling */
+    #quickTestInput {
+        background-color: #ffffff !important;
+        color: #212529 !important;
+        border: 1px solid #ced4da !important;
+    }
+    
+    #quickTestInput:focus {
+        background-color: #ffffff !important;
+        color: #212529 !important;
+        border-color: #86b7fe !important;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+    }
+    
+    #quickTestInput::placeholder {
+        color: #6c757d !important;
+        opacity: 1 !important;
+    }
+    
+    #quickTestOutput {
+        background-color: #f8f9fa !important;
+        color: #212529 !important;
+        border: 1px solid #ced4da !important;
+    }
+
+    /* Enhanced Stats */
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .stat-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .stat-success { background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%); }
+    .stat-info { background: linear-gradient(135deg, #3ca55c 0%, #b2fab4 100%); }
+    .stat-warning { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+
+    /* Results Panel Enhancement */
+    .results-panel {
+        max-height: 400px;
+        overflow-y: auto;
+        border-radius: var(--border-radius);
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .container-fluid {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+        
+        .btn-enhanced {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+    }
+
+    /* Code Editor Enhancements */
+    .code-editor {
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 14px;
+        line-height: 1.5;
+        border-radius: 6px;
+        transition: var(--transition);
+    }
+
+    .code-editor:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    /* Animation Enhancements */
+    .fade-in {
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Loading States */
+    .btn-loading {
+        position: relative;
+        color: transparent !important;
+    }
+
+    .btn-loading:after {
+        content: "";
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: auto;
+        border: 2px solid transparent;
+        border-top-color: #ffffff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Playground specific styles */
+    .playground-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+        padding: 1.5rem;
+        margin-bottom: 0;
+    }
+
+    .playground-intro {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--box-shadow);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    
+    <!-- Enhanced Breadcrumb -->
+    {{ enhanced_breadcrumb([
+        {'text': 'Dashboard', 'url': url_for('dashboard'), 'icon': 'fas fa-home'},
+        {'text': 'Code Playground', 'icon': 'fas fa-play'}
+    ]) }}
+
+    <div class="row">
+        
+        <!-- Sidebar -->
+        <div class="col-lg-3 col-md-4">
+            <!-- Quick Test Section -->
+            <div class="sidebar-container">
+                <div class="card-header">
+                    <h5><i class="fas fa-bolt"></i> Quick Test</h5>
+                </div>
+                
+                <div class="p-3">
+                    <!-- Test Input -->
+                    <div class="mb-3">
+                        <label for="quickTestInput" class="form-label fw-bold">
+                            <i class="fas fa-keyboard text-info me-1"></i>Test Input 
+                            <small class="text-muted fw-normal">(Optional)</small>
+                        </label>
+                        <textarea class="form-control code-editor" id="quickTestInput" rows="8" 
+                                  placeholder="Enter test input (optional)...
+
+Example:
+3
+1 2 3
+
+Leave empty for programs that don't need input"
+                                  style="background-color: #ffffff; color: #212529; border: 1px solid #ced4da;"></textarea>
+                    </div>
+                    
+                    <!-- Run Button -->
+                    <div class="text-center mb-3">
+                        <button class="btn btn-success btn-enhanced w-100" id="runQuickTestBtn">
+                            <i class="fas fa-play me-2"></i>Run Quick Test
+                        </button>
+                    </div>
+                    
+                    <!-- Test Output (Initially Hidden) -->
+                    <div class="mb-3" id="quickTestOutputSection" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label for="quickTestOutput" class="form-label fw-bold mb-0">
+                                <i class="fas fa-terminal text-success me-1"></i>Output
+                            </label>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="clearQuickTestOutputBtn">
+                                <i class="fas fa-trash me-1"></i>Clear
+                            </button>
+                        </div>
+                        <textarea class="form-control code-editor" id="quickTestOutput" rows="8" 
+                                  readonly placeholder="Output will appear here..."
+                                  style="background-color: #f8f9fa; color: #212529; border: 1px solid #ced4da;"></textarea>
+                    </div>
+                    
+                    <!-- Error Display -->
+                    <div id="quickTestError" style="display: none;">
+                        <div class="alert alert-danger small mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Error:</strong> <span id="quickTestErrorMessage"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Code Editor Area -->
+        <div class="col-lg-9 col-md-8">
+            {% call enhanced_card("C++ Code Editor", "fas fa-code", [
+                {'text': 'Clear', 'icon': 'fas fa-trash', 'class': 'btn-outline-secondary btn-sm', 'id': 'clearCodeBtn'},
+                {'text': 'Template', 'icon': 'fas fa-file-code', 'class': 'btn-outline-info btn-sm', 'id': 'loadTemplateBtn'}
+            ]) %}
+                <div class="editor-resize-container">
+                    <div class="monaco-editor-container" id="cpp-solution-editor"></div>
+                    <div class="editor-resize-handle" id="cpp-solution-editor-resize-handle"></div>
+                </div>
+                
+            {% endcall %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Monaco Editor -->
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
+<!-- Monaco Editor Component -->
+<script src="{{ url_for('static', filename='js/monaco-editor-component.js') }}"></script>
+<!-- Monaco Editor Presets -->
+<script src="{{ url_for('static', filename='js/monaco-editor-presets.js') }}"></script>
+
+<script>
+class PlaygroundTester {
+    constructor() {
+        this.editor = null;
+        this.isRunning = false;
+    }
+
+    static async init() {
+        const tester = new PlaygroundTester();
+        await tester.initializeEditor();
+        tester.setupEventListeners();
+        return tester;
+    }
+
+    async initializeEditor() {
+        // Initialize Monaco Editor with the same settings as test-solution page
+        this.editor = MonacoEditorPresets.createCppSolutionEditor('cpp-solution-editor', {
+            height: 800,
+            resizable: true
+        });
+    }
+
+    setupEventListeners() {
+        // Setup event listeners immediately
+        setTimeout(() => {
+            this.setupButtons();
+        }, 100);
+    }
+
+    setupButtons() {
+        // Clear Code Button
+        const clearBtn = document.getElementById('clearCodeBtn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                if (this.editor) {
+                    this.editor.setValue('');
+                    this.showNotification('Code cleared!', 'info');
+                }
+            });
+        }
+
+        // Load Template Button
+        const templateBtn = document.getElementById('loadTemplateBtn');
+        if (templateBtn) {
+            templateBtn.addEventListener('click', () => {
+                const template = `#include <bits/stdc++.h>
+using namespace std;
+#define int long long
+#define all(x) x.begin(), x.end()
+#define pb push_back
+const int MOD = 1000000007;
+int n, m, k;
+vector<int> a;
+
+void solve()
+{
+    cin >> n;
+    a.resize(n);
+    for (auto &i : a)
+        cin >> i;
+}
+
+signed main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+    int t;
+    cin >> t;
+    while (t--)
+        solve();
+    return 0;
+}`;
+                if (this.editor) {
+                    this.editor.setValue(template);
+                    this.showNotification('Template loaded!', 'success');
+                }
+            });
+        }
+
+        // Run Quick Test Button
+        const runBtn = document.getElementById('runQuickTestBtn');
+        if (runBtn) {
+            runBtn.addEventListener('click', () => {
+                this.runQuickTest();
+            });
+        }
+
+        // Clear Quick Test Output Button
+        const clearOutputBtn = document.getElementById('clearQuickTestOutputBtn');
+        if (clearOutputBtn) {
+            clearOutputBtn.addEventListener('click', () => {
+                this.clearQuickTestOutput();
+            });
+        }
+    }
+
+    async runQuickTest() {
+        if (this.isRunning) return;
+
+        const code = this.editor ? this.editor.getValue() : '';
+        const input = document.getElementById('quickTestInput')?.value || '';
+
+        if (!code.trim()) {
+            this.showNotification('Please enter some code first!', 'warning');
+            return;
+        }
+
+        this.isRunning = true;
+        const runBtn = document.getElementById('runQuickTestBtn');
+        const originalText = runBtn.innerHTML;
+        
+        // Show loading state
+        runBtn.classList.add('btn-loading');
+        runBtn.disabled = true;
+
+        // Show output section
+        const outputSection = document.getElementById('quickTestOutputSection');
+        if (outputSection) {
+            outputSection.style.display = 'block';
+        }
+
+        // Clear previous results
+        this.clearQuickTestResults();
+
+        try {
+            const response = await fetch('/api/quick-test', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    code: code,
+                    input: input
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                document.getElementById('quickTestOutput').value = result.output;
+                this.showNotification('Code executed successfully!', 'success');
+            } else {
+                document.getElementById('quickTestErrorMessage').textContent = result.error;
+                document.getElementById('quickTestError').style.display = 'block';
+                this.showNotification('Execution failed. Check the error details.', 'danger');
+            }
+        } catch (error) {
+            console.error('Quick test error:', error);
+            document.getElementById('quickTestErrorMessage').textContent = 'Failed to connect to server';
+            document.getElementById('quickTestError').style.display = 'block';
+            this.showNotification('Network error occurred', 'danger');
+        } finally {
+            this.isRunning = false;
+            runBtn.classList.remove('btn-loading');
+            runBtn.disabled = false;
+        }
+    }
+
+    clearQuickTestOutput() {
+        document.getElementById('quickTestOutput').value = '';
+        document.getElementById('quickTestOutputSection').style.display = 'none';
+        this.clearQuickTestResults();
+        this.showNotification('Output cleared!', 'info');
+    }
+
+    clearQuickTestResults() {
+        document.getElementById('quickTestError').style.display = 'none';
+        document.getElementById('quickTestErrorMessage').textContent = '';
+    }
+
+    showNotification(message, type = 'info') {
+        // Create toast notification
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} position-fixed`;
+        toast.style.cssText = `
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            animation: slideInRight 0.3s ease;
+        `;
+        toast.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : type === 'warning' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+            ${message}
+        `;
+
+        document.body.appendChild(toast);
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+            toast.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 300);
+        }, 3000);
+    }
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    PlaygroundTester.init().then(tester => {
+        console.log('Playground initialized successfully');
+        window.playgroundTester = tester; // Make it globally accessible for debugging
+    }).catch(error => {
+        console.error('Failed to initialize playground:', error);
+    });
+});
+
+// Add toast animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

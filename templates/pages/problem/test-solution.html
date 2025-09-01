@@ -79,6 +79,37 @@
     .verdict-WA { color: #dc3545; font-weight: bold; }
     .verdict-TLE { color: #ffc107; font-weight: bold; }
     .verdict-RTE { color: #fd7e14; font-weight: bold; }
+    
+    /* Quick Test Input/Output Styling */
+    #quickTestInput {
+        background-color: #ffffff !important;
+        color: #212529 !important;
+        border: 1px solid #ced4da !important;
+    }
+    
+    #quickTestInput:focus {
+        background-color: #ffffff !important;
+        color: #212529 !important;
+        border-color: #86b7fe !important;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+    }
+    
+    #quickTestInput::placeholder {
+        color: #6c757d !important;
+        opacity: 1 !important;
+    }
+    
+    #quickTestOutput {
+        background-color: #f8f9fa !important;
+        color: #212529 !important;
+        border: 1px solid #ced4da !important;
+    }
+    
+    #quickTestOutput::placeholder {
+        color: #6c757d !important;
+        opacity: 1 !important;
+    }
+
     .verdict-CE { color: #6f42c1; font-weight: bold; }
     .verdict-PE { color: #20c997; font-weight: bold; }
     .verdict-JE { color: #6c757d; font-weight: bold; }
@@ -240,6 +271,62 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Quick Test Section -->
+            <div class="sidebar-container mt-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-bolt"></i> Quick Test</h5>
+                </div>
+                
+                <div class="p-3">
+                    <!-- Test Input -->
+                    <div class="mb-3">
+                        <label for="quickTestInput" class="form-label fw-bold">
+                            <i class="fas fa-keyboard text-info me-1"></i>Test Input 
+                            <small class="text-muted fw-normal">(Optional)</small>
+                        </label>
+                        <textarea class="form-control code-editor" id="quickTestInput" rows="4" 
+                                  placeholder="Enter test input (optional)...
+
+Example:
+3
+1 2 3
+
+Leave empty for programs that don't need input"
+                                  style="background-color: #ffffff; color: #212529; border: 1px solid #ced4da;"></textarea>
+                    </div>
+                    
+                    <!-- Run Button -->
+                    <div class="d-grid mb-3">
+                        <button type="button" class="btn btn-primary btn-enhanced" id="runQuickTestBtn">
+                            <i class="fas fa-play me-2"></i>Run Quick Test
+                        </button>
+                    </div>
+                    
+                    <!-- Test Output (Initially Hidden) -->
+                    <div class="mb-3" id="quickTestOutputSection" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label for="quickTestOutput" class="form-label fw-bold mb-0">
+                                <i class="fas fa-terminal text-success me-1"></i>Output
+                            </label>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="clearQuickTestOutputBtn">
+                                <i class="fas fa-trash me-1"></i>Clear
+                            </button>
+                        </div>
+                        <textarea class="form-control code-editor" id="quickTestOutput" rows="4" 
+                                  readonly placeholder="Output will appear here..."
+                                  style="background-color: #f8f9fa; color: #212529; border: 1px solid #ced4da;"></textarea>
+                    </div>
+                    
+                    <!-- Error Display -->
+                    <div id="quickTestError" style="display: none;">
+                        <div class="alert alert-danger mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Error:</strong> <span id="quickTestErrorText"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Code Editor Panel (Main Content Second - matching edit page) -->
@@ -258,9 +345,7 @@
                             <button class="btn btn-success btn-enhanced me-2" id="runTestsBtn">
                                 <i class="fas fa-play"></i> Run All Tests
                             </button>
-                            <button class="btn btn-outline-primary btn-enhanced" id="quickTestBtn" data-bs-toggle="modal" data-bs-target="#quickTestModal">
-                                <i class="fas fa-bolt"></i> Quick Test
-                            </button>
+
                         </div>
                         <div class="col-md-6 text-end">
                             <small class="text-muted">
@@ -304,46 +389,7 @@
 
 </div>
 
-<!-- Quick Test Modal -->
-<div class="modal fade" id="quickTestModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="fas fa-bolt"></i> Quick Test</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label for="quickTestInput" class="form-label">Test Input</label>
-                    <textarea class="form-control code-editor" id="quickTestInput" rows="6" 
-                              placeholder="Enter test input...
 
-Example:
-3
-1 2 3"></textarea>
-                </div>
-                
-                <div class="mb-3">
-                    <label for="quickTestOutput" class="form-label">Output</label>
-                    <textarea class="form-control code-editor" id="quickTestOutput" rows="4" 
-                              readonly placeholder="Output will appear here..."></textarea>
-                </div>
-                
-                <div id="quickTestError" style="display: none;">
-                    <div class="alert alert-danger">
-                        <strong>Error:</strong> <span id="quickTestErrorText"></span>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="runQuickTestBtn">
-                    <i class="fas fa-play"></i> Run Test
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Content Viewer Modal -->
 <div class="modal fade" id="contentViewerModal" tabindex="-1">
@@ -389,11 +435,15 @@ class SolutionTester {
         try {
             console.log('Initializing Solution Tester with reusable Monaco Editor...');
             
+            // Set up event listeners after a small delay to ensure DOM is ready
+            setTimeout(() => {
+                this.setupEventListeners();
+            }, 100);
+            
             // Create C++ Solution Editor using our reusable component
             this.cppEditor = MonacoEditorPresets.createCppSolutionEditor('cpp-solution-editor', {
                 onReady: (editor) => {
                     console.log('C++ Solution Editor ready');
-                    this.setupEventListeners();
                 }
             });
             
@@ -403,59 +453,51 @@ class SolutionTester {
     }
     
     setupEventListeners() {
+        console.log('Setting up event listeners...');
+        
+        // Check if buttons exist
+        const runTestsBtn = document.getElementById('runTestsBtn');
+        const runQuickTestBtn = document.getElementById('runQuickTestBtn');
+        const loadTemplateBtn = document.getElementById('loadTemplateBtn');
+        const clearCodeBtn = document.getElementById('clearCodeBtn');
+        
+        console.log('Buttons found:', {
+            runTestsBtn: !!runTestsBtn,
+            runQuickTestBtn: !!runQuickTestBtn,
+            loadTemplateBtn: !!loadTemplateBtn,
+            clearCodeBtn: !!clearCodeBtn
+        });
+        
         // Load C++ template
         document.getElementById('loadTemplateBtn')?.addEventListener('click', () => {
             if (this.cppEditor) {
                 // Get the default template from the preset and reload it
-                const defaultTemplate = `#include <iostream>
-#include <vector>
-#include <algorithm>
-#include <map>
-#include <set>
-#include <string>
+                const defaultTemplate = `#include <bits/stdc++.h>
 using namespace std;
+#define int long long
+#define all(x) x.begin(), x.end()
+#define pb push_back
+const int MOD = 1000000007;
+int n, m, k;
+vector<int> a;
 
-// Helper function for debugging
-void debug(const vector<int>& arr) {
-    cout << "Debug: ";
-    for (int x : arr) {
-        cout << x << " ";
-    }
-    cout << endl;
-}
-
-// Main solution function
-int solve(const vector<int>& arr) {
-    int n = arr.size();
-    int result = 0;
-    
-    // Process the array
-    for (int i = 0; i < n; i++) {
-        // Add your logic here
-        result += arr[i];
-    }
-    
-    return result;
-}
-
-int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-    
-    int n;
+void solve()
+{
     cin >> n;
-    
-    vector<int> arr(n);
-    for (int i = 0; i < n; i++) {
-        cin >> arr[i];
-    }
-    
-    // Optional: debug the input
-    // debug(arr);
-    
-    int answer = solve(arr);
-    cout << answer << endl;
-    
+    a.resize(n);
+    for (auto &i : a)
+        cin >> i;
+}
+
+signed main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+    int t;
+    cin >> t;
+    while (t--)
+        solve();
     return 0;
 }`;
                 this.cppEditor.setValue(defaultTemplate);
@@ -473,6 +515,7 @@ int main() {
         
         // Run all tests
         document.getElementById('runTestsBtn')?.addEventListener('click', () => {
+            console.log('Run all tests button clicked!');
             const code = this.getCode();
             
             if (!code.trim()) {
@@ -495,6 +538,7 @@ int main() {
         
         // Quick test
         document.getElementById('runQuickTestBtn')?.addEventListener('click', () => {
+            console.log('Quick test button clicked!');
             const code = this.getCode();
             const input = document.getElementById('quickTestInput')?.value.trim();
             
@@ -503,12 +547,15 @@ int main() {
                 return;
             }
             
-            if (!input) {
-                alert('Please enter test input');
-                return;
-            }
-            
-            this.runQuickTest(code, input);
+            // Allow running without input (for programs that don't need input)
+            this.runQuickTest(code, input || '');
+        });
+        
+        // Clear quick test output
+        document.getElementById('clearQuickTestOutputBtn')?.addEventListener('click', () => {
+            document.getElementById('quickTestOutput').value = '';
+            document.getElementById('quickTestOutputSection').style.display = 'none';
+            document.getElementById('quickTestError').style.display = 'none';
         });
     }
     
@@ -569,10 +616,12 @@ int main() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running...';
     btn.disabled = true;
     
+    // Show output section and clear previous results
+    document.getElementById('quickTestOutputSection').style.display = 'block';
     document.getElementById('quickTestError').style.display = 'none';
     document.getElementById('quickTestOutput').value = '';
     
-    fetch(`/api/problem/{{ problem.slug }}/quick-test`, {
+    fetch('/api/quick-test', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -606,12 +655,32 @@ int main() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing Solution Tester...');
     
-    try {
-        window.solutionTester = new SolutionTester();
-    } catch (error) {
-        console.error('Failed to initialize Solution Tester:', error);
-    }
+    // Add a small delay to ensure all elements are rendered
+    setTimeout(() => {
+        try {
+            window.solutionTester = new SolutionTester();
+            console.log('Solution Tester initialized successfully');
+        } catch (error) {
+            console.error('Failed to initialize Solution Tester:', error);
+            
+            // Fallback: Set up basic event listeners if main initialization fails
+            setupFallbackEventListeners();
+        }
+    }, 200);
 });
+
+// Fallback event listeners in case main initialization fails
+function setupFallbackEventListeners() {
+    console.log('Setting up fallback event listeners...');
+    
+    document.getElementById('runTestsBtn')?.addEventListener('click', () => {
+        alert('Solution Tester not properly initialized. Please refresh the page.');
+    });
+    
+    document.getElementById('runQuickTestBtn')?.addEventListener('click', () => {
+        alert('Solution Tester not properly initialized. Please refresh the page.');
+    });
+}
 
 
 

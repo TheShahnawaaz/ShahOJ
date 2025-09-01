@@ -60,16 +60,21 @@ class SolutionTester:
 
     def __init__(self, problem):
         self.problem = problem
-        self.problem_dir = Path(problem.problem_dir)
+        self.problem_dir = Path(problem.problem_dir) if problem else None
 
         # Get compiler settings
         self.compiler_cmd = config.get(
             'compiler.cpp.command', 'g++ -std=c++17 -O2 {src} -o {out}')
         self.compile_timeout = config.get('compiler.cpp.timeout', 30)
 
-        # Get execution limits from problem config
-        self.time_limit_ms = problem.config.get('time_limit_ms', 1000)
-        self.memory_limit_mb = problem.config.get('memory_limit_mb', 256)
+        # Get execution limits from problem config or use defaults
+        if problem:
+            self.time_limit_ms = problem.config.get('time_limit_ms', 1000)
+            self.memory_limit_mb = problem.config.get('memory_limit_mb', 256)
+        else:
+            # Default limits for independent quick test
+            self.time_limit_ms = 5000  # 5 seconds default
+            self.memory_limit_mb = 256  # 256 MB default
 
     def test_solution(self, cpp_code: str, test_categories: List[str] = None) -> Dict[str, Any]:
         """
@@ -403,13 +408,14 @@ class SolutionTester:
 
         return "AC"
 
-    def quick_test(self, cpp_code: str, test_input: str) -> Tuple[bool, str, str]:
+    def independent_quick_test(self, cpp_code: str, test_input: str) -> Tuple[bool, str, str]:
         """
-        Quickly test a solution against a single input
+        Independent quick test that doesn't require a problem context
+        Just compiles and runs C++ code with given input
         Returns (success, output, error_message)
         """
         try:
-            # Compile
+            # Compile the code
             compile_result = self._compile_solution(cpp_code)
             if not compile_result['success']:
                 return False, "", f"Compilation Error: {compile_result['errors']}"
@@ -417,7 +423,7 @@ class SolutionTester:
             executable_path = compile_result['executable_path']
 
             try:
-                # Run
+                # Run the executable with input
                 result = subprocess.run(
                     [executable_path],
                     input=test_input,
@@ -427,11 +433,16 @@ class SolutionTester:
                 )
 
                 if result.returncode == 0:
+                    # Success - return the output
                     return True, result.stdout.strip(), ""
                 else:
-                    return False, "", f"Runtime Error: {result.stderr}"
+                    # Runtime error
+                    error_msg = result.stderr.strip() if result.stderr.strip(
+                    ) else f"Program exited with code {result.returncode}"
+                    return False, "", f"Runtime Error: {error_msg}"
 
             finally:
+                # Clean up executable
                 if os.path.exists(executable_path):
                     os.remove(executable_path)
 
