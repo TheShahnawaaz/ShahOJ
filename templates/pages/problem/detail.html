@@ -50,6 +50,84 @@
         border: 1px solid transparent;
     }
 
+    /* Markdown Content Styling */
+    .markdown-content {
+        line-height: 1.6;
+        color: #333;
+    }
+
+    .markdown-content h1,
+    .markdown-content h2,
+    .markdown-content h3,
+    .markdown-content h4,
+    .markdown-content h5,
+    .markdown-content h6 {
+        color: #2c3e50;
+        font-weight: 600;
+    }
+
+    .markdown-content h1 {
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 0.5rem;
+    }
+
+    .markdown-content h2 {
+        border-bottom: 1px solid #e9ecef;
+        padding-bottom: 0.3rem;
+    }
+
+    .markdown-content code {
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 0.9em;
+    }
+
+    .markdown-content pre {
+        background-color: #f8f9fa !important;
+        border: 1px solid #e9ecef !important;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 0.9em;
+        overflow-x: auto;
+    }
+
+    .markdown-content ul,
+    .markdown-content ol {
+        padding-left: 1.5rem;
+    }
+
+    .markdown-content li {
+        margin-bottom: 0.5rem;
+    }
+
+    .markdown-content p {
+        margin-bottom: 1rem;
+    }
+
+    .markdown-content blockquote {
+        border-left: 4px solid #007bff;
+        padding-left: 1rem;
+        margin-left: 0;
+        color: #6c757d;
+        font-style: italic;
+    }
+
+    .markdown-content table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+    }
+
+    .markdown-content th,
+    .markdown-content td {
+        border: 1px solid #dee2e6;
+        padding: 0.5rem;
+        text-align: left;
+    }
+
+    .markdown-content th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+    }
+
     .btn-enhanced:hover {
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -119,9 +197,33 @@
 
     .markdown-content code {
         background: #f8f9fa;
-        padding: 0.2rem 0.4rem;
         border-radius: 4px;
         font-size: 0.9em;
+    }
+
+    /* Code block copy button styling */
+    .code-block-container {
+        position: relative;
+    }
+
+    .copy-btn {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .copy-btn:hover {
+        background: #fff;
+        border-color: #007bff;
+        color: #007bff;
+    }
+
+    .copy-btn.copied {
+        background: #28a745;
+        border-color: #28a745;
+        color: white;
     }
 </style>
 {% endblock %}
@@ -218,69 +320,17 @@
         <!-- Main Content Panel -->
         <div class="col-lg-9 col-md-8">
             
-            <!-- Enhanced Tabs Navigation -->
-            <ul class="nav nav-tabs" id="problemTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="statement-tab" data-bs-toggle="tab" data-bs-target="#statement" type="button">
-                        <i class="fas fa-file-alt"></i> Statement
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button">
-                        <i class="fas fa-cog"></i> Configuration
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="tests-tab" data-bs-toggle="tab" data-bs-target="#tests" type="button">
-                        <i class="fas fa-vial"></i> Test Cases
-                    </button>
-                </li>
-            </ul>
-
-            <!-- Enhanced Tab Content -->
-            <div class="tab-content border-0 p-0" id="problemTabsContent">
-                
-                <!-- Statement Tab -->
-                <div class="tab-pane fade show active" id="statement" role="tabpanel">
-                    {% call enhanced_card("Problem Statement", "fas fa-file-alt", [
-                        {'text': 'Edit', 'icon': 'fas fa-edit', 'class': 'btn-outline-primary btn-sm', 'onclick': "location.href='" + url_for('edit_problem_page', slug=problem.slug) + "'"}
-                    ]) %}
-                        <div id="problemStatement">
-                            <div class="text-center py-4">
-                                <i class="fas fa-spinner fa-spin text-primary"></i>
-                                <p class="mt-2 text-muted">Loading problem statement...</p>
-                            </div>
-                        </div>
-                    {% endcall %}
+            <!-- Problem Statement -->
+            {% call enhanced_card("Problem Statement", "fas fa-file-alt", [
+                {'text': 'Edit', 'icon': 'fas fa-edit', 'class': 'btn-outline-primary btn-sm', 'onclick': "location.href='" + url_for('edit_problem_page', slug=problem.slug) + "'"}
+            ]) %}
+                <div id="problemStatement">
+                    <div class="text-center py-4">
+                        <i class="fas fa-spinner fa-spin text-primary"></i>
+                        <p class="mt-2 text-muted">Loading problem statement...</p>
+                    </div>
                 </div>
-
-                <!-- Configuration Tab -->
-                <div class="tab-pane fade" id="config" role="tabpanel">
-                    {% call enhanced_card("Problem Configuration", "fas fa-cog", [
-                        {'text': 'Edit Config', 'icon': 'fas fa-edit', 'class': 'btn-outline-primary btn-sm', 'onclick': "location.href='" + url_for('edit_problem_page', slug=problem.slug) + "'"}
-                    ]) %}
-                        <pre class="bg-light border rounded p-3 mb-0"><code>{{ problem.config.data | tojson(indent=2) }}</code></pre>
-                    {% endcall %}
-                </div>
-
-                <!-- Test Cases Tab -->
-                <div class="tab-pane fade" id="tests" role="tabpanel">
-                    {% call enhanced_card("Test Cases Management", "fas fa-vial", [
-                        {'text': 'Add Manual', 'icon': 'fas fa-plus', 'class': 'btn-outline-primary btn-sm', 'onclick': "location.href='" + url_for('manage_test_cases', slug=problem.slug) + "'"},
-                        {'text': 'Generate', 'icon': 'fas fa-cog', 'class': 'btn-outline-success btn-sm', 'onclick': "location.href='" + url_for('manage_test_cases', slug=problem.slug) + "'"}
-                    ]) %}
-                        {% set test_counts = problem.get_test_cases_count() %}
-                        {{ test_case_summary(test_counts) }}
-                        
-                        <div class="text-center mt-4 pt-3 border-top">
-                            <a href="{{ url_for('manage_test_cases', slug=problem.slug) }}" class="btn btn-primary btn-enhanced">
-                                <i class="fas fa-cog"></i> Manage All Test Cases
-                            </a>
-                        </div>
-                    {% endcall %}
-                </div>
-                
-            </div>
+            {% endcall %}
 
         </div>
     </div>
@@ -291,17 +341,6 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize tabs
-    const triggerTabList = [].slice.call(document.querySelectorAll('#problemTabs button'));
-    triggerTabList.forEach(function (triggerEl) {
-        const tabTrigger = new bootstrap.Tab(triggerEl);
-        
-        triggerEl.addEventListener('click', function (event) {
-            event.preventDefault();
-            tabTrigger.show();
-        });
-    });
-    
     // Load problem statement
     loadProblemStatement();
 
@@ -345,20 +384,76 @@ function loadProblemStatement() {
 }
 
 function convertMarkdownToHtml(markdown) {
-    // Simple markdown conversion (basic implementation)
-    let html = markdown
-        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-        .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
-        .replace(/^##### (.+)$/gm, '<h5>$1</h5>')
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.+?)\*/g, '<em>$1</em>')
-        .replace(/`(.+?)`/g, '<code>$1</code>')
-        .replace(/^```\n([\s\S]*?)\n```/gm, '<pre class="bg-light p-3"><code>$1</code></pre>')
-        .replace(/\n\n/g, '</p><p>')
-        .replace(/^\n/, '<p>')
-        .replace(/\n$/, '</p>');
+    // Enhanced markdown conversion
+    let html = markdown;
+    
+    // Handle code blocks first (before other processing)
+    html = html.replace(/```([^`\n]*)\n?([\s\S]*?)```/gm, function(match, lang, code) {
+        const codeId = 'code-' + Math.random().toString(36).substr(2, 9);
+        return `<div class="code-block-container position-relative mb-3">
+            <pre class="bg-light border rounded p-3 mb-0"><code id="${codeId}" class="language-${lang || 'text'}">${code.trim()}</code></pre>
+            <button class="btn btn-sm btn-outline-secondary copy-btn position-absolute" 
+                    style="top: 8px; right: 8px; padding: 4px 8px; font-size: 12px;"
+                    onclick="copyCodeBlock('${codeId}')" 
+                    title="Copy to clipboard">
+                <i class="fas fa-copy"></i>
+            </button>
+        </div>`;
+    });
+    
+    // Handle inline code
+    html = html.replace(/`([^`]+)`/g, '<code class="bg-light px-1 rounded">$1</code>');
+    
+    // Handle headers
+    html = html.replace(/^##### (.+)$/gm, '<h5 class="mt-4 mb-2">$1</h5>');
+    html = html.replace(/^#### (.+)$/gm, '<h4 class="mt-4 mb-3">$1</h4>');
+    html = html.replace(/^### (.+)$/gm, '<h3 class="mt-4 mb-3">$1</h3>');
+    html = html.replace(/^## (.+)$/gm, '<h2 class="mt-4 mb-3">$1</h2>');
+    html = html.replace(/^# (.+)$/gm, '<h1 class="mt-3 mb-4">$1</h1>');
+    
+    // Handle bold and italic
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    
+    // Handle bullet lists
+    html = html.replace(/^- (.+)$/gm, '###LISTITEM###$1###/LISTITEM###');
+    
+    // Handle numbered lists  
+    html = html.replace(/^\d+\. (.+)$/gm, '###ORDEREDITEM###$1###/ORDEREDITEM###');
+    
+    // Convert list items to proper HTML
+    html = html.replace(/(###LISTITEM###.+?###\/LISTITEM###(\n|$))+/gm, function(match) {
+        const items = match.replace(/###LISTITEM###/g, '<li>').replace(/###\/LISTITEM###/g, '</li>').trim();
+        return '<ul class="mb-3">' + items + '</ul>';
+    });
+    
+    html = html.replace(/(###ORDEREDITEM###.+?###\/ORDEREDITEM###(\n|$))+/gm, function(match) {
+        const items = match.replace(/###ORDEREDITEM###/g, '<li>').replace(/###\/ORDEREDITEM###/g, '</li>').trim();
+        return '<ol class="mb-3">' + items + '</ol>';
+    });
+    
+    // Handle mathematical notation (common in competitive programming)
+    html = html.replace(/≤/g, '&le;');
+    html = html.replace(/≥/g, '&ge;');
+    html = html.replace(/\^(\d+)/g, '<sup>$1</sup>');
+    
+    // Handle paragraphs - split by double newlines
+    const paragraphs = html.split(/\n\s*\n/);
+    html = paragraphs.map(p => {
+        p = p.trim();
+        if (!p) return '';
+        
+        // Skip if already wrapped in block elements
+        if (p.match(/^<(h[1-6]|pre|ul|ol|div)/)) {
+            return p;
+        }
+        
+        // Wrap in paragraph
+        return `<p class="mb-3">${p}</p>`;
+    }).join('\n');
+    
+    // Clean up extra whitespace
+    html = html.replace(/\n+/g, '\n').trim();
     
     return `<div class="markdown-content">${html}</div>`;
 }
@@ -403,6 +498,48 @@ function deleteProblem(slug) {
 function exportProblem(slug) {
     // Placeholder for export functionality
     alert('Export functionality will be implemented soon!');
+}
+
+function copyCodeBlock(codeId) {
+    const codeElement = document.getElementById(codeId);
+    const button = event.target.closest('.copy-btn');
+    
+    if (!codeElement) return;
+    
+    // Get the text content
+    const text = codeElement.textContent;
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(text).then(() => {
+        // Show success feedback
+        const originalContent = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i>';
+        button.classList.add('copied');
+        
+        // Reset after 2 seconds
+        setTimeout(() => {
+            button.innerHTML = originalContent;
+            button.classList.remove('copied');
+        }, 2000);
+    }).catch(err => {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        // Show success feedback
+        const originalContent = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i>';
+        button.classList.add('copied');
+        
+        setTimeout(() => {
+            button.innerHTML = originalContent;
+            button.classList.remove('copied');
+        }, 2000);
+    });
 }
 </script>
 {% endblock %}

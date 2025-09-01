@@ -60,7 +60,7 @@
                 <p class="mb-2 opacity-75">{{ problem.slug }}</p>
                 
                 <!-- Problem Meta Information -->
-                <div class="d-flex gap-3 flex-wrap">
+                <div class="d-flex align-items-center gap-1 flex-wrap">
                     {% set difficulty = problem.config.get('difficulty') or 'Medium' %}
                     <span class="badge fs-6 px-3 py-2
                         {% if difficulty == 'Easy' %}bg-success
@@ -69,15 +69,19 @@
                         {{ difficulty }}
                     </span>
                     
-                    <div class="d-flex gap-1 flex-wrap">
+                    <div class="d-flex gap-1 flex-wrap px-3">
                         {% for tag in (problem.config.get('tags') or []) %}
-                            <span class="badge bg-light text-dark border">{{ tag }}</span>
+                            <span class="badge bg-light text-dark border px-1 py-1">{{ tag }}</span>
                         {% endfor %}
                     </div>
                     
-                    <div class="text-light opacity-75">
-                        <i class="fas fa-clock"></i> {{ problem.config.get('limits.time_ms') or 1000 }}ms
-                        <i class="fas fa-memory ms-2"></i> {{ problem.config.get('limits.memory_mb') or 256 }}MB
+                    <div class="d-flex align-items-center gap-3 text-light opacity-75 px-3">
+                        <span class="d-flex align-items-center gap-1">
+                            <i class="fas fa-clock"></i> {{ problem.config.get('limits.time_ms') or 1000 }}ms
+                        </span>
+                        <span class="d-flex align-items-center gap-1">
+                            <i class="fas fa-memory"></i> {{ problem.config.get('limits.memory_mb') or 256 }}MB
+                        </span>
                     </div>
                 </div>
             </div>

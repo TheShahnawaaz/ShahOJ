@@ -87,10 +87,11 @@
     }
     
     .file-tab.active {
-        background: linear-gradient(90deg, var(--primary-color), #0056b3);
-        color: white;
-        border-left-color: #003d82;
-        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        background: linear-gradient(90deg,rgba(0, 123, 255, 0.2),rgba(0, 123, 255, 0.5));
+        color: #212529;
+        border-left-color: var(--primary-color);
+        border-left-width: 6px;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
     }
     
     .file-tab.active:hover {
@@ -113,7 +114,7 @@
     }
 
     .file-tab.active.modified::after {
-        color: #fff3cd;
+        color: #f0ad4e;
     }
 
     .file-tab .d-flex {
@@ -140,7 +141,7 @@
     }
 
     .file-tab.active small {
-        opacity: 0.9;
+        opacity: 0.7;
     }
 
     .file-status {
@@ -347,29 +348,7 @@
 
 
 
-    /* File Templates */
-    .template-selector {
-        margin-bottom: 1rem;
-    }
 
-    .template-option {
-        padding: 0.75rem;
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: var(--transition);
-        margin-bottom: 0.5rem;
-    }
-
-    .template-option:hover {
-        border-color: var(--primary-color);
-        background-color: #f8f9fa;
-    }
-
-    .template-option.selected {
-        border-color: var(--primary-color);
-        background-color: #e3f2fd;
-    }
 
     /* Responsive Design */
     @media (max-width: 768px) {
@@ -519,7 +498,7 @@
                                 <div>
                         <strong>Configuration</strong>
                                     <div class="file-status status-complete">
-                                        <i class="fas fa-check-circle"></i> Complete
+                                        <i class="fas fa-check"></i> Complete
                                     </div>
                                 </div>
                             </div>
@@ -627,23 +606,6 @@
             
                 </div>
                 
-                <!-- File Statistics -->
-                <div class="card-footer bg-light">
-                    <div class="row text-center">
-                        <div class="col-4">
-                            <div class="fw-bold text-success" id="validFilesCount">0</div>
-                            <small class="text-muted">Valid</small>
-                    </div>
-                        <div class="col-4">
-                            <div class="fw-bold text-warning" id="pendingFilesCount">6</div>
-                            <small class="text-muted">Pending</small>
-                        </div>
-                        <div class="col-4">
-                            <div class="fw-bold text-danger" id="errorFilesCount">0</div>
-                            <small class="text-muted">Errors</small>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -657,14 +619,7 @@
                         <h5 class="editor-title">
                             <i class="fas fa-cog text-primary"></i> Problem Configuration
                         </h5>
-                        <div class="editor-actions">
-                            <button class="btn btn-sm btn-outline-secondary btn-enhanced" id="resetConfigBtn">
-                            <i class="fas fa-undo"></i> Reset
-                        </button>
-                            <button class="btn btn-sm btn-outline-primary btn-enhanced" id="validateConfigBtn">
-                                <i class="fas fa-check"></i> Validate
-                        </button>
-                    </div>
+
                     </div>
                     <div class="config-grid">
                         <!-- Basic Information -->
@@ -754,29 +709,10 @@
                         <h5 class="editor-title">
                             <i class="fas fa-file-alt text-info"></i> Problem Statement
                         </h5>
-                        <div class="editor-actions">
-                            <button class="btn btn-sm btn-outline-secondary btn-enhanced" id="resetStatementBtn">
-                            <i class="fas fa-undo"></i> Reset
-                        </button>
-                            <button class="btn btn-sm btn-outline-info btn-enhanced" id="previewStatementBtn">
-                                <i class="fas fa-eye"></i> Preview
-                            </button>
-                            <button class="btn btn-sm btn-outline-primary btn-enhanced" id="validateStatementBtn">
-                                <i class="fas fa-check"></i> Validate
-                        </button>
-                    </div>
+
                     </div>
                     
-                    <!-- Template Selector -->
-                    <div class="template-selector p-3 bg-light border-bottom" id="statement-templates">
-                        <h6 class="mb-2">Quick Templates:</h6>
-                        <div class="d-flex gap-2 flex-wrap">
-                            <button class="btn btn-sm btn-outline-secondary" data-template="basic">Basic Problem</button>
-                            <button class="btn btn-sm btn-outline-secondary" data-template="array">Array Problem</button>
-                            <button class="btn btn-sm btn-outline-secondary" data-template="graph">Graph Problem</button>
-                            <button class="btn btn-sm btn-outline-secondary" data-template="math">Math Problem</button>
-                    </div>
-                    </div>
+
                     
                     <div class="editor-resize-container">
                         <div class="monaco-editor-container" id="statement-monaco-editor"></div>
@@ -793,28 +729,10 @@
                         <h5 class="editor-title">
                             <i class="fas fa-code text-success"></i> Reference Solution
                         </h5>
-                        <div class="editor-actions">
-                            <button class="btn btn-sm btn-outline-secondary btn-enhanced" id="resetSolutionBtn">
-                            <i class="fas fa-undo"></i> Reset
-                        </button>
-                            <button class="btn btn-sm btn-outline-success btn-enhanced" id="testSolutionBtn">
-                                <i class="fas fa-play"></i> Test Run
-                            </button>
-                            <button class="btn btn-sm btn-outline-primary btn-enhanced" id="validateSolutionBtn">
-                                <i class="fas fa-check"></i> Validate
-                        </button>
-                    </div>
+
                     </div>
                     
-                    <!-- Template Selector -->
-                    <div class="template-selector p-3 bg-light border-bottom" id="solution-templates">
-                        <h6 class="mb-2">Solution Templates:</h6>
-                        <div class="d-flex gap-2 flex-wrap">
-                            <button class="btn btn-sm btn-outline-secondary" data-template="basic">Basic I/O</button>
-                            <button class="btn btn-sm btn-outline-secondary" data-template="array">Array Processing</button>
-                            <button class="btn btn-sm btn-outline-secondary" data-template="interactive">Interactive</button>
-                        </div>
-                    </div>
+
                     
                     <div class="editor-resize-container">
                         <div class="monaco-editor-container" id="solution-monaco-editor"></div>
@@ -831,29 +749,10 @@
                         <h5 class="editor-title">
                             <i class="fas fa-random text-warning"></i> Test Generator
                         </h5>
-                        <div class="editor-actions">
-                            <button class="btn btn-sm btn-outline-secondary btn-enhanced" id="resetGeneratorBtn">
-                            <i class="fas fa-undo"></i> Reset
-                        </button>
-                            <button class="btn btn-sm btn-outline-warning btn-enhanced" id="testGeneratorBtn">
-                                <i class="fas fa-play"></i> Test Generate
-                            </button>
-                            <button class="btn btn-sm btn-outline-primary btn-enhanced" id="validateGeneratorBtn">
-                                <i class="fas fa-check"></i> Validate
-                        </button>
-                    </div>
+
                     </div>
                     
-                    <!-- Template Selector -->
-                    <div class="template-selector p-3 bg-light border-bottom" id="generator-templates">
-                        <h6 class="mb-2">Generator Templates:</h6>
-                        <div class="d-flex gap-2 flex-wrap">
-                            <button class="btn btn-sm btn-outline-secondary" data-template="basic">Basic Generator</button>
-                            <button class="btn btn-sm btn-outline-secondary" data-template="array">Array Generator</button>
-                            <button class="btn btn-sm btn-outline-secondary" data-template="graph">Graph Generator</button>
-                            <button class="btn btn-sm btn-outline-secondary" data-template="tree">Tree Generator</button>
-                        </div>
-                    </div>
+
                     
                     <div class="editor-resize-container">
                         <div class="monaco-editor-container" id="generator-monaco-editor"></div>
@@ -878,12 +777,7 @@
                                     Enable Validation
                                 </label>
                             </div>
-                            <button class="btn btn-sm btn-outline-secondary btn-enhanced" id="resetValidatorBtn">
-                                <i class="fas fa-undo"></i> Reset
-                            </button>
-                            <button class="btn btn-sm btn-outline-primary btn-enhanced" id="validateValidatorBtn">
-                                <i class="fas fa-check"></i> Validate
-                            </button>
+
                         </div>
                     </div>
                     
@@ -901,15 +795,7 @@
                         </div>
                         </div>
                     
-                    <!-- Template Selector -->
-                    <div class="template-selector p-3 bg-light border-bottom" id="validator-templates">
-                        <h6 class="mb-2">Validator Templates:</h6>
-                        <div class="d-flex gap-2 flex-wrap">
-                            <button class="btn btn-sm btn-outline-secondary" data-template="basic">Basic Validator</button>
-                            <button class="btn btn-sm btn-outline-secondary" data-template="range">Range Validator</button>
-                            <button class="btn btn-sm btn-outline-secondary" data-template="array">Array Validator</button>
-                    </div>
-                    </div>
+
                     
                     <div class="editor-resize-container">
                         <div class="monaco-editor-container" id="validator-monaco-editor"></div>
@@ -926,28 +812,10 @@
                         <h5 class="editor-title">
                             <i class="fas fa-gavel text-danger"></i> Custom Checker (SPJ)
                         </h5>
-                        <div class="editor-actions">
-                            <button class="btn btn-sm btn-outline-secondary btn-enhanced" id="resetCheckerBtn">
-                            <i class="fas fa-undo"></i> Reset
-                        </button>
-                            <button class="btn btn-sm btn-outline-danger btn-enhanced" id="compileCheckerBtn">
-                                <i class="fas fa-hammer"></i> Compile
-                            </button>
-                            <button class="btn btn-sm btn-outline-primary btn-enhanced" id="validateCheckerBtn">
-                                <i class="fas fa-check"></i> Validate
-                        </button>
-                    </div>
+
                     </div>
                     
-                    <!-- Template Selector -->
-                    <div class="template-selector p-3 bg-light border-bottom" id="checker-templates">
-                        <h6 class="mb-2">Checker Templates:</h6>
-                        <div class="d-flex gap-2 flex-wrap">
-                            <button class="btn btn-sm btn-outline-secondary" data-template="basic">Basic SPJ</button>
-                            <button class="btn btn-sm btn-outline-secondary" data-template="float">Float Comparison</button>
-                            <button class="btn btn-sm btn-outline-secondary" data-template="multiple">Multiple Answers</button>
-                    </div>
-                    </div>
+
                     
                     <div class="editor-resize-container">
                         <div class="monaco-editor-container" id="checker-monaco-editor"></div>
@@ -1014,344 +882,20 @@ class ProblemEditor {
         this.editors = {};
 
         this.validationCache = new Map();
+        this.initialized = false;
         
-        this.fileTemplates = {
-            statement: {
-                basic: `# Problem Title
-
-## Problem Statement
-
-Write a clear and concise problem statement here.
-
-## Input Format
-
-Describe the input format.
-
-## Output Format
-
-Describe the expected output format.
-
-## Constraints
-
-- List constraints here
-- 1 ≤ n ≤ 10^5
-
-## Sample Input
-\`\`\`
-3
-1 2 3
-\`\`\`
-
-## Sample Output
-\`\`\`
-6
-\`\`\`
-
-## Explanation
-
-Explain the sample case.`,
-                array: `# Array Problem
-
-## Problem Statement
-
-Given an array of n integers, solve the following problem...
-
-## Input Format
-
-First line contains integer n.
-Second line contains n space-separated integers.
-
-## Output Format
-
-Output the result.
-
-## Constraints
-
-- 1 ≤ n ≤ 10^5
-- 1 ≤ arr[i] ≤ 10^9
-
-## Sample Input
-\`\`\`
-5
-1 2 3 4 5
-\`\`\`
-
-## Sample Output
-\`\`\`
-15
-\`\`\``,
-                graph: `# Graph Problem
-
-## Problem Statement
-
-Given a graph with n vertices and m edges...
-
-## Input Format
-
-First line: n (vertices) and m (edges)
-Next m lines: u v (edge from u to v)
-
-## Output Format
-
-Output the result.
-
-## Constraints
-
-- 1 ≤ n ≤ 10^5
-- 1 ≤ m ≤ 2*10^5
-
-## Sample Input
-\`\`\`
-4 3
-1 2
-2 3
-3 4
-\`\`\`
-
-## Sample Output
-\`\`\`
-3
-\`\`\``
-            },
-            solution: {
-                basic: `#!/usr/bin/env python3
-
-def solve():
-    # Read input
-    n = int(input())
-    arr = list(map(int, input().split()))
-    
-    # Solve the problem
-    result = sum(arr)
-    
-    # Output result
-    print(result)
-
-if __name__ == "__main__":
-    solve()`,
-                array: `#!/usr/bin/env python3
-
-def solve():
-    n = int(input())
-    arr = list(map(int, input().split()))
-    
-    # Process array
-    result = 0
-    for i in range(n):
-        result += arr[i]
-    
-    print(result)
-
-if __name__ == "__main__":
-    solve()`,
-                interactive: `#!/usr/bin/env python3
-import sys
-
-def solve():
-    # Interactive problem template
-    def query(x):
-        print(f"? {x}")
-        sys.stdout.flush()
-        return int(input())
-    
-    def answer(x):
-        print(f"! {x}")
-        sys.stdout.flush()
-    
-    # Your interactive solution here
-    n = int(input())
-    
-    # Example: binary search
-    left, right = 1, n
-    while left < right:
-        mid = (left + right) // 2
-        response = query(mid)
-        if response == 1:
-            left = mid + 1
-        else:
-            right = mid
-    
-    answer(left)
-
-if __name__ == "__main__":
-    solve()`
-            },
-            generator: {
-                basic: `#!/usr/bin/env python3
-import random
-import sys
-
-def generate_test_case(test_num, seed):
-    random.seed(seed)
-    
-    # Generate test case based on test_num
-    if test_num <= 3:  # Small cases
-        n = random.randint(1, 10)
-    elif test_num <= 7:  # Medium cases
-        n = random.randint(10, 1000)
-    else:  # Large cases
-        n = random.randint(1000, 100000)
-    
-    # Generate array
-    arr = [random.randint(1, 1000000) for _ in range(n)]
-    
-    # Output test case
-    print(n)
-    print(' '.join(map(str, arr)))
-
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python generator.py <test_num> <seed>")
-        sys.exit(1)
-    
-    test_num = int(sys.argv[1])
-    seed = int(sys.argv[2])
-    
-    generate_test_case(test_num, seed)`,
-                array: `#!/usr/bin/env python3
-import random
-import sys
-
-def generate_array_test(test_num, seed):
-    random.seed(seed)
-    
-    # Scale based on test number
-    if test_num <= 3:
-        n = random.randint(1, 10)
-        max_val = 100
-    elif test_num <= 7:
-        n = random.randint(10, 1000)
-        max_val = 10000
-    else:
-        n = random.randint(1000, 100000)
-        max_val = 1000000000
-    
-    # Generate array with specific properties
-    arr = []
-    for i in range(n):
-        arr.append(random.randint(1, max_val))
-    
-    print(n)
-    print(' '.join(map(str, arr)))
-
-if __name__ == "__main__":
-    test_num = int(sys.argv[1])
-    seed = int(sys.argv[2])
-    generate_array_test(test_num, seed)`
-            },
-            validator: {
-                basic: `#!/usr/bin/env python3
-import sys
-
-def validate():
-    try:
-        # Read and validate input
-        n = int(input())
-        
-        # Check constraints
-        if not (1 <= n <= 100000):
-            return False
-        
-        arr = list(map(int, input().split()))
-        
-        if len(arr) != n:
-            return False
-        
-        for x in arr:
-            if not (1 <= x <= 1000000000):
-                return False
-        
-        return True
-    except:
-        return False
-
-if __name__ == "__main__":
-    if validate():
-        sys.exit(0)  # Valid
-    else:
-        sys.exit(1)  # Invalid`,
-                range: `#!/usr/bin/env python3
-import sys
-
-def validate():
-    try:
-        lines = sys.stdin.read().strip().split('\\n')
-        
-        # Validate first line
-        n = int(lines[0])
-        if not (1 <= n <= 100000):
-            return False
-        
-        # Validate second line
-        if len(lines) < 2:
-            return False
-        
-        values = list(map(int, lines[1].split()))
-        if len(values) != n:
-            return False
-        
-        # Check value ranges
-        for val in values:
-            if not (1 <= val <= 1000000000):
-                return False
-        
-        return True
-    except:
-        return False
-
-if __name__ == "__main__":
-    sys.exit(0 if validate() else 1)`
-            },
-            checker: {
-                basic: `#include "testlib.h"
-using namespace std;
-
-int main(int argc, char* argv[]) {
-    registerTestlibCmd(argc, argv);
-    
-    // Read expected answer
-    int expected = ans.readInt();
-    
-    // Read participant output
-    int result = ouf.readInt();
-    
-    // Compare
-    if (expected == result) {
-        quitf(_ok, "Correct answer: %d", result);
-    } else {
-        quitf(_wa, "Wrong answer: expected %d, got %d", expected, result);
-    }
-    
-    return 0;
-}`,
-                float: `#include "testlib.h"
-using namespace std;
-
-int main(int argc, char* argv[]) {
-    registerTestlibCmd(argc, argv);
-    
-    double expected = ans.readDouble();
-    double result = ouf.readDouble();
-    
-    double eps = 1e-6;
-    
-    if (abs(expected - result) <= eps) {
-        quitf(_ok, "Correct answer: %.6f", result);
-    } else {
-        quitf(_wa, "Wrong answer: expected %.6f, got %.6f", expected, result);
-    }
-    
-    return 0;
-}`
-            }
-        };
-        
-        this.init();
+        // Editor will be initialized via init() method call
     }
     
     async init() {
+        if (this.initialized) {
+            console.log('Problem Editor already initialized, skipping...');
+            return;
+        }
+        
         try {
             console.log('Initializing Problem Editor...');
+            this.initialized = true;
             
             // Wait for DOM to be fully ready
             await new Promise(resolve => {
@@ -1366,23 +910,15 @@ int main(int argc, char* argv[]) {
             this.loadFileContents();
             
             // Initialize Monaco Editors using our reusable components
-            setTimeout(() => {
+                setTimeout(() => {
                 this.initializeEditors();
                 this.switchToFile('config');
-                // Update file statuses after Monaco is initialized
-                setTimeout(() => {
-                    this.updateAllFileStatuses();
-                }, 200);
                 console.log('Enhanced Problem Editor initialized for: {{ problem.slug }}');
             }, 100);
             
         } catch (error) {
             console.error('Failed to initialize Problem Editor:', error);
             this.switchToFile('config');
-            // Update file statuses for fallback editors
-            setTimeout(() => {
-                this.updateAllFileStatuses();
-            }, 100);
         }
     }
     
@@ -1392,54 +928,61 @@ int main(int argc, char* argv[]) {
             
             // 1. Statement Editor (Markdown)
             this.editors.statement = MonacoEditorPresets.createStatementEditor('statement-monaco-editor', {
-                height: 500,
-                onReady: (editor) => {
-                    console.log('Statement editor ready');
-                    this.loadInitialContent('statement', editor);
-                }
+                height: 700,
+                defaultValue: this.getInitialContent('statement') // Load content directly
             });
             
             // 2. Solution Editor (Python)
             this.editors.solution = MonacoEditorPresets.createPythonSolutionEditor('solution-monaco-editor', {
-                height: 500,
-                onReady: (editor) => {
-                    console.log('Solution editor ready');
-                    this.loadInitialContent('solution', editor);
-                }
+                height: 700,
+                defaultValue: this.getInitialContent('solution') // Load content directly
             });
             
             // 3. Generator Editor (Python)
             this.editors.generator = MonacoEditorPresets.createGeneratorEditor('generator-monaco-editor', {
-                height: 400,
-                onReady: (editor) => {
-                    console.log('Generator editor ready');
-                    this.loadInitialContent('generator', editor);
-                }
+                height: 700,
+                defaultValue: this.getInitialContent('generator') // Load content directly
             });
             
             // 4. Validator Editor (Python)
             this.editors.validator = MonacoEditorPresets.createValidatorEditor('validator-monaco-editor', {
-                height: 400,
-                onReady: (editor) => {
-                    console.log('Validator editor ready');
-                    this.loadInitialContent('validator', editor);
-                }
+                height: 700,
+                defaultValue: this.getInitialContent('validator') // Load content directly
             });
             
-            // 5. Checker Editor (C++)
+                        // 5. Checker Editor (C++)
             this.editors.checker = MonacoEditorPresets.createCheckerEditor('checker-monaco-editor', {
-                height: 400,
-                onReady: (editor) => {
-                    console.log('Checker editor ready');
-                    this.loadInitialContent('checker', editor);
-                }
+                height: 700,
+                defaultValue: this.getInitialContent('checker') // Load content directly
             });
-            
+                    
             console.log('All editors initialized successfully');
             
+            // Add change listeners to all editors
+            this.setupEditorChangeListeners();
+            
+                        // Update file statuses now that content is loaded
+            setTimeout(() => {
+                this.updateAllFileStatuses();
+            }, 500);
+                    
         } catch (error) {
             console.error('Failed to initialize editors:', error);
         }
+    }
+    
+    setupEditorChangeListeners() {
+        const fileTypes = ['statement', 'solution', 'generator', 'validator', 'checker'];
+        
+        fileTypes.forEach(fileType => {
+            const editor = this.editors[fileType];
+            if (editor && editor.editor && editor.editor.onDidChangeModelContent) {
+                editor.editor.onDidChangeModelContent(() => {
+                    this.markFileModified(fileType);
+                    this.validateFileContent(fileType);
+                });
+            }
+        });
     }
     
     loadInitialContent(fileType, editor) {
@@ -1473,10 +1016,7 @@ int main(int argc, char* argv[]) {
             }
         });
         
-        // Update file statuses after creating fallback editors
-        setTimeout(() => {
-            this.updateAllFileStatuses();
-        }, 100);
+        // File statuses will be updated after editors are initialized
     }
     
     createFallbackEditor(fileType, container) {
@@ -1484,7 +1024,7 @@ int main(int argc, char* argv[]) {
         const textarea = document.createElement('textarea');
         textarea.className = 'form-control code-editor';
         textarea.style.width = '100%';
-        textarea.style.height = '500px';
+        textarea.style.height = '600px';
         textarea.style.fontFamily = 'Monaco, Consolas, "Courier New", monospace';
         textarea.style.fontSize = '14px';
         textarea.style.lineHeight = '1.4';
@@ -1515,12 +1055,15 @@ int main(int argc, char* argv[]) {
         // Get content from JSON data element
         try {
             const dataElement = document.getElementById('initial-content-data');
+            
             if (dataElement) {
                 const contentData = JSON.parse(dataElement.textContent);
                 return contentData[fileType] || '';
+            } else {
+                console.error('initial-content-data element not found!');
             }
         } catch (error) {
-            console.warn('Failed to parse initial content data:', error);
+            console.error('Failed to parse initial content data for', fileType, ':', error);
         }
         return '';
     }
@@ -1548,14 +1091,7 @@ int main(int argc, char* argv[]) {
         // Action buttons
         document.getElementById('saveAllBtn')?.addEventListener('click', () => this.saveAllChanges());
         
-        // Template buttons
-        document.querySelectorAll('[data-template]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const template = e.target.dataset.template;
-                const fileType = e.target.closest('.file-content').id.replace('-content', '');
-                this.applyTemplate(fileType, template);
-            });
-        });
+
         
         // Validator toggle
         document.getElementById('validatorEnabled')?.addEventListener('change', (e) => {
@@ -1776,7 +1312,7 @@ int main(int argc, char* argv[]) {
         if (!statusElement) return;
         
         const statusConfig = {
-            complete: { class: 'status-complete', icon: 'fas fa-check-circle', text: 'Complete' },
+            complete: { class: 'status-complete', icon: 'fas fa-check', text: 'Complete' },
             incomplete: { class: 'status-incomplete', icon: 'fas fa-exclamation-circle', text: 'Required' },
             optional: { class: 'status-optional', icon: 'fas fa-info-circle', text: 'Optional' }
         };
@@ -1784,6 +1320,16 @@ int main(int argc, char* argv[]) {
         const config = statusConfig[status];
         statusElement.className = `file-status ${config.class}`;
         statusElement.innerHTML = `<i class="${config.icon}"></i> ${config.text}`;
+        
+        // Also update the validation indicator on the right side
+        const validationIndicator = document.getElementById(`${fileType}-validation`);
+        if (validationIndicator) {
+            if (status === 'complete') {
+                this.updateValidationStatus(validationIndicator, 'valid', 'Complete');
+            } else {
+                this.updateValidationStatus(validationIndicator, 'pending', 'Pending');
+            }
+        }
     }
     
 
@@ -1796,7 +1342,6 @@ int main(int argc, char* argv[]) {
         if (this.editors[fileType]) {
             return this.editors[fileType].getValue();
         }
-        
         return '';
     }
     
@@ -1811,14 +1356,7 @@ int main(int argc, char* argv[]) {
         return fileNames[fileType] || `${fileType}.txt`;
     }
     
-    applyTemplate(fileType, templateName) {
-        if (this.fileTemplates[fileType] && this.fileTemplates[fileType][templateName]) {
-            const template = this.fileTemplates[fileType][templateName];
-            if (this.editors[fileType]) {
-                this.editors[fileType].setValue(template);
-            }
-        }
-    }
+
     
 
     
@@ -1878,6 +1416,9 @@ int main(int argc, char* argv[]) {
                 btn.innerHTML = '<i class="fas fa-save"></i> Save All Changes';
                 btn.classList.remove('btn-warning');
                 btn.classList.add('btn-light');
+                
+                // Update file statuses after successful save
+                this.updateAllFileStatuses();
                 
             } else {
                 this.showSaveStatus('error', `Save failed: ${result.error}`);
@@ -2012,6 +1553,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     try {
         window.problemEditor = new ProblemEditor();
+        window.problemEditor.init().catch(error => {
+            console.error('Failed to initialize Problem Editor async:', error);
+        });
     } catch (error) {
         console.error('Failed to initialize Problem Editor:', error);
         
@@ -2022,7 +1566,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const textarea = document.createElement('textarea');
                 textarea.className = 'form-control code-editor';
                 textarea.style.width = '100%';
-                textarea.style.height = '500px';
+                textarea.style.height = '600px';
                 textarea.style.fontFamily = 'Monaco, Consolas, "Courier New", monospace';
                 textarea.placeholder = `Enter ${type} content here...`;
                 container.appendChild(textarea);
