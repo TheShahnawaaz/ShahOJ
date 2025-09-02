@@ -994,6 +994,164 @@ def get_problem_statement_api(slug):
         }), 500
 
 
+@app.route('/api/problem/<slug>/ai-generate', methods=['POST'])
+def ai_generate_file_api(slug):
+    """API endpoint to generate code files using AI"""
+    try:
+        problem = problem_manager.get_problem(slug)
+        if not problem:
+            return jsonify({'success': False, 'error': 'Problem not found'}), 404
+
+        data = request.get_json()
+        file_type = data.get('file_type', '').strip()
+
+        if file_type not in ['solution', 'generator', 'validator', 'spj']:
+            return jsonify({
+                'success': False,
+                'error': 'Invalid file type. Must be one of: solution, generator, validator, spj'
+            }), 400
+
+        # Get problem statement
+        statement_file = problem.problem_dir / 'statement.md'
+        if not statement_file.exists():
+            return jsonify({
+                'success': False,
+                'error': 'Problem statement not found. Please create statement.md first.'
+            }), 400
+
+        with open(statement_file, 'r') as f:
+            problem_statement = f.read()
+
+        if not problem_statement.strip():
+            return jsonify({
+                'success': False,
+                'error': 'Problem statement is empty. Please add content to statement.md first.'
+            }), 400
+
+        # Import AI service
+        from core.ai_service import get_ai_service
+        ai_service = get_ai_service()
+
+        if not ai_service:
+            return jsonify({
+                'success': False,
+                'error': 'AI service not available. Please configure OPENAI_API_KEY environment variable.'
+            }), 503
+
+        # Generate code based on file type
+        try:
+            if file_type == 'solution':
+                result = ai_service.generate_solution_with_explanation(
+                    problem_statement)
+            elif file_type == 'generator':
+                result = ai_service.generate_generator_with_explanation(
+                    problem_statement)
+            elif file_type == 'validator':
+                result = ai_service.generate_validator_with_explanation(
+                    problem_statement)
+            elif file_type == 'spj':
+                result = ai_service.generate_special_judge_with_explanation(
+                    problem_statement)
+
+            return jsonify({
+                'success': True,
+                'generated_code': result.code,
+                'explanation': result.explanation,
+                'file_type': file_type,
+                'message': f'Successfully generated {file_type} code using AI'
+            })
+
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'AI generation failed: {str(e)}'
+            }), 500
+
+    except Exception as e:
+        print(f"Error in AI generation: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': f'Server error: {str(e)}'
+        }), 500
+
+
+@app.route('/api/problem/<slug>/ai-polish-statement', methods=['POST'])
+def ai_polish_statement_api(slug):
+    """API endpoint to polish problem statement using AI"""
+    try:
+        problem = problem_manager.get_problem(slug)
+        if not problem:
+            return jsonify({'success': False, 'error': 'Problem not found'}), 404
+
+        data = request.get_json()
+        raw_statement = data.get('raw_statement', '').strip()
+
+        if not raw_statement:
+            return jsonify({
+                'success': False,
+                'error': 'Raw statement content is required'
+            }), 400
+
+        # Import AI service
+        from core.ai_service import get_ai_service
+        ai_service = get_ai_service()
+
+        if not ai_service:
+            return jsonify({
+                'success': False,
+                'error': 'AI service not available. Please configure OPENAI_API_KEY environment variable.'
+            }), 503
+
+        # Polish the statement
+        try:
+            result = ai_service.polish_statement_with_explanation(
+                raw_statement)
+            print(result.code)
+            return jsonify({
+                'success': True,
+                'polished_statement': result.code,
+                'explanation': result.explanation,
+                'message': 'Statement polished successfully using AI'
+            })
+
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'AI polishing failed: {str(e)}'
+            }), 500
+
+    except Exception as e:
+        print(f"Error in AI statement polishing: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': f'Server error: {str(e)}'
+        }), 500
+
+
+@app.route('/api/ai/status')
+def ai_status_api():
+    """Check if AI service is available"""
+    try:
+        from core.ai_service import get_ai_service
+        ai_service = get_ai_service()
+
+        return jsonify({
+            'success': True,
+            'ai_available': ai_service is not None,
+            'model': ai_service.model if ai_service else None
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'ai_available': False,
+            'error': str(e)
+        })
+
+
 @app.route('/health')
 def health_check():
     """Health check endpoint"""

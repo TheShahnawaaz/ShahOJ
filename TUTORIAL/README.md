@@ -19,6 +19,7 @@ Welcome to the comprehensive PocketOJ tutorial! This guide will teach you everyt
 - [**Special Judges**](08-special-judges.md) - Custom checkers for problems with multiple answers
 - [**Test Management**](09-test-management.md) - Managing and organizing test cases
 - [**Solution Testing**](10-solution-testing.md) - Testing C++ solutions against your problems
+- [**AI Code Generation**](14-ai-code-generation.md) - Generate code files using artificial intelligence
 
 ### Best Practices
 - [**Problem Design Guidelines**](11-problem-design.md) - Creating high-quality competitive programming problems
@@ -29,9 +30,11 @@ Welcome to the comprehensive PocketOJ tutorial! This guide will teach you everyt
 
 **New to PocketOJ?** Start with [Platform Overview](01-platform-overview.md) → [Quick Start Guide](02-quick-start.md)
 
-**Want to create a problem?** Go to [Problem Structure](03-problem-structure.md) → [Reference Solutions](05-reference-solutions.md) → [Test Generators](06-test-generators.md)
+**Want to create a problem?** Go to [Problem Structure](03-problem-structure.md) → [AI Code Generation](14-ai-code-generation.md) → [Test Management](09-test-management.md)
 
-**Need advanced features?** Check out [Special Judges](08-special-judges.md) and [Test Management](09-test-management.md)
+**Traditional approach?** [Reference Solutions](05-reference-solutions.md) → [Test Generators](06-test-generators.md) → [Input Validators](07-input-validators.md)
+
+**Need advanced features?** Check out [Special Judges](08-special-judges.md) and [Solution Testing](10-solution-testing.md)
 
 ## 💡 Key Concepts
 
@@ -42,9 +45,10 @@ Welcome to the comprehensive PocketOJ tutorial! This guide will teach you everyt
 
 ## 🎯 Learning Path
 
-1. **Beginner**: Platform Overview → Quick Start → Problem Structure → Reference Solutions
-2. **Intermediate**: Test Generators → Input Validators → Test Management
-3. **Advanced**: Special Judges → Problem Design Guidelines → Common Patterns
+1. **Beginner**: Platform Overview → Quick Start → Problem Structure → AI Code Generation
+2. **Intermediate**: Test Management → Solution Testing → Problem Design Guidelines
+3. **Advanced**: Special Judges → Custom Validators → Common Patterns
+4. **Expert**: Manual file creation → Troubleshooting → Performance optimization
 
 ## 📝 Examples
 

@@ -222,10 +222,140 @@
         padding: 1rem;
         border-bottom: 1px solid #dee2e6;
         display: flex;
-        justify-content: between;
+        justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
         gap: 1rem;
+    }
+
+    .editor-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .ai-generate-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        white-space: nowrap;
+    }
+
+    .ai-generate-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,123,255,0.2);
+    }
+
+    .ai-generate-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .ai-generate-btn.loading {
+        position: relative;
+    }
+
+    .ai-generate-btn.loading .fas {
+        animation: spin 1s linear infinite;
+    }
+
+    /* AI Polish Button */
+    .ai-polish-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        white-space: nowrap;
+        border-color: #28a745;
+        color: #28a745;
+    }
+
+    .ai-polish-btn:hover {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
+    }
+
+    .ai-polish-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .ai-polish-btn.loading .fas {
+        animation: sparkle 1.5s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    @keyframes sparkle {
+        0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        50% { transform: scale(1.2) rotate(180deg); opacity: 0.8; }
+    }
+
+    /* AI Generation Modal */
+    .ai-preview-container {
+        background: #f8f9fa;
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+    }
+
+    .ai-preview-container pre {
+        background: white;
+        padding: 1rem;
+        border-radius: 4px;
+        border: 1px solid #e9ecef;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        margin: 0;
+    }
+
+    .ai-status-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .ai-status-indicator.available {
+        background: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+        border: 1px solid rgba(40, 167, 69, 0.2);
+    }
+
+    .ai-status-indicator.unavailable {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+        border: 1px solid rgba(220, 53, 69, 0.2);
+    }
+
+    /* AI Explanation Styling */
+    .ai-explanation-container {
+        background: #e8f4fd;
+        border-left: 4px solid #007bff;
+        border-radius: var(--border-radius);
+        padding: 1rem;
+    }
+
+    .ai-explanation-content {
+        font-size: 0.95rem;
+        line-height: 1.5;
+        color: #2c3e50;
+        white-space: pre-wrap;
+        max-height: 200px;
+        overflow-y: auto;
     }
 
     .editor-title {
@@ -709,7 +839,12 @@
                         <h5 class="editor-title">
                             <i class="fas fa-file-alt text-info"></i> Problem Statement
                         </h5>
-
+                        <div class="editor-actions">
+                            <button type="button" class="btn btn-outline-success btn-sm ai-polish-btn" 
+                                    data-file-type="statement" title="Polish with AI">
+                                <i class="fas fa-sparkles"></i> Polish with AI
+                            </button>
+                        </div>
                     </div>
                     
 
@@ -729,7 +864,12 @@
                         <h5 class="editor-title">
                             <i class="fas fa-code text-success"></i> Reference Solution
                         </h5>
-
+                        <div class="editor-actions">
+                            <button type="button" class="btn btn-outline-primary btn-sm ai-generate-btn" 
+                                    data-file-type="solution" title="Generate with AI">
+                                <i class="fas fa-magic"></i> Generate with AI
+                            </button>
+                        </div>
                     </div>
                     
 
@@ -749,7 +889,12 @@
                         <h5 class="editor-title">
                             <i class="fas fa-random text-warning"></i> Test Generator
                         </h5>
-
+                        <div class="editor-actions">
+                            <button type="button" class="btn btn-outline-primary btn-sm ai-generate-btn" 
+                                    data-file-type="generator" title="Generate with AI">
+                                <i class="fas fa-magic"></i> Generate with AI
+                            </button>
+                        </div>
                     </div>
                     
 
@@ -770,6 +915,10 @@
                             <i class="fas fa-shield-alt text-secondary"></i> Input Validator
                         </h5>
                         <div class="editor-actions">
+                            <button type="button" class="btn btn-outline-primary btn-sm ai-generate-btn me-3" 
+                                    data-file-type="validator" title="Generate with AI">
+                                <i class="fas fa-magic"></i> Generate with AI
+                            </button>
                             <div class="form-check form-switch me-3">
                                 <input class="form-check-input" type="checkbox" id="validatorEnabled" 
                                        {{ 'checked' if problem.config.get('validation.enabled', False) else '' }}>
@@ -812,7 +961,12 @@
                         <h5 class="editor-title">
                             <i class="fas fa-gavel text-danger"></i> Custom Checker (SPJ)
                         </h5>
-
+                        <div class="editor-actions">
+                            <button type="button" class="btn btn-outline-primary btn-sm ai-generate-btn" 
+                                    data-file-type="spj" title="Generate with AI">
+                                <i class="fas fa-magic"></i> Generate with AI
+                            </button>
+                        </div>
                     </div>
                     
 
@@ -841,6 +995,71 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Generation Modal -->
+    <div class="modal fade" id="aiGenerationModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-magic text-primary"></i> 
+                        AI Code Generation - <span id="aiModalFileType">File Type</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="aiGenerationStatus">
+                        <!-- Status messages will be populated by JavaScript -->
+                    </div>
+
+                    <div id="aiGenerationPreview" style="display: none;">
+                        <h6 class="mb-3">
+                            <i class="fas fa-eye"></i> Generated Code Preview
+                        </h6>
+                        <div class="ai-preview-container">
+                            <pre id="aiGeneratedCode"></pre>
+                        </div>
+                        
+                        <!-- AI Explanation Section -->
+                        <div id="aiExplanationSection" class="mt-3" style="display: none;">
+                            <h6 class="mb-2">
+                                <i class="fas fa-lightbulb"></i> AI Explanation
+                            </h6>
+                            <div class="ai-explanation-container">
+                                <div id="aiExplanationContent" class="ai-explanation-content"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Review the generated code carefully.</strong> 
+                                The AI has created this code based on your problem statement. 
+                                You can edit it further after applying it to the editor.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="aiGenerationError" style="display: none;">
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Generation Failed:</strong>
+                            <span id="aiErrorMessage"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="applyAiCodeBtn" style="display: none;">
+                        <i class="fas fa-check"></i> Apply to Editor
+                    </button>
+                    <button type="button" class="btn btn-primary" id="regenerateAiCodeBtn" style="display: none;">
+                        <i class="fas fa-redo"></i> Regenerate
+                    </button>
                 </div>
             </div>
         </div>
@@ -1513,6 +1732,431 @@ class ProblemEditor {
             this.updateValidationStatus(configValidation, 'invalid', 'Missing required configuration');
         }
     }
+
+    // AI Generation Methods
+    async initializeAI() {
+        // Check AI availability
+        try {
+            const response = await fetch('/api/ai/status');
+            const data = await response.json();
+            
+            this.aiAvailable = data.ai_available;
+            
+            // Enable/disable AI buttons based on availability
+            const aiButtons = document.querySelectorAll('.ai-generate-btn, .ai-polish-btn');
+            aiButtons.forEach(btn => {
+                if (!this.aiAvailable) {
+                    btn.disabled = true;
+                    btn.title = 'AI service not available. Configure OPENAI_API_KEY.';
+                    if (btn.classList.contains('ai-polish-btn')) {
+                        btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> AI Unavailable';
+                    } else {
+                        btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> AI Unavailable';
+                    }
+                }
+            });
+            
+            // Setup AI button event listeners
+            this.setupAIEventListeners();
+            
+        } catch (error) {
+            console.error('Failed to check AI status:', error);
+            this.aiAvailable = false;
+        }
+    }
+
+    setupAIEventListeners() {
+        // Setup AI generation button listeners
+        document.querySelectorAll('.ai-generate-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const fileType = e.currentTarget.getAttribute('data-file-type');
+                this.handleAIGeneration(fileType);
+            });
+        });
+
+        // Setup AI polish button listeners
+        document.querySelectorAll('.ai-polish-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const fileType = e.currentTarget.getAttribute('data-file-type');
+                this.handleAIStatementPolish();
+            });
+        });
+
+        // Setup modal button listeners
+        document.getElementById('applyAiCodeBtn').addEventListener('click', () => {
+            this.applyAICode();
+        });
+
+        document.getElementById('regenerateAiCodeBtn').addEventListener('click', () => {
+            this.regenerateAICode();
+        });
+    }
+
+    async handleAIGeneration(fileType) {
+        if (!this.aiAvailable) {
+            alert('AI service is not available. Please configure OPENAI_API_KEY.');
+            return;
+        }
+
+        // Store current file type for regeneration
+        this.currentAIFileType = fileType;
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('aiGenerationModal'));
+        document.getElementById('aiModalFileType').textContent = this.getFileTypeDisplayName(fileType);
+        
+        // Reset modal state
+        this.resetAIModal();
+        modal.show();
+
+        // Start generation
+        await this.generateAICode(fileType);
+    }
+
+    async generateAICode(fileType) {
+        const statusDiv = document.getElementById('aiGenerationStatus');
+        const previewDiv = document.getElementById('aiGenerationPreview');
+        const errorDiv = document.getElementById('aiGenerationError');
+        const applyBtn = document.getElementById('applyAiCodeBtn');
+        const regenerateBtn = document.getElementById('regenerateAiCodeBtn');
+
+        // Show loading state
+        statusDiv.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Generating...</span>
+                </div>
+                <div class="mt-3">
+                    <h6>Generating ${this.getFileTypeDisplayName(fileType)} with AI...</h6>
+                    <p class="text-muted">This may take 10-30 seconds depending on the complexity.</p>
+                </div>
+            </div>
+        `;
+
+        try {
+            const response = await fetch(`/api/problem/${this.getSlugFromUrl()}/ai-generate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    file_type: fileType
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Store generated code (clean any remaining formatting issues)
+                this.currentAICode = this.cleanGeneratedCode(data.generated_code);
+                this.currentAIExplanation = data.explanation;
+
+                // Show preview
+                statusDiv.style.display = 'none';
+                previewDiv.style.display = 'block';
+                errorDiv.style.display = 'none';
+
+                document.getElementById('aiGeneratedCode').textContent = this.currentAICode;
+                
+                // Show explanation if available
+                this.updateExplanationDisplay(data.explanation);
+                
+                applyBtn.style.display = 'inline-block';
+                regenerateBtn.style.display = 'inline-block';
+
+            } else {
+                // Show error
+                statusDiv.style.display = 'none';
+                previewDiv.style.display = 'none';
+                errorDiv.style.display = 'block';
+
+                document.getElementById('aiErrorMessage').textContent = data.error;
+                regenerateBtn.style.display = 'inline-block';
+            }
+
+        } catch (error) {
+            console.error('AI generation error:', error);
+            
+            statusDiv.style.display = 'none';
+            previewDiv.style.display = 'none';
+            errorDiv.style.display = 'block';
+
+            document.getElementById('aiErrorMessage').textContent = `Network error: ${error.message}`;
+            regenerateBtn.style.display = 'inline-block';
+        }
+    }
+
+    applyAICode() {
+        // Handle statement polishing
+        if (this.currentPolishedStatement) {
+            const statementEditor = this.editors.statement;
+            if (statementEditor && statementEditor.setValue) {
+                statementEditor.setValue(this.currentPolishedStatement);
+                this.markFileModified('statement');
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('aiGenerationModal'));
+                modal.hide();
+
+                // Switch to statement tab
+                this.switchToFile('statement');
+
+                // Show success message
+                this.showSaveStatus('success', 'AI-polished statement applied successfully!');
+                
+                // Clear polished statement
+                this.currentPolishedStatement = null;
+            }
+            return;
+        }
+
+        // Handle regular code generation
+        if (!this.currentAICode || !this.currentAIFileType) {
+            return;
+        }
+
+        // Map file type to editor name (SPJ uses 'checker' editor)
+        const editorName = this.currentAIFileType === 'spj' ? 'checker' : this.currentAIFileType;
+        
+        // Get the appropriate editor
+        const editor = this.editors[editorName];
+        if (editor && editor.setValue) {
+            editor.setValue(this.currentAICode);
+            this.markFileModified(editorName);
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('aiGenerationModal'));
+            modal.hide();
+
+            // Switch to the file tab (use editor name for switching)
+            this.switchToFile(editorName);
+
+            // Show success message
+            this.showSaveStatus('success', `AI-generated ${this.getFileTypeDisplayName(this.currentAIFileType)} applied successfully!`);
+        }
+    }
+
+    async regenerateAICode() {
+        // Handle statement re-polishing
+        if (this.currentRawStatement) {
+            this.resetAIModal();
+            await this.polishStatement(this.currentRawStatement);
+            return;
+        }
+
+        // Handle regular code regeneration
+        if (!this.currentAIFileType) {
+            return;
+        }
+
+        this.resetAIModal();
+        await this.generateAICode(this.currentAIFileType);
+    }
+
+    resetAIModal() {
+        const statusDiv = document.getElementById('aiGenerationStatus');
+        const previewDiv = document.getElementById('aiGenerationPreview');
+        const errorDiv = document.getElementById('aiGenerationError');
+        const applyBtn = document.getElementById('applyAiCodeBtn');
+        const regenerateBtn = document.getElementById('regenerateAiCodeBtn');
+
+        statusDiv.style.display = 'block';
+        previewDiv.style.display = 'none';
+        errorDiv.style.display = 'none';
+        applyBtn.style.display = 'none';
+        regenerateBtn.style.display = 'none';
+
+        statusDiv.innerHTML = '';
+        
+        // Reset button text to default
+        applyBtn.innerHTML = '<i class="fas fa-check"></i> Apply to Editor';
+        regenerateBtn.innerHTML = '<i class="fas fa-redo"></i> Regenerate';
+        
+        // Clear stored data
+        this.currentAICode = null;
+        this.currentPolishedStatement = null;
+        this.currentAIExplanation = null;
+    }
+
+    updateExplanationDisplay(explanation) {
+        const explanationSection = document.getElementById('aiExplanationSection');
+        const explanationContent = document.getElementById('aiExplanationContent');
+        
+        if (explanation && explanation.trim()) {
+            explanationContent.textContent = explanation;
+            explanationSection.style.display = 'block';
+        } else {
+            explanationSection.style.display = 'none';
+        }
+    }
+
+    getFileTypeDisplayName(fileType) {
+        const names = {
+            'solution': 'Reference Solution',
+            'generator': 'Test Generator',
+            'validator': 'Input Validator',
+            'spj': 'Special Judge (SPJ)'
+        };
+        return names[fileType] || fileType;
+    }
+
+    getSlugFromUrl() {
+        const pathParts = window.location.pathname.split('/');
+        return pathParts[pathParts.length - 2]; // Assuming URL is /problem/{slug}/edit
+    }
+
+    cleanGeneratedCode(code) {
+        // Additional client-side cleaning as a safety net
+        if (!code) return '';
+
+        // Remove markdown code blocks if they somehow made it through
+        let cleaned = code.replace(/^```[\w]*\n?/gm, '').replace(/\n?```$/gm, '');
+        
+        // Remove any leading explanatory text before code starts
+        const lines = cleaned.split('\n');
+        let startIndex = 0;
+        
+        // Look for actual code start patterns
+        const codePatterns = [
+            /^#!/,                          // Shebang
+            /^#include/,                    // C++ includes
+            /^import\s/,                    // Python imports
+            /^from\s/,                      // Python from imports
+            /^def\s/,                       // Python functions
+            /^class\s/,                     // Python classes
+            /^"""/,                         // Python docstrings
+            /^'''/,                         // Python docstrings
+            /^using namespace/,             // C++ using
+            /^int main\s*\(/,              // C++ main
+            /^\w+\s+\w+\s*\(/,            // Function definitions
+        ];
+        
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (codePatterns.some(pattern => pattern.test(line))) {
+                startIndex = i;
+                break;
+            }
+        }
+        
+        if (startIndex > 0) {
+            cleaned = lines.slice(startIndex).join('\n');
+        }
+        
+        return cleaned.trim();
+    }
+
+    // Statement Polishing Methods
+    async handleAIStatementPolish() {
+        if (!this.aiAvailable) {
+            alert('AI service is not available. Please configure OPENAI_API_KEY.');
+            return;
+        }
+
+        // Get current statement content from the editor
+        const statementEditor = this.editors.statement;
+        if (!statementEditor || !statementEditor.getValue) {
+            alert('Statement editor not available.');
+            return;
+        }
+
+        const currentStatement = statementEditor.getValue().trim();
+        if (!currentStatement) {
+            alert('Please write some content in the statement editor first.');
+            return;
+        }
+
+        // Store for regeneration
+        this.currentRawStatement = currentStatement;
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('aiGenerationModal'));
+        document.getElementById('aiModalFileType').textContent = 'Statement Polish';
+        
+        // Reset modal state
+        this.resetAIModal();
+        modal.show();
+
+        // Start polishing
+        await this.polishStatement(currentStatement);
+    }
+
+    async polishStatement(rawStatement) {
+        const statusDiv = document.getElementById('aiGenerationStatus');
+        const previewDiv = document.getElementById('aiGenerationPreview');
+        const errorDiv = document.getElementById('aiGenerationError');
+        const applyBtn = document.getElementById('applyAiCodeBtn');
+        const regenerateBtn = document.getElementById('regenerateAiCodeBtn');
+
+        // Show loading state
+        statusDiv.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-success" role="status">
+                    <span class="visually-hidden">Polishing...</span>
+                </div>
+                <div class="mt-3">
+                    <h6><i class="fas fa-sparkles"></i> Polishing Statement with AI...</h6>
+                    <p class="text-muted">Creating a professional, well-structured problem statement. This may take 15-45 seconds.</p>
+                </div>
+            </div>
+        `;
+
+        try {
+            const response = await fetch(`/api/problem/${this.getSlugFromUrl()}/ai-polish-statement`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    raw_statement: rawStatement
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Store polished statement
+                this.currentPolishedStatement = data.polished_statement;
+                this.currentAIExplanation = data.explanation;
+
+                // Show preview
+                statusDiv.style.display = 'none';
+                previewDiv.style.display = 'block';
+                errorDiv.style.display = 'none';
+
+                document.getElementById('aiGeneratedCode').textContent = data.polished_statement;
+                
+                // Show explanation if available
+                this.updateExplanationDisplay(data.explanation);
+                
+                applyBtn.style.display = 'inline-block';
+                applyBtn.innerHTML = '<i class="fas fa-check"></i> Apply Polished Statement';
+                regenerateBtn.style.display = 'inline-block';
+                regenerateBtn.innerHTML = '<i class="fas fa-redo"></i> Re-polish';
+
+            } else {
+                // Show error
+                statusDiv.style.display = 'none';
+                previewDiv.style.display = 'none';
+                errorDiv.style.display = 'block';
+
+                document.getElementById('aiErrorMessage').textContent = data.error;
+                regenerateBtn.style.display = 'inline-block';
+                regenerateBtn.innerHTML = '<i class="fas fa-redo"></i> Try Again';
+            }
+
+        } catch (error) {
+            console.error('AI statement polishing error:', error);
+            
+            statusDiv.style.display = 'none';
+            previewDiv.style.display = 'none';
+            errorDiv.style.display = 'block';
+
+            document.getElementById('aiErrorMessage').textContent = `Network error: ${error.message}`;
+            regenerateBtn.style.display = 'inline-block';
+            regenerateBtn.innerHTML = '<i class="fas fa-redo"></i> Try Again';
+        }
+    }
 }
     
 // Initialize the enhanced editor when DOM is loaded
@@ -1520,7 +2164,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     try {
         window.problemEditor = new ProblemEditor();
-        window.problemEditor.init().catch(error => {
+        window.problemEditor.init().then(() => {
+            // Initialize AI functionality after main editor is ready
+            return window.problemEditor.initializeAI();
+        }).catch(error => {
             console.error('Failed to initialize Problem Editor async:', error);
         });
     } catch (error) {

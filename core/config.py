@@ -52,6 +52,15 @@ class Config:
                     'command': 'g++ -std=c++17 -O2 {src} -o {out}',
                     'timeout': 30
                 }
+            },
+            'ai': {
+                'openai_api_key': '',  # Set via environment variable or config
+                'base_url': '',  # Custom API endpoint (optional)
+                # Default model (can be overridden by OPENAI_MODEL env var)
+                'model': 'gemini-2.5-flash',
+                'max_tokens': 6144,  # Increased for longer responses with explanations
+                'temperature': 0.7,
+                'enabled': False  # Enable when API key is configured
             }
         }
 

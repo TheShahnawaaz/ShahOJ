@@ -12,3 +12,10 @@ web:
   debug: true
   host: 127.0.0.1
   port: 5001
+ai:
+  openai_api_key: ${OPENAI_API_KEY}  # Set via environment variable
+  base_url: ${OPENAI_BASE_URL}  # Custom API endpoint (optional)
+  model: ${OPENAI_MODEL}  # AI model to use (optional, defaults to gemini-2.5-flash)
+  max_tokens: ${OPENAI_MAX_TOKENS}  # Token limit (optional, defaults to 6144)
+  temperature: 0.7
+  enabled: false  # Will be auto-enabled when API key is provided

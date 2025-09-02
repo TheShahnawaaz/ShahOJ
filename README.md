@@ -4,14 +4,16 @@ A minimal, efficient competitive programming judge system that follows Codeforce
 
 ## Features
 
+- **AI-Powered Code Generation**: Automatically generate solutions, test generators, validators, and special judges using OpenAI GPT models (now with AI explanations!)
 - **Minimal Setup**: Adding a new problem requires only dropping input/output files and setting basic configuration
 - **Multiple Checker Types**: 
   - `diff` - Exact text matching (default)
   - `float` - Floating-point comparison with tolerance
   - `spj` - Special Judge for problems with multiple valid answers
 - **Resource Limits**: Configurable time and memory limits per problem
-- **Test Organization**: Separate pretests and system tests
+- **Test Organization**: Separate sample and system tests with comprehensive management
 - **Test Generation**: Python-based generators for creating large test cases
+- **Web-Based Problem Editor**: Complete problem creation and editing interface
 - **Single Language Focus**: Optimized for C++ submissions (easily extensible)
 
 ## Quick Start
@@ -21,6 +23,8 @@ A minimal, efficient competitive programming judge system that follows Codeforce
 - Python 3.6+
 - g++ with C++17 support
 - PyYAML
+- OpenAI API Key (optional, for AI code generation)
+- Custom AI API Endpoint (optional, supports OpenAI-compatible APIs like Google's Generative Language API)
 
 ### Installation
 
@@ -30,6 +34,12 @@ cd PocketOJ
 
 # Install dependencies
 pip install -r requirements.txt
+
+# Enable AI features (optional)
+export OPENAI_API_KEY="your-api-key-here"
+export OPENAI_BASE_URL="https://generativelanguage.googleapis.com/v1beta/openai"  # For Google's Generative Language API
+export OPENAI_MODEL="gemini-2.5-flash"  # AI model to use (optional, defaults to gemini-2.5-flash)
+export OPENAI_MAX_TOKENS="6144"  # Maximum tokens for AI responses (optional, defaults to 6144)
 
 # Make judge executable
 chmod +x judge/judge.py
