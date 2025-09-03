@@ -26,6 +26,277 @@
     
     <!-- Custom CSS -->
     <style>
+        /* CSS Variables for Theme Support */
+        :root {
+            /* Light mode (current) */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --navbar-bg: #0d6efd;
+            --card-bg: #ffffff;
+            --border-color: #dee2e6;
+            --footer-bg: #f8f9fa;
+            --footer-text: #6c757d;
+            
+            /* Dark mode */
+            --bg-primary-dark: #1a1a1a;
+            --bg-secondary-dark: #2d2d2d;
+            --text-primary-dark: #ffffff;
+            --text-secondary-dark: #b0b0b0;
+            --navbar-bg-dark: #0a4a8a;
+            --card-bg-dark: #2d2d2d;
+            --border-color-dark: #404040;
+            --footer-bg-dark: #2d2d2d;
+            --footer-text-dark: #b0b0b0;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1rem;
+            padding: 0.75rem 1rem;
+            margin: 0 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(132, 201, 232, 0.2);
+            color: #ffffff;
+            transform: translateY(-1px) scale(1.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .theme-toggle i {
+            transition: transform 0.5s ease;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .theme-toggle.rotating i {
+            transform: rotate(180deg);
+        }
+
+        .theme-toggle:focus {
+            outline: 2px solid rgba(132, 201, 232, 0.5);
+            outline-offset: 2px;
+        }
+
+        /* Dark Mode Styles */
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body.dark-mode {
+            background-color: var(--bg-primary-dark);
+            color: var(--text-primary-dark);
+        }
+
+        .dark-mode .navbar {
+            background-color: var(--navbar-bg-dark) !important;
+        }
+
+        .dark-mode .card {
+            background-color: var(--card-bg-dark);
+            border-color: var(--border-color-dark);
+            color: var(--text-primary-dark);
+        }
+
+        .dark-mode .text-muted {
+            color: var(--text-secondary-dark) !important;
+        }
+
+        .dark-mode .bg-light {
+            background-color: var(--bg-secondary-dark) !important;
+        }
+
+        .dark-mode footer {
+            background-color: var(--footer-bg-dark) !important;
+            color: var(--footer-text-dark) !important;
+        }
+
+        .dark-mode .sidebar {
+            background-color: var(--bg-secondary-dark) !important;
+        }
+
+        /* Ensure brand colors remain consistent in dark mode */
+        .dark-mode .shah-text {
+            background: linear-gradient(135deg,rgb(132, 201, 232) 0%, rgb(132, 201, 232) 25%, rgb(132, 201, 232) 50%, rgb(132, 201, 232) 75%, rgb(132, 201, 232) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Dark mode form and input styles */
+        .dark-mode .form-control {
+            background-color: var(--bg-secondary-dark);
+            border-color: var(--border-color-dark);
+            color: var(--text-primary-dark);
+        }
+
+        .dark-mode .form-control:focus {
+            background-color: var(--bg-secondary-dark);
+            border-color: rgb(132, 201, 232);
+            color: var(--text-primary-dark);
+            box-shadow: 0 0 0 0.2rem rgba(132, 201, 232, 0.25);
+        }
+
+        .dark-mode .btn-primary {
+            background-color: rgb(132, 201, 232);
+            border-color: rgb(132, 201, 232);
+        }
+
+        .dark-mode .btn-outline-primary {
+            color: rgb(132, 201, 232);
+            border-color: rgb(132, 201, 232);
+        }
+
+        .dark-mode .btn-outline-primary:hover {
+            background-color: rgb(132, 201, 232);
+            border-color: rgb(132, 201, 232);
+        }
+
+        /* Dark mode table styles */
+        .dark-mode .table {
+            color: var(--text-primary-dark);
+        }
+
+        .dark-mode .table-striped > tbody > tr:nth-of-type(odd) > td {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Dark mode alert styles */
+        .dark-mode .alert-info {
+            background-color: rgba(132, 201, 232, 0.1);
+            border-color: rgba(132, 201, 232, 0.3);
+            color: var(--text-primary-dark);
+        }
+
+        .dark-mode .alert-success {
+            background-color: rgba(40, 167, 69, 0.1);
+            border-color: rgba(40, 167, 69, 0.3);
+            color: var(--text-primary-dark);
+        }
+
+        .dark-mode .alert-warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            border-color: rgba(255, 193, 7, 0.3);
+            color: var(--text-primary-dark);
+        }
+
+        .dark-mode .alert-danger {
+            background-color: rgba(220, 53, 69, 0.1);
+            border-color: rgba(220, 53, 69, 0.3);
+            color: var(--text-primary-dark);
+        }
+
+        /* Dark mode dropdown styles */
+        .dark-mode .dropdown-menu {
+            background-color: var(--card-bg-dark);
+            border-color: var(--border-color-dark);
+        }
+
+        .dark-mode .dropdown-item {
+            color: var(--text-primary-dark);
+        }
+
+        .dark-mode .dropdown-item:hover {
+            background-color: rgba(132, 201, 232, 0.1);
+            color: var(--text-primary-dark);
+        }
+
+        /* Dark mode badge styles */
+        .dark-mode .badge.bg-light {
+            background-color: var(--bg-secondary-dark) !important;
+            color: var(--text-primary-dark) !important;
+        }
+
+        .dark-mode .badge.text-dark {
+            color: var(--text-primary-dark) !important;
+        }
+
+        /* Dark mode progress bar styles */
+        .dark-mode .progress {
+            background-color: var(--bg-secondary-dark);
+        }
+
+        /* Dark mode breadcrumb styles */
+        .dark-mode .breadcrumb {
+            background-color: var(--bg-secondary-dark);
+        }
+
+        .dark-mode .breadcrumb-item a {
+            color: rgb(132, 201, 232);
+        }
+
+        /* Dark mode modal styles */
+        .dark-mode .modal-content {
+            background-color: var(--card-bg-dark);
+            color: var(--text-primary-dark);
+        }
+
+        .dark-mode .modal-header {
+            border-bottom-color: var(--border-color-dark);
+        }
+
+        .dark-mode .modal-footer {
+            border-top-color: var(--border-color-dark);
+        }
+
+        /* Dark mode code and pre styles */
+        .dark-mode pre {
+            background-color: var(--bg-secondary-dark) !important;
+            color: var(--text-primary-dark);
+            border-color: var(--border-color-dark);
+        }
+
+        .dark-mode code {
+            background-color: var(--bg-secondary-dark) !important;
+            color: rgb(132, 201, 232);
+        }
+
+        /* Dark mode list group styles */
+        .dark-mode .list-group-item {
+            background-color: var(--card-bg-dark);
+            border-color: var(--border-color-dark);
+            color: var(--text-primary-dark);
+        }
+
+        /* Dark mode pagination styles */
+        .dark-mode .page-link {
+            background-color: var(--card-bg-dark);
+            border-color: var(--border-color-dark);
+            color: var(--text-primary-dark);
+        }
+
+        .dark-mode .page-link:hover {
+            background-color: rgba(132, 201, 232, 0.1);
+            border-color: rgb(132, 201, 232);
+            color: var(--text-primary-dark);
+        }
+
+        .dark-mode .page-item.active .page-link {
+            background-color: rgb(132, 201, 232);
+            border-color: rgb(132, 201, 232);
+        }
+
+        /* Responsive theme toggle */
+        @media (max-width: 991.98px) {
+            .theme-toggle {
+                margin: 0.5rem 0;
+                text-align: center;
+                display: block;
+                width: 100%;
+            }
+        }
+
         .navbar-brand {
             font-weight: bold;
             text-decoration: none !important;
@@ -232,6 +503,11 @@
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Theme toggle button -->
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" role="switch" aria-checked="false">
+                    <i class="fas fa-moon" id="themeIcon" aria-hidden="true"></i>
+                </button>
+                
                 <!-- Navigation items moved to the right -->
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
@@ -269,6 +545,99 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Dark Mode Toggle Script -->
+    <script>
+        // Monaco Editor theme update function
+        function updateMonacoTheme(theme) {
+            // Update all Monaco editors if they exist
+            if (typeof monaco !== 'undefined' && monaco.editor) {
+                const editors = monaco.editor.getEditors();
+                editors.forEach(editor => {
+                    editor.updateOptions({ theme: theme });
+                });
+            }
+            
+            // Also update any global Monaco editor instances
+            if (window.monacoEditorInstances) {
+                Object.values(window.monacoEditorInstances).forEach(instance => {
+                    if (instance.editor) {
+                        instance.editor.updateOptions({ theme: theme });
+                    }
+                });
+            }
+        }
+
+        // Dark mode toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            const body = document.body;
+            
+            // Check for saved theme preference or default to light mode
+            const currentTheme = localStorage.getItem('shahoj-theme') || 'light';
+            
+            // Apply saved theme on page load
+            if (currentTheme === 'dark') {
+                body.classList.add('dark-mode');
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+                themeToggle.setAttribute('aria-checked', 'true');
+                // Update Monaco theme if editors exist
+                setTimeout(() => updateMonacoTheme('vs-dark'), 100);
+            }
+            
+            // Handle theme toggle click
+            themeToggle.addEventListener('click', function() {
+                // Add rotation animation
+                themeToggle.classList.add('rotating');
+                
+                // Toggle dark mode
+                body.classList.toggle('dark-mode');
+                
+                // Update icon and save preference
+                if (body.classList.contains('dark-mode')) {
+                    themeIcon.classList.remove('fa-moon');
+                    themeIcon.classList.add('fa-sun');
+                    localStorage.setItem('shahoj-theme', 'dark');
+                    themeToggle.setAttribute('aria-checked', 'true');
+                    updateMonacoTheme('vs-dark');
+                } else {
+                    themeIcon.classList.remove('fa-sun');
+                    themeIcon.classList.add('fa-moon');
+                    localStorage.setItem('shahoj-theme', 'light');
+                    themeToggle.setAttribute('aria-checked', 'false');
+                    updateMonacoTheme('vs-light');
+                }
+                
+                // Remove rotation class after animation
+                setTimeout(() => {
+                    themeToggle.classList.remove('rotating');
+                }, 500);
+            });
+            
+            // Handle keyboard navigation (Enter and Space)
+            themeToggle.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    themeToggle.click();
+                }
+            });
+            
+            // Optional: Detect system theme preference
+            if (!localStorage.getItem('shahoj-theme')) {
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (prefersDark) {
+                    body.classList.add('dark-mode');
+                    themeIcon.classList.remove('fa-moon');
+                    themeIcon.classList.add('fa-sun');
+                    themeToggle.setAttribute('aria-checked', 'true');
+                    localStorage.setItem('shahoj-theme', 'dark');
+                    setTimeout(() => updateMonacoTheme('vs-dark'), 100);
+                }
+            }
+        });
+    </script>
     
     <!-- Custom JS -->
     {% block extra_js %}{% endblock %}
