@@ -16,6 +16,9 @@ A minimal, efficient competitive programming judge system that follows Codeforce
 - **Web-Based Problem Editor**: Complete problem creation and editing interface
 - **Single Language Focus**: Optimized for C++ submissions (easily extensible)
 
+### UI/Theme
+- **Dark Mode**: Toggle in navbar with smooth transitions, persistence, and system preference support
+
 ## Quick Start
 
 ### Prerequisites
@@ -44,6 +47,15 @@ export OPENAI_MAX_TOKENS="6144"  # Maximum tokens for AI responses (optional, de
 # Make judge executable
 chmod +x judge/judge.py
 ```
+
+## Theme System (Dark Mode)
+
+- A theme toggle button is available in the navbar between the logo and navigation items.
+- Clicking the button toggles between light and dark themes instantly with 0.3s transitions.
+- The app remembers your preference via localStorage and restores it on load.
+- If no preference is stored, the app follows the system preference (`prefers-color-scheme`).
+- Keyboard accessible: activate with Enter/Space; ARIA role `switch` is used with `aria-checked` updates.
+- Brand color `rgb(132, 201, 232)` remains consistent in both themes.
 
 ### Running Your First Problem
 
