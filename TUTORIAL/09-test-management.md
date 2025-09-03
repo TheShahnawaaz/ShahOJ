@@ -4,7 +4,7 @@ Effective test case management is crucial for maintaining high-quality competiti
 
 ## 🎯 Test Case Categories
 
-PocketOJ organizes test cases into two main categories:
+ShahOJ organizes test cases into two main categories:
 
 ### 1. Sample Tests (`tests/samples/`)
 - **Purpose**: Examples shown in the problem statement

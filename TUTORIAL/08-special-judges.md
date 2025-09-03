@@ -505,7 +505,7 @@ g++ -std=c++17 -O2 spj.cpp -o spj
 echo "test_input" | ./spj input.txt output.txt answer.txt
 ```
 
-### 2. PocketOJ Integration
+### 2. ShahOJ Integration
 
 The system automatically handles SPJ compilation and execution:
 
@@ -656,7 +656,7 @@ Before finalizing your SPJ:
 
 ### Integration
 - [ ] Compiles successfully with testlib.h
-- [ ] Works with PocketOJ's SPJ interface
+- [ ] Works with ShahOJ's SPJ interface
 - [ ] Tested with various solution outputs
 - [ ] Consistent with reference solution
 

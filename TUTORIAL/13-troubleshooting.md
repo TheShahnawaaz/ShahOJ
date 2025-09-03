@@ -1,6 +1,6 @@
 # Troubleshooting Guide
 
-Common issues and solutions when working with PocketOJ problems. This guide helps you diagnose and fix problems quickly.
+Common issues and solutions when working with ShahOJ problems. This guide helps you diagnose and fix problems quickly.
 
 ## 🚨 Problem Creation Issues
 

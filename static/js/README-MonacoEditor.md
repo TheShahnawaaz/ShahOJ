@@ -1,6 +1,6 @@
-# Monaco Editor Component for PocketOJ
+# Monaco Editor Component for ShahOJ
 
-A comprehensive, reusable Monaco Editor integration with advanced features for the PocketOJ competitive programming platform.
+A comprehensive, reusable Monaco Editor integration with advanced features for the ShahOJ competitive programming platform.
 
 ## 🚀 Features
 
@@ -340,4 +340,4 @@ To extend the component:
 
 ## 📄 License
 
-Part of the PocketOJ project. See main project license for details.
+Part of the ShahOJ project. See main project license for details.

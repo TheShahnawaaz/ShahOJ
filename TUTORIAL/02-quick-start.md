@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-Create your first PocketOJ problem in 10 minutes! This guide walks you through creating a simple "Sum of Two Numbers" problem.
+Create your first ShahOJ problem in 10 minutes! This guide walks you through creating a simple "Sum of Two Numbers" problem.
 
 ## 🎯 What We'll Build
 
@@ -11,7 +11,7 @@ Create your first PocketOJ problem in 10 minutes! This guide walks you through c
 
 ## 📋 Prerequisites
 
-- PocketOJ running locally (see main README for setup)
+- ShahOJ running locally (see main README for setup)
 - Basic understanding of Python
 - Text editor or IDE
 
@@ -222,7 +222,7 @@ if __name__ == '__main__':
 
 ## 🎉 Success!
 
-Congratulations! You've created your first PocketOJ problem. You should now see:
+Congratulations! You've created your first ShahOJ problem. You should now see:
 
 - Problem listed on the dashboard
 - Complete problem page with statement

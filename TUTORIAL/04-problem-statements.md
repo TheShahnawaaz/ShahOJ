@@ -1,6 +1,6 @@
 # Writing Problem Statements
 
-A well-written problem statement is crucial for creating engaging and clear competitive programming problems. This guide covers best practices for writing effective problem statements in PocketOJ.
+A well-written problem statement is crucial for creating engaging and clear competitive programming problems. This guide covers best practices for writing effective problem statements in ShahOJ.
 
 ## 📝 Statement Structure
 

@@ -1,10 +1,10 @@
 # Problem Structure
 
-Understanding the file organization and structure of PocketOJ problems is crucial for effective problem creation and management.
+Understanding the file organization and structure of ShahOJ problems is crucial for effective problem creation and management.
 
 ## 📁 Directory Structure
 
-Each problem in PocketOJ follows a standardized directory structure:
+Each problem in ShahOJ follows a standardized directory structure:
 
 ```
 problems/your-problem-slug/

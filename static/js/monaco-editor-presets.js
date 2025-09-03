@@ -1,5 +1,5 @@
 /**
- * Monaco Editor Presets for PocketOJ
+ * Monaco Editor Presets for ShahOJ
  * Pre-configured editor setups for common use cases
  */
 

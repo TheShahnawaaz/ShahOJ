@@ -1,5 +1,5 @@
 /**
- * Reusable Monaco Editor Component for PocketOJ
+ * Reusable Monaco Editor Component for ShahOJ
  * Supports C++, Python, Markdown with resizing, folding, and zoom features
  */
 class MonacoEditorComponent {

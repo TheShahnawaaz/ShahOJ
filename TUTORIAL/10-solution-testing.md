@@ -4,7 +4,7 @@ Testing C++ solutions against your problems is crucial for validating problem qu
 
 ## 🎯 Testing Overview
 
-Solution testing in PocketOJ involves:
+Solution testing in ShahOJ involves:
 
 1. **Compilation**: Compiling C++ code with appropriate flags
 2. **Execution**: Running solutions against test cases with resource limits

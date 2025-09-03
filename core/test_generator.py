@@ -1,5 +1,5 @@
 """
-Test case generation system for PocketOJ
+Test case generation system for ShahOJ
 """
 
 import os
@@ -27,7 +27,6 @@ class TestGenerator:
         """
         # Generate input using the problem's generator
         input_text = self._run_generator(case_num, seed)
-
 
         # Validate the generated input
         if not self._validate_input(input_text):

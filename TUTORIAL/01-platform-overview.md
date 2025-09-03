@@ -1,8 +1,8 @@
 # Platform Overview
 
-## What is PocketOJ?
+## What is ShahOJ?
 
-PocketOJ is a **Codeforces-style competitive programming judge system** designed for creating, managing, and testing competitive programming problems. It follows the standard stdin/stdout interface used in competitive programming contests.
+ShahOJ is a **Codeforces-style competitive programming judge system** designed for creating, managing, and testing competitive programming problems. It follows the standard stdin/stdout interface used in competitive programming contests.
 
 ## 🏗️ Architecture Overview
 
@@ -19,7 +19,7 @@ PocketOJ is a **Codeforces-style competitive programming judge system** designed
 ## 🎯 Core Concepts
 
 ### 1. File-Centric Approach
-Unlike traditional online judges that require complex configurations, PocketOJ uses a **file-centric approach**:
+Unlike traditional online judges that require complex configurations, ShahOJ uses a **file-centric approach**:
 - Problems are defined by their files (statement, solution, generator)
 - No rigid schemas or complex setup procedures
 - Maximum flexibility for problem creators
@@ -75,7 +75,7 @@ C++ Code → Compilation → Execution → Output Checking → Verdict
 
 ## 🎛️ Checker Types
 
-PocketOJ supports three types of output checking:
+ShahOJ supports three types of output checking:
 
 ### Exact Match (diff)
 ```yaml
