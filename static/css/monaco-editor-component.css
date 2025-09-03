@@ -137,6 +137,40 @@
 }
 
 /* Dark mode support */
+.dark-mode .monaco-editor-container {
+    border-color: #404040;
+    background: #1e1e1e;
+}
+
+.dark-mode .editor-resize-handle {
+    background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.1));
+}
+
+.dark-mode .editor-resize-handle:hover {
+    background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0.2));
+}
+
+.dark-mode .editor-resize-handle::before {
+    background: #666;
+    box-shadow: 0 2px 0 #666, 0 4px 0 #666;
+}
+
+.dark-mode .editor-resize-handle:hover::before {
+    background: rgb(132, 201, 232);
+    box-shadow: 0 2px 0 rgb(132, 201, 232), 0 4px 0 rgb(132, 201, 232);
+}
+
+.dark-mode .code-editor {
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    border-color: #404040;
+}
+
+.dark-mode .code-editor:focus {
+    box-shadow: 0 0 0 2px rgb(132, 201, 232);
+}
+
+/* System dark mode preference fallback */
 @media (prefers-color-scheme: dark) {
     .monaco-editor-container {
         border-color: #444;
