@@ -10,6 +10,25 @@ from pathlib import Path
 from typing import Dict, List, Tuple, Any
 
 
+def normalize_output(text: str) -> str:
+    """
+    Normalize output text for comparison by:
+    1. Stripping leading/trailing whitespace
+    2. Removing trailing spaces from each line
+    3. Removing empty lines
+    4. Ensuring consistent line endings
+    """
+    if not text:
+        return ""
+
+    # Strip overall and process each line
+    lines = text.strip().split('\n')
+    # Remove trailing spaces from each line and filter out empty lines
+    normalized_lines = [line.rstrip() for line in lines if line.strip()]
+
+    return '\n'.join(normalized_lines)
+
+
 class TestGenerator:
     """Generates test cases for competitive programming problems"""
 
@@ -98,12 +117,16 @@ class TestGenerator:
             # Save input file
             in_file = test_dir / f"{test_num:02d}.in"
             with open(in_file, 'w') as f:
-                f.write(test_case['input'] + '\n')
+                # Ensure consistent newline format
+                input_content = test_case['input'].strip()
+                f.write(input_content + '\n')
 
             # Save answer file
             ans_file = test_dir / f"{test_num:02d}.ans"
             with open(ans_file, 'w') as f:
-                f.write(test_case['answer'] + '\n')
+                # Ensure consistent newline format for answers
+                answer_normalized = normalize_output(test_case['answer'])
+                f.write(answer_normalized + '\n')
 
             test_num += 1
             total_saved += 1
@@ -135,15 +158,18 @@ class TestGenerator:
             else:
                 next_num = 1
 
-            # Save files
+            # Save files with consistent formatting
             in_file = test_dir / f"{next_num:02d}.in"
             ans_file = test_dir / f"{next_num:02d}.ans"
 
             with open(in_file, 'w') as f:
-                f.write(input_text.strip() + '\n')
+                input_content = input_text.strip()
+                f.write(input_content + '\n')
 
             with open(ans_file, 'w') as f:
-                f.write(answer_text.strip() + '\n')
+                # Normalize answer output for consistency
+                answer_normalized = normalize_output(answer_text)
+                f.write(answer_normalized + '\n')
 
             return True
 
@@ -197,7 +223,8 @@ class TestGenerator:
                 raise RuntimeError(
                     f"Reference solution failed: {result.stderr}")
 
-            return result.stdout
+            # Normalize output using consistent helper function
+            return normalize_output(result.stdout)
 
         except subprocess.TimeoutExpired:
             raise RuntimeError("Reference solution timed out")

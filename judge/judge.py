@@ -13,6 +13,25 @@ import json
 import yaml
 
 
+def normalize_output(text: str) -> str:
+    """
+    Normalize output text for comparison by:
+    1. Stripping leading/trailing whitespace
+    2. Removing trailing spaces from each line
+    3. Removing empty lines
+    4. Ensuring consistent line endings
+    """
+    if not text:
+        return ""
+
+    # Strip overall and process each line
+    lines = text.strip().split('\n')
+    # Remove trailing spaces from each line and filter out empty lines
+    normalized_lines = [line.rstrip() for line in lines if line.strip()]
+
+    return '\n'.join(normalized_lines)
+
+
 def set_limits(mem_mb, time_ms):
     # POSIX-only. For Windows, skip memory limit or use Job Objects.
     try:
@@ -46,8 +65,11 @@ def run_with_limits(exec_path, in_path, out_path, time_ms, mem_mb):
 def diff_check(ans_path, out_path):
     try:
         with open(ans_path, 'r', encoding='utf-8') as fa, open(out_path, 'r', encoding='utf-8') as fo:
-            a, b = fa.read().strip(), fo.read().strip()
-            return 'AC' if a == b else 'WA'
+            # Use consistent normalization function
+            expected = normalize_output(fa.read())
+            actual = normalize_output(fo.read())
+
+            return 'AC' if expected == actual else 'WA'
     except Exception:
         return 'JE'  # Judge Error if files can't be read
 

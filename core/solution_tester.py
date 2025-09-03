@@ -14,6 +14,25 @@ from typing import Dict, List, Any, Tuple, Optional
 from .config import config
 
 
+def normalize_output(text: str) -> str:
+    """
+    Normalize output text for comparison by:
+    1. Stripping leading/trailing whitespace
+    2. Removing trailing spaces from each line
+    3. Removing empty lines
+    4. Ensuring consistent line endings
+    """
+    if not text:
+        return ""
+
+    # Strip overall and process each line
+    lines = text.strip().split('\n')
+    # Remove trailing spaces from each line and filter out empty lines
+    normalized_lines = [line.rstrip() for line in lines if line.strip()]
+
+    return '\n'.join(normalized_lines)
+
+
 class SolutionResult:
     """Represents the result of testing a solution on a single test case"""
 
@@ -261,8 +280,11 @@ class SolutionTester:
                         'checker.type') or 'diff'
 
                     if checker_type == 'diff':
-                        # Exact match
-                        if actual_output == expected_output:
+                        # Normalize whitespace for comparison using our helper function
+                        expected_normalized = normalize_output(expected_output)
+                        actual_normalized = normalize_output(actual_output)
+
+                        if actual_normalized == expected_normalized:
                             return SolutionResult(test_num, 'AC', runtime_ms,
                                                   input_content=input_content,
                                                   expected_output=expected_output,
