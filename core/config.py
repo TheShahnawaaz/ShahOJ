@@ -1,5 +1,5 @@
 """
-Configuration management for PocketOJ
+Configuration management for ShahOJ
 """
 
 import os

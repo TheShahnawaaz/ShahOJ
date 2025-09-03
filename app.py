@@ -1,10 +1,10 @@
 """
-Flask web application for PocketOJ extensible judge system
+Flask web application for ShahOJ extensible judge system
 """
 
 from core.config import config
 from core.problem_manager import ProblemManager
-from flask import Flask, render_template, jsonify, request, redirect, url_for, flash
+from flask import Flask, render_template, jsonify, request, redirect, url_for, flash, send_from_directory
 import os
 import sys
 import traceback
@@ -30,6 +30,16 @@ def dashboard():
         return render_template('pages/dashboard.html', problems=problems, stats=stats)
     except Exception as e:
         return f"Error loading dashboard: {e}", 500
+
+
+@app.route('/favicon.ico')
+def favicon():
+    """Serve favicon.ico from static/images directory"""
+    return send_from_directory(
+        os.path.join(app.root_path, 'static', 'images'),
+        'favicon.ico',
+        mimetype='image/vnd.microsoft.icon'
+    )
 
 
 @app.route('/playground')
@@ -1174,7 +1184,7 @@ if __name__ == '__main__':
     # Default to False for production safety
     debug = config.get('web.debug', False)
 
-    print(f"Starting PocketOJ web interface...")
+    print(f"Starting ShahOJ web interface...")
     print(f"Dashboard: http://{host}:{port}/")
     print(f"API: http://{host}:{port}/api/problems")
 

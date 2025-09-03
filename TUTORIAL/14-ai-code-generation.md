@@ -1,6 +1,6 @@
 # AI Code Generation
 
-PocketOJ includes powerful AI-powered code generation features that can automatically create reference solutions, test generators, input validators, and special judges based on your problem statements.
+ShahOJ includes powerful AI-powered code generation features that can automatically create reference solutions, test generators, input validators, and special judges based on your problem statements.
 
 ## 💡 Enhanced AI Experience
 
@@ -108,7 +108,7 @@ The system uses sophisticated prompts tailored to each file type:
 
 ### Test Generator Prompts
 - Creates diverse test patterns (small, medium, large, edge cases)
-- Implements the standard PocketOJ generator interface
+- Implements the standard ShahOJ generator interface
 - Generates comprehensive test coverage
 - Uses reproducible random generation with seeds
 
@@ -318,7 +318,7 @@ ai:
 ### Code Review Process
 1. **Functionality**: Does it solve the problem correctly?
 2. **Efficiency**: Is the algorithm appropriate for constraints?
-3. **Style**: Does it follow PocketOJ conventions?
+3. **Style**: Does it follow ShahOJ conventions?
 4. **Edge Cases**: Are boundary conditions handled?
 5. **Testing**: Does it pass all generated test cases?
 

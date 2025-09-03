@@ -1,5 +1,5 @@
 """
-Solution testing system for PocketOJ
+Solution testing system for ShahOJ
 Compiles and tests C++ solutions against problem test cases
 """
 

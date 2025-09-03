@@ -140,7 +140,7 @@ CRITICAL: Return ONLY the requested content in the 'code' field. Use proper math
     def _build_solution_prompt(self, problem_statement: str) -> str:
         """Build prompt for solution generation"""
         return f"""
-Based on the following problem statement, generate a Python reference solution that follows PocketOJ standards.
+Based on the following problem statement, generate a Python reference solution that follows ShahOJ standards.
 
 PROBLEM STATEMENT:
 {problem_statement}
@@ -180,7 +180,7 @@ Provide the complete Python code in the 'code' field. Optionally include a brief
     def _build_generator_prompt(self, problem_statement: str) -> str:
         """Build prompt for generator creation"""
         return f"""
-Based on the following problem statement, generate a Python test case generator that follows PocketOJ standards.
+Based on the following problem statement, generate a Python test case generator that follows ShahOJ standards.
 
 Note: When referencing mathematical variables in comments, use proper notation like aᵢ, n, m instead of A_i, N, M.
 
@@ -238,7 +238,7 @@ Generate ONLY the Python code without any explanation, markdown formatting, or c
     def _build_validator_prompt(self, problem_statement: str) -> str:
         """Build prompt for validator creation"""
         return f"""
-Based on the following problem statement, generate a Python input validator that follows PocketOJ standards.
+Based on the following problem statement, generate a Python input validator that follows ShahOJ standards.
 
 PROBLEM STATEMENT:
 {problem_statement}
@@ -289,7 +289,7 @@ Generate ONLY the Python code without any explanation, markdown formatting, or c
     def _build_spj_prompt(self, problem_statement: str) -> str:
         """Build prompt for special judge creation"""
         return f"""
-Based on the following problem statement, generate a C++ Special Judge (SPJ) using testlib.h that follows PocketOJ standards.
+Based on the following problem statement, generate a C++ Special Judge (SPJ) using testlib.h that follows ShahOJ standards.
 
 PROBLEM STATEMENT:
 {problem_statement}

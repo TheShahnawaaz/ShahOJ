@@ -1,4 +1,4 @@
-# PocketOJ - Codeforces-Style Competitive Programming Judge
+# ShahOJ - Codeforces-Style Competitive Programming Judge
 
 A minimal, efficient competitive programming judge system that follows Codeforces conventions (stdin/stdout). Designed for minimal per-problem setup while supporting advanced features like Special Judges (SPJ), time/memory limits, and test generation.
 
@@ -30,7 +30,7 @@ A minimal, efficient competitive programming judge system that follows Codeforce
 
 ```bash
 # Clone or download the project
-cd PocketOJ
+cd ShahOJ
 
 # Install dependencies
 pip install -r requirements.txt

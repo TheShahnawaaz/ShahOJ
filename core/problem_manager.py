@@ -1,5 +1,5 @@
 """
-Problem management system for PocketOJ - New File-Centric Architecture
+Problem management system for ShahOJ - New File-Centric Architecture
 """
 
 import os

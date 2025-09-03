@@ -1,11 +1,11 @@
-# PocketOJ Tutorial
+# ShahOJ Tutorial
 
-Welcome to the comprehensive PocketOJ tutorial! This guide will teach you everything you need to know about creating and managing competitive programming problems on the PocketOJ platform.
+Welcome to the comprehensive ShahOJ tutorial! This guide will teach you everything you need to know about creating and managing competitive programming problems on the ShahOJ platform.
 
 ## 📚 Tutorial Contents
 
 ### Getting Started
-- [**Platform Overview**](01-platform-overview.md) - Understanding PocketOJ architecture and concepts
+- [**Platform Overview**](01-platform-overview.md) - Understanding ShahOJ architecture and concepts
 - [**Quick Start Guide**](02-quick-start.md) - Create your first problem in 10 minutes
 - [**Problem Structure**](03-problem-structure.md) - Understanding the file organization
 
@@ -28,7 +28,7 @@ Welcome to the comprehensive PocketOJ tutorial! This guide will teach you everyt
 
 ## 🚀 Quick Navigation
 
-**New to PocketOJ?** Start with [Platform Overview](01-platform-overview.md) → [Quick Start Guide](02-quick-start.md)
+**New to ShahOJ?** Start with [Platform Overview](01-platform-overview.md) → [Quick Start Guide](02-quick-start.md)
 
 **Want to create a problem?** Go to [Problem Structure](03-problem-structure.md) → [AI Code Generation](14-ai-code-generation.md) → [Test Management](09-test-management.md)
 
@@ -60,9 +60,9 @@ Each tutorial includes:
 
 ## 🔗 Additional Resources
 
-- [PocketOJ Dashboard](/) - Main application interface
+- [ShahOJ Dashboard](/) - Main application interface
 - [Create New Problem](/create-problem) - Problem creation wizard
-- [GitHub Repository](https://github.com/your-repo/PocketOJ) - Source code and issues
+- [GitHub Repository](https://github.com/your-repo/ShahOJ) - Source code and issues
 
 ---
 
