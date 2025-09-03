@@ -225,6 +225,140 @@
         border-radius: 4px;
         font-size: 0.9em;
     }
+
+    /* Sortable Table Headers */
+    .sortable-header {
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+        transition: var(--transition);
+        padding-right: 2rem !important;
+    }
+
+    .sortable-header:hover {
+        background-color: #e9ecef !important;
+        color: var(--primary-color);
+    }
+
+    .sort-icon {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.75rem;
+        opacity: 0.5;
+        transition: var(--transition);
+    }
+
+    .sortable-header:hover .sort-icon {
+        opacity: 0.8;
+    }
+
+    .sortable-header.sort-asc .sort-icon {
+        opacity: 1;
+        color: var(--primary-color);
+    }
+
+    .sortable-header.sort-desc .sort-icon {
+        opacity: 1;
+        color: var(--primary-color);
+    }
+
+    /* Hide default sort icons and show active ones */
+    .sort-icon .fa-sort {
+        display: inline;
+    }
+
+    .sort-icon .fa-sort-up,
+    .sort-icon .fa-sort-down {
+        display: none;
+    }
+
+    .sortable-header.sort-asc .sort-icon .fa-sort {
+        display: none;
+    }
+
+    .sortable-header.sort-asc .sort-icon .fa-sort-up {
+        display: inline;
+    }
+
+    .sortable-header.sort-desc .sort-icon .fa-sort {
+        display: none;
+    }
+
+    .sortable-header.sort-desc .sort-icon .fa-sort-down {
+        display: inline;
+    }
+
+    /* Enhanced Table Row Animations */
+    .table tbody tr {
+        position: relative;
+        will-change: transform;
+    }
+
+    /* Smooth row transitions during reordering */
+    .table tbody tr.reordering {
+        z-index: 1;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        border-radius: 4px;
+    }
+
+    /* Enhanced hover effect during animations */
+    .table tbody tr:hover {
+        background-color: rgba(0,123,255,0.08) !important;
+        transition: background-color 0.2s ease;
+    }
+
+    /* Prevent layout shift during animations */
+    .table-responsive {
+        overflow: visible;
+        position: relative;
+    }
+
+    /* Add a subtle sorting indicator */
+    .table.sorting {
+        position: relative;
+    }
+
+    .table.sorting::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+        opacity: 0.6;
+        animation: sortingIndicator 0.6s ease-in-out;
+    }
+
+    @keyframes sortingIndicator {
+        0% {
+            transform: scaleX(0);
+        }
+        50% {
+            transform: scaleX(1);
+        }
+        100% {
+            transform: scaleX(0);
+        }
+    }
+
+    /* Stagger animation classes */
+    .table tbody tr.animate-in {
+        animation: slideInRow 0.4s cubic-bezier(0.2, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes slideInRow {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 </style>
 {% endblock %}
 
@@ -292,19 +426,51 @@
         <div class="card-body">
             {% if problems %}
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover" id="problemsTable">
                     <thead>
                         <tr>
-                            <th>Title</th>
-                            <th>Difficulty</th>
-                            <th>Tags</th>
-                            <th>Created</th>
+                            <th class="sortable-header" data-column="title" data-type="text">
+                                Title
+                                <span class="sort-icon">
+                                    <i class="fas fa-sort"></i>
+                                    <i class="fas fa-sort-up"></i>
+                                    <i class="fas fa-sort-down"></i>
+                                </span>
+                            </th>
+                            <th class="sortable-header" data-column="difficulty" data-type="difficulty">
+                                Difficulty
+                                <span class="sort-icon">
+                                    <i class="fas fa-sort"></i>
+                                    <i class="fas fa-sort-up"></i>
+                                    <i class="fas fa-sort-down"></i>
+                                </span>
+                            </th>
+                            <th class="sortable-header" data-column="tags" data-type="text">
+                                Tags
+                                <span class="sort-icon">
+                                    <i class="fas fa-sort"></i>
+                                    <i class="fas fa-sort-up"></i>
+                                    <i class="fas fa-sort-down"></i>
+                                </span>
+                            </th>
+                            <th class="sortable-header" data-column="created" data-type="date">
+                                Created
+                                <span class="sort-icon">
+                                    <i class="fas fa-sort"></i>
+                                    <i class="fas fa-sort-up"></i>
+                                    <i class="fas fa-sort-down"></i>
+                                </span>
+                            </th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for problem in problems %}
-                        <tr class="clickable-row" onclick="location.href='{{ url_for('problem_detail', slug=problem.slug) }}'">
+                        <tr class="clickable-row" onclick="location.href='{{ url_for('problem_detail', slug=problem.slug) }}'"
+                            data-title="{{ (problem.config.get('title') or problem.slug)|lower }}"
+                            data-difficulty="{{ problem.config.get('difficulty') or 'Medium' }}"
+                            data-tags="{{ (problem.config.get('tags') or [])|join(', ')|lower }}"
+                            data-created="{{ problem.config.get('created_date') or '1900-01-01' }}">
                             <td>
                                 <div class="problem-title-link">
                                     {{ problem.config.get('title') or problem.slug }}
@@ -368,14 +534,28 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Table Sorter JavaScript -->
+<script src="{{ url_for('static', filename='js/table-sorter.js') }}"></script>
+
 <script>
-// Add some basic JavaScript functionality
+// Dashboard JavaScript functionality
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize table sorting for problems table
+    let problemTableSorter = null;
+    const problemsTable = document.getElementById('problemsTable');
+    
+    if (problemsTable) {
+        problemTableSorter = window.initTableSorter('problemsTable');
+        
+        // Default sort by creation date (newest first)
+        problemTableSorter.sort('created', 'desc');
+    }
+    
     // Add click handlers for action buttons
     const actionButtons = document.querySelectorAll('.btn-group .btn');
     actionButtons.forEach(button => {
         if (button.title) {
-            // Add tooltip functionality if needed
+            // Add tooltip functionality
             button.setAttribute('data-bs-toggle', 'tooltip');
             button.setAttribute('data-bs-placement', 'top');
         }
