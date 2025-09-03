@@ -26,6 +26,33 @@
     
     <!-- Custom CSS -->
     <style>
+        :root {
+            /* Light mode (current) */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --navbar-bg: #0d6efd; /* Bootstrap primary */
+            --card-bg: #ffffff;
+            --border-color: rgba(0, 0, 0, 0.125);
+
+            /* Dark mode */
+            --bg-primary-dark: #0f172a; /* slate-900 */
+            --bg-secondary-dark: #111827; /* slate-800 */
+            --text-primary-dark: #e5e7eb; /* gray-200 */
+            --text-secondary-dark: #9ca3af; /* gray-400 */
+            --navbar-bg-dark: #0b1220; /* deep navy */
+            --card-bg-dark: #0f172a; /* slate-900 */
+            --border-color-dark: rgba(132, 201, 232, 0.25);
+        }
+
+        /* Base theme bindings */
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
         .navbar-brand {
             font-weight: bold;
             text-decoration: none !important;
@@ -78,6 +105,7 @@
             padding: 0.75rem 0;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             border-bottom: 2px solid rgba(132, 201, 232, 0.3);
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
         
         .nav-link-enhanced {
@@ -208,6 +236,66 @@
         .navbar-nav .nav-link.active:hover {
             background-color: rgba(255, 255, 255, 0.3);
         }
+
+        /* Theme toggle styles */
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1rem;
+            padding: 0.75rem 1rem;
+            margin: 0 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(132, 201, 232, 0.2);
+            color: #ffffff;
+            transform: translateY(-1px) scale(1.1);
+        }
+
+        .theme-toggle i {
+            transition: transform 0.5s ease;
+        }
+
+        .theme-toggle.rotating i {
+            transform: rotate(180deg);
+        }
+
+        /* Dark mode rules */
+        body.dark-mode {
+            background-color: var(--bg-primary-dark);
+            color: var(--text-primary-dark);
+        }
+
+        .dark-mode .navbar {
+            background-color: var(--navbar-bg-dark) !important;
+            border-bottom-color: var(--border-color-dark);
+        }
+
+        .dark-mode .card {
+            background-color: var(--card-bg-dark);
+            border-color: var(--border-color-dark);
+            color: var(--text-primary-dark);
+        }
+
+        .dark-mode .text-muted {
+            color: var(--text-secondary-dark) !important;
+        }
+
+        .dark-mode .bg-light {
+            background-color: var(--bg-secondary-dark) !important;
+        }
+
+        /* Ensure brand colors remain consistent */
+        .dark-mode .shah-text {
+            background: linear-gradient(135deg,rgb(132, 201, 232) 0%, rgb(132, 201, 232) 25%, rgb(132, 201, 232) 50%, rgb(132, 201, 232) 75%, rgb(132, 201, 232) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -232,6 +320,10 @@
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Theme toggle button -->
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" role="switch" aria-checked="false">
+                    <i class="fas fa-moon" id="themeIcon" aria-hidden="true"></i>
+                </button>
                 <!-- Navigation items moved to the right -->
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
@@ -269,6 +361,72 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Dark mode toggle functionality with persistence and accessibility
+    document.addEventListener('DOMContentLoaded', function() {
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const body = document.body;
+
+        function applyTheme(theme) {
+            const isDark = theme === 'dark';
+            body.classList.toggle('dark-mode', isDark);
+            themeToggle?.setAttribute('aria-checked', String(isDark));
+            if (isDark) {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            } else {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            }
+        }
+
+        // Determine initial theme: saved preference or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+        applyTheme(initialTheme);
+
+        // Listen for system preference changes (nice-to-have)
+        if (window.matchMedia) {
+            try {
+                const media = window.matchMedia('(prefers-color-scheme: dark)');
+                if (typeof media.addEventListener === 'function') {
+                    media.addEventListener('change', (e) => {
+                        const stored = localStorage.getItem('theme');
+                        if (!stored) {
+                            applyTheme(e.matches ? 'dark' : 'light');
+                        }
+                    });
+                } else if (typeof media.addListener === 'function') {
+                    media.addListener((e) => {
+                        const stored = localStorage.getItem('theme');
+                        if (!stored) {
+                            applyTheme(e.matches ? 'dark' : 'light');
+                        }
+                    });
+                }
+            } catch (err) {}
+        }
+
+        function toggleTheme() {
+            themeToggle.classList.add('rotating');
+            const makeDark = !body.classList.contains('dark-mode');
+            applyTheme(makeDark ? 'dark' : 'light');
+            localStorage.setItem('theme', makeDark ? 'dark' : 'light');
+            setTimeout(() => themeToggle.classList.remove('rotating'), 500);
+        }
+
+        themeToggle?.addEventListener('click', toggleTheme);
+        // Keyboard support
+        themeToggle?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleTheme();
+            }
+        });
+    });
+    </script>
     
     <!-- Custom JS -->
     {% block extra_js %}{% endblock %}
