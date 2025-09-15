@@ -214,6 +214,28 @@ Use for additional clarifications:
 - Use `a[i]` for array elements
 ```
 
+### LaTeX Math Support
+ShahOJ renders mathematical formulas using [KaTeX](https://katex.org). Use `$...$` for inline expressions and `$$...$$` for display math.
+
+**Inline example**
+```markdown
+Euler's identity: $e^{i\pi} + 1 = 0$
+```
+
+**Block example**
+```markdown
+$$
+\sum_{i=1}^{n} i = \frac{n(n+1)}{2}
+$$
+```
+
+**Complex formatting**
+```markdown
+$$
+\underbrace{f(k)}_{\text{maybe huge in }k} \times \underbrace{n^{c}}_{\text{polynomial in input size}}
+$$
+```
+
 ## 📚 Problem Types and Templates
 
 ### 1. Array Problems

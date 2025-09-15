@@ -392,7 +392,7 @@ Create a complete markdown document with the following structure:
 ## Explanation
 [Brief explanation of sample cases if helpful]
 
-CRITICAL: Use proper mathematical notation throughout (a₁, a₂, ..., aₙ, 10⁹, ≤, ≥). Return complete markdown in the 'code' field.
+CRITICAL: Use proper mathematical notation throughout (a₁, a₂, ..., aₙ, 10⁹, ≤, ≥). Use LaTeX for all math expressions – `$...$` for inline math and `$$...$$` for block math. Return complete markdown in the 'code' field.
 """
 
 
