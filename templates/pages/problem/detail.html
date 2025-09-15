@@ -129,6 +129,18 @@
         font-weight: 600;
     }
 
+    /* KaTeX Block Math Centering - Using our custom container */
+    .markdown-content .math-display-container {
+        text-align: center !important;
+        margin: 1rem 0 !important;
+        display: block !important;
+        width: 100% !important;
+    }
+    
+    .markdown-content .math-display-container .katex {
+        display: inline-block !important;
+    }
+
     .btn-enhanced:hover {
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -358,19 +370,24 @@ function loadProblemStatement() {
         .then(data => {
             const statementDiv = document.getElementById('problemStatement');
             if (data.success) {
-                const htmlContent = marked.parse(data.statement);
-                statementDiv.innerHTML = `<div class="markdown-content">${htmlContent}</div>`;
+                // Use LaTeX-aware markdown conversion
+                const htmlContent = convertMarkdownWithLatex(data.statement);
+                statementDiv.innerHTML = htmlContent;
                 enhanceCodeBlocks(statementDiv);
                 if (window.renderMathInElement) {
                     renderMathInElement(statementDiv, {
                         delimiters: [
                             { left: '$$', right: '$$', display: true },
-                            { left: '\\(', right: '\\)', display: false },
                             { left: '\\[', right: '\\]', display: true },
+                            { left: '\\(', right: '\\)', display: false },
                             { left: '$', right: '$', display: false }
                         ],
-                        throwOnError: false
+                        throwOnError: false,
+                        displayMode: false,
+                        output: 'html',
+                        strict: false
                     });
+                    
                 }
             } else {
                 statementDiv.innerHTML = `
@@ -394,6 +411,56 @@ function loadProblemStatement() {
                 <p class="text-muted">{{ problem.config.get('description', 'No description available.') }}</p>
             `;
         });
+}
+
+function convertMarkdownWithLatex(markdown) {
+    // Store LaTeX expressions with their placeholders
+    const latexMap = new Map();
+    let text = markdown;
+    
+    // Protect block math $$...$$
+    text = text.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
+        const placeholder = `LATEXBLOCK${Date.now()}${Math.random()}LATEXBLOCK`;
+        latexMap.set(placeholder, match);
+        return placeholder;
+    });
+    
+    // Protect inline math $...$
+    text = text.replace(/\$([^$\n]+?)\$/g, (match) => {
+        const placeholder = `LATEXINLINE${Date.now()}${Math.random()}LATEXINLINE`;
+        latexMap.set(placeholder, match);
+        return placeholder;
+    });
+    
+    // Protect LaTeX delimited expressions \(...\) and \[...\]
+    text = text.replace(/\\\([\s\S]*?\\\)/g, (match) => {
+        const placeholder = `LATEXDELIM${Date.now()}${Math.random()}LATEXDELIM`;
+        latexMap.set(placeholder, match);
+        return placeholder;
+    });
+    
+    text = text.replace(/\\\[[\s\S]*?\\\]/g, (match) => {
+        const placeholder = `LATEXDELIM${Date.now()}${Math.random()}LATEXDELIM`;
+        latexMap.set(placeholder, match);
+        return placeholder;
+    });
+    
+    // Process markdown with marked.js
+    let html = marked.parse(text);
+    
+    // Restore LaTeX expressions with proper wrapping
+    for (const [placeholder, latexContent] of latexMap) {
+        let replacement = latexContent;
+        
+        // Wrap block math ($$...$$ and \[...\]) in a centering container
+        if (latexContent.startsWith('$$') || latexContent.startsWith('\\[')) {
+            replacement = `<div class="math-display-container">${latexContent}</div>`;
+        }
+        
+        html = html.replace(new RegExp(placeholder, 'g'), replacement);
+    }
+    
+    return `<div class="markdown-content">${html}</div>`;
 }
 
 function enhanceCodeBlocks(container) {

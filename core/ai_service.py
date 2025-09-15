@@ -420,6 +420,20 @@ KATEX ERROR PREVENTION (CRITICAL):
 
 Keep the final output as clean markdown with KaTeX-ready LaTeX.
 
+MARKDOWN TABLES (when appropriate):
+- Use tables to organize complex information, constraints, or comparisons clearly.
+- Tables work well for: input/output formats, complexity analysis, test case explanations, algorithm comparisons.
+- Standard markdown table syntax: `| Header 1 | Header 2 |` with `|---|---|` separator.
+- You can include inline math in table cells: `| Algorithm | Complexity | Notes |`
+- Example:
+```
+| Operation | Time Complexity | Space Complexity |
+|-----------|-----------------|------------------|
+| Search | $O(\log n)$ | $O(1)$ |
+| Insert | $O(\log n)$ | $O(1)$ |
+```
+- Avoid block math (`$$...$$`) inside table cells; use inline math (`$...$`) instead.
+
 Return the complete markdown in the 'code' field only.
 """
 
