@@ -392,7 +392,35 @@ Create a complete markdown document with the following structure:
 ## Explanation
 [Brief explanation of sample cases if helpful]
 
-CRITICAL: Use proper mathematical notation throughout (a₁, a₂, ..., aₙ, 10⁹, ≤, ≥). Use LaTeX for all math expressions – `$...$` for inline math and `$$...$$` for block math. Return complete markdown in the 'code' field.
+KATEX/LaTeX RENDERING RULES (CRITICAL):
+- Use LaTeX for ALL math so it renders with KaTeX on the site.
+- Inline math: wrap in `$...$` (preferred). Block math: wrap in `$$...$$` on their own lines.
+- The renderer also supports `\( ... \)` for inline and `\[ ... \]` for block, but prefer `$...$` and `$$...$$`.
+- Inside math, use LaTeX subscripts/superscripts (`a_i`, `10^9`) instead of mixed Unicode. In prose (outside math), you may still write a₁, a₂, … for readability.
+- Use standard LaTeX commands supported by KaTeX, for example:
+  • Fractions: `\frac{{a}}{{b}}`, Roots: `\sqrt{{x}}`, Ceil/Floor: `\lceil x \rceil`, `\lfloor x \rfloor`.
+  • Sums/Products: `\sum_{{i=1}}^n`, `\prod_{{i=1}}^n`.
+  • Sets/Intervals: `\{{ x \in \mathbb{{Z}} : \dots \}}`, `\left[0, 1\right)`.
+  • Piecewise: `\begin{{cases}} 0 & x < 0 \\ 1 & x \ge 0 \end{{cases}}`.
+  • Alignment: `\begin{{aligned}} a &= b \\ c &= d \end{{aligned}}`.
+  • Matrices: `\begin{{bmatrix}} 1 & 2 \\ 3 & 4 \end{{bmatrix}}`.
+  • Complexity/logs: `O(n \\log n)`, `\\max`, `\\min`.
+- Do NOT wrap math in markdown code fences. Code fences are only for source code snippets.
+- Avoid dollar signs inside code blocks. Put mathematical expressions outside code blocks so they render.
+- When writing constraints, prefer inline math, e.g.: `1 \\le n \\le 10^5`, `-10^9 \\le a_i \\le 10^9`.
+
+KATEX ERROR PREVENTION (CRITICAL):
+- NEVER leave math expressions incomplete or unmatched (e.g., `$x^2` without closing `$`).
+- NEVER mix math and non-math content inside delimiters (e.g., `$x = 5$ and then more text` should be `$x = 5$ and then more text`).
+- NEVER use unsupported LaTeX commands. Stick to basic KaTeX-supported constructs.
+- ALWAYS escape backslashes properly in special contexts: `\\log`, `\\max`, `\\min`, `\\le`, `\\ge`.
+- NEVER use nested math delimiters (e.g., `$...$...$...$` should be separate expressions).
+- ALWAYS validate that opening and closing delimiters match exactly.
+- When in doubt, test simple expressions first: `$x + y$`, `$n^2$`, `$\sum_{{i=1}}^n a_i$`.
+
+Keep the final output as clean markdown with KaTeX-ready LaTeX.
+
+Return the complete markdown in the 'code' field only.
 """
 
 
