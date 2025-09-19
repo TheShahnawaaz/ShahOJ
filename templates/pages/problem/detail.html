@@ -19,16 +19,16 @@
         --transition: all 0.3s ease;
     }
 
-    body {
-        background-color: #f5f7fa;
-    }
+    body { background-color: var(--primary-bg); }
 
     /* Enhanced Layout */
     .edit-container {
-        background: white;
+        background: var(--card-bg);
         border-radius: var(--border-radius);
         box-shadow: var(--box-shadow);
         margin-bottom: 2rem;
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
     }
 
     /* Progress Bar */
@@ -54,7 +54,7 @@
     /* Markdown Content Styling */
     .markdown-content {
         line-height: 1.6;
-        color: #333;
+        color: var(--text-primary);
     }
 
     .markdown-content h1,
@@ -63,19 +63,13 @@
     .markdown-content h4,
     .markdown-content h5,
     .markdown-content h6 {
-        color: #2c3e50;
+        color: var(--text-primary);
         font-weight: 600;
     }
 
-    .markdown-content h1 {
-        border-bottom: 2px solid #e9ecef;
-        padding-bottom: 0.5rem;
-    }
+    .markdown-content h1 { border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
 
-    .markdown-content h2 {
-        border-bottom: 1px solid #e9ecef;
-        padding-bottom: 0.3rem;
-    }
+    .markdown-content h2 { border-bottom: 1px solid var(--border-color); padding-bottom: 0.3rem; }
 
     .markdown-content code {
         font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
@@ -83,11 +77,29 @@
     }
 
     .markdown-content pre {
-        background-color: #f8f9fa !important;
-        border: 1px solid #e9ecef !important;
+        background-color: var(--secondary-bg) !important;
+        border: 1px solid var(--border-color) !important;
         font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
         font-size: 0.9em;
         overflow-x: auto;
+    }
+
+    /* Code blocks styling - override Bootstrap's bg-light in dark mode */
+    .code-block-container pre {
+        background-color: var(--code-bg) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    [data-theme="dark"] .code-block-container pre.bg-light {
+        background-color: #2d2d30 !important;
+        border-color: #3e3e42 !important;
+        color: #cccccc !important;
+    }
+    
+    [data-theme="dark"] .code-block-container pre code {
+        color: #cccccc !important;
+        background: transparent !important;
     }
 
     .markdown-content ul,
@@ -149,14 +161,17 @@
     .card {
         border-radius: var(--border-radius);
         box-shadow: var(--box-shadow);
-        border: 1px solid #e9ecef;
+        border: 1px solid var(--border-color);
         margin-bottom: 1.5rem;
+        background: var(--card-bg);
+        color: var(--text-primary);
     }
 
     .card-header {
-        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-        border-bottom: 1px solid #dee2e6;
+        background: var(--secondary-bg);
+        border-bottom: 1px solid var(--border-color);
         font-weight: 600;
+        color: var(--text-primary);
     }
 
     .nav-tabs {
@@ -185,10 +200,23 @@
     }
 
     .tab-content {
-        background: white;
+        background: var(--card-bg);
         border-radius: 0 0 var(--border-radius) var(--border-radius);
         box-shadow: var(--box-shadow);
+        color: var(--text-primary);
     }
+
+    /* File Status list-group styling */
+    .list-group-item {
+        background-color: var(--card-bg) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    .list-group.list-group-flush .list-group-item {
+        background-color: var(--card-bg) !important;
+    }
+    .list-group-item .text-muted { color: var(--text-secondary) !important; }
+    [data-theme="dark"] .badge.bg-light { background-color: #3c3c3c !important; color: #cccccc !important; border: 1px solid var(--border-color) !important; }
 
     .markdown-content {
         line-height: 1.6;

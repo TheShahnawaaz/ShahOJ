@@ -23,13 +23,14 @@
         --transition: all 0.3s ease;
     }
 
+    /* Respect global theme background */
     body {
-        background-color: #f5f7fa;
+        background-color: var(--primary-bg);
     }
 
     /* Enhanced Layout */
     .sidebar-container {
-        background: white;
+        background: var(--card-bg);
         border-radius: var(--border-radius);
         box-shadow: var(--box-shadow);
         border: none;
@@ -77,32 +78,32 @@
         border-radius: var(--border-radius);
         box-shadow: var(--box-shadow);
         transition: var(--transition);
-        background: white;
+        background: var(--card-bg);
     }
 
     /* Quick Test Input/Output Styling */
     #quickTestInput {
-        background-color: #ffffff !important;
-        color: #212529 !important;
-        border: 1px solid #ced4da !important;
+        background-color: var(--input-bg) !important;
+        color: var(--text-primary) !important;
+        border: 1px solid var(--input-border) !important;
     }
     
     #quickTestInput:focus {
-        background-color: #ffffff !important;
-        color: #212529 !important;
-        border-color: #86b7fe !important;
+        background-color: var(--input-bg) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--btn-primary) !important;
         box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
     }
     
     #quickTestInput::placeholder {
-        color: #6c757d !important;
+        color: var(--text-secondary) !important;
         opacity: 1 !important;
     }
     
     #quickTestOutput {
-        background-color: #f8f9fa !important;
-        color: #212529 !important;
-        border: 1px solid #ced4da !important;
+        background-color: var(--secondary-bg) !important;
+        color: var(--text-primary) !important;
+        border: 1px solid var(--input-border) !important;
     }
 
     /* Enhanced Stats */
@@ -127,8 +128,8 @@
         max-height: 400px;
         overflow-y: auto;
         border-radius: var(--border-radius);
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
+        background: var(--secondary-bg);
+        border: 1px solid var(--border-color);
     }
 
     /* Responsive Design */
@@ -151,6 +152,19 @@
         line-height: 1.5;
         border-radius: 6px;
         transition: var(--transition);
+    }
+image.png
+    /* Never override Monaco token colors - keep only the container background */
+    [data-theme="dark"] .monaco-editor, [data-theme="dark"] .monaco-editor-background {
+        background-color: #1e1e1e !important;
+        color: unset !important; /* allow Monaco theme to control token colors */
+    }
+    [data-theme="dark"] .monaco-editor .view-overlays, 
+    [data-theme="dark"] .monaco-editor .margin, 
+    [data-theme="dark"] .monaco-editor .minimap,
+    [data-theme="dark"] .monaco-editor .decorationsOverviewRuler {
+        background-color: #1e1e1e !important;
+        color: unset !important;
     }
 
     .code-editor:focus {
@@ -205,11 +219,25 @@
     }
 
     .playground-intro {
-        background: rgba(255, 255, 255, 0.95);
+        background: var(--card-bg);
         border-radius: var(--border-radius);
         padding: 1.5rem;
         margin-bottom: 2rem;
         box-shadow: var(--box-shadow);
+    }
+
+    /* Dark mode fine-tuning (in case inline !important slips through) */
+    [data-theme="dark"] .sidebar-container,
+    [data-theme="dark"] .enhanced-card,
+    [data-theme="dark"] .playground-intro {
+        background-color: #252526 !important;
+        color: #cccccc !important;
+    }
+    [data-theme="dark"] #quickTestInput,
+    [data-theme="dark"] #quickTestOutput {
+        background-color: #2d2d30 !important;
+        color: #cccccc !important;
+        border-color: #3e3e42 !important;
     }
 </style>
 {% endblock %}

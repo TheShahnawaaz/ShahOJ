@@ -26,6 +26,478 @@
     
     <!-- Custom CSS -->
     <style>
+        /* CSS Variables for Theme Management */
+        :root {
+            /* Light Mode Colors */
+            --primary-bg: #ffffff;
+            --secondary-bg: #f8f9fa;
+            --tertiary-bg: #ffffff;
+            --card-bg: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --text-muted: #6c757d;
+            --border-color: #dee2e6;
+            --navbar-bg: #007bff;
+            --navbar-text: #ffffff;
+            --table-bg: #ffffff;
+            --table-hover: #f5f5f5;
+            --footer-bg: #f8f9fa;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --shadow-hover: rgba(0, 0, 0, 0.15);
+            --input-bg: #ffffff;
+            --input-border: #ced4da;
+            --btn-primary: #007bff;
+            --btn-secondary: #6c757d;
+            --btn-success: #28a745;
+            --btn-warning: #ffc107;
+            --btn-danger: #dc3545;
+            --code-bg: #f8f9fa;
+            --code-text: #e83e8c;
+        }
+
+        /* Dark Mode Colors */
+        [data-theme="dark"] {
+            --primary-bg: #1e1e1e;
+            --secondary-bg: #252526;
+            --tertiary-bg: #2d2d30;
+            --card-bg: #252526;
+            --text-primary: #cccccc;
+            --text-secondary: #969696;
+            --text-muted: #808080;
+            --border-color: #3e3e42;
+            --navbar-bg: #252526;
+            --navbar-text: #cccccc;
+            --table-bg: #252526;
+            --table-hover: #2d2d30;
+            --footer-bg: #1e1e1e;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --shadow-hover: rgba(0, 0, 0, 0.4);
+            --input-bg: #3c3c3c;
+            --input-border: #464647;
+            --btn-primary: #0e639c;
+            --btn-secondary: #5a5a5a;
+            --btn-success: #1e7e34;
+            --btn-warning: #d39e00;
+            --btn-danger: #bd2130;
+            --code-bg: #1e1e1e;
+            --code-text: #569cd6;
+        }
+
+        /* Theme transitions (scoped) */
+        html.theme-transition *,
+        html.theme-transition *::before,
+        html.theme-transition *::after {
+            transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        /* Base Theme Styles */
+        body {
+            background-color: var(--primary-bg) !important;
+            color: var(--text-primary) !important;
+        }
+
+        /* Force Bootstrap overrides for dark mode */
+        [data-theme="dark"] body {
+            background-color: #1e1e1e !important;
+            color: #cccccc !important;
+        }
+
+        [data-theme="dark"] .bg-light,
+        [data-theme="dark"] .bg-light * {
+            background-color: #252526 !important;
+            color: #cccccc !important;
+        }
+
+        [data-theme="dark"] .text-muted {
+            color: #808080 !important;
+        }
+
+        [data-theme="dark"] .card {
+            background-color: #252526 !important;
+            border-color: #3e3e42 !important;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3) !important;
+            color: #cccccc !important;
+        }
+
+        /* Do not force color on every descendant to avoid breaking Monaco token colors */
+
+        [data-theme="dark"] .card .card-body,
+        [data-theme="dark"] .card .card-header,
+        [data-theme="dark"] .card .card-footer {
+            background-color: #252526 !important;
+            color: #cccccc !important;
+            border-color: #3e3e42 !important;
+        }
+
+        /* Unified styling for card headers used as toolbars */
+        .card-header.d-flex.justify-content-between.align-items-center {
+            background-color: var(--card-bg) !important;
+            color: var(--text-primary) !important;
+            border-bottom: 1px solid var(--border-color) !important;
+        }
+        [data-theme="dark"] .card-header.d-flex.justify-content-between.align-items-center {
+            background-color: #252526 !important;
+            color: #cccccc !important;
+            border-bottom-color: #3e3e42 !important;
+        }
+
+        [data-theme="dark"] .table {
+            background-color: #252526 !important;
+            color: #cccccc !important;
+            border-color: #3e3e42 !important;
+        }
+
+        [data-theme="dark"] .table th {
+            background-color: #2d2d30 !important;
+            border-color: #3e3e42 !important;
+            color: #cccccc !important;
+        }
+
+        [data-theme="dark"] .table td {
+            border-color: #3e3e42 !important;
+            color: #cccccc !important;
+            background-color: #252526 !important;
+        }
+
+        [data-theme="dark"] .table-hover tbody tr:hover {
+            background-color: #2d2d30 !important;
+        }
+
+        [data-theme="dark"] .table-hover tbody tr:hover td {
+            background-color: #2d2d30 !important;
+        }
+
+        [data-theme="dark"] .form-control,
+        [data-theme="dark"] .form-select,
+        [data-theme="dark"] input,
+        [data-theme="dark"] textarea,
+        [data-theme="dark"] select {
+            background-color: #3c3c3c !important;
+            border-color: #464647 !important;
+            color: #cccccc !important;
+        }
+
+        [data-theme="dark"] .form-control:focus,
+        [data-theme="dark"] .form-select:focus,
+        [data-theme="dark"] input:focus,
+        [data-theme="dark"] textarea:focus,
+        [data-theme="dark"] select:focus {
+            background-color: #3c3c3c !important;
+            border-color: #569cd6 !important;
+            color: #cccccc !important;
+            box-shadow: 0 0 0 0.2rem rgba(86, 156, 214, 0.25) !important;
+        }
+
+        [data-theme="dark"] .btn-primary {
+            background-color: #0e639c !important;
+            border-color: #0e639c !important;
+            color: #ffffff !important;
+        }
+
+        [data-theme="dark"] .btn-secondary {
+            background-color: #5a5a5a !important;
+            border-color: #5a5a5a !important;
+            color: #ffffff !important;
+        }
+
+        [data-theme="dark"] .btn-success {
+            background-color: #1e7e34 !important;
+            border-color: #1e7e34 !important;
+            color: #ffffff !important;
+        }
+
+        [data-theme="dark"] .btn-warning {
+            background-color: #d39e00 !important;
+            border-color: #d39e00 !important;
+            color: #000000 !important;
+        }
+
+        [data-theme="dark"] .btn-danger {
+            background-color: #bd2130 !important;
+            border-color: #bd2130 !important;
+            color: #ffffff !important;
+        }
+
+        /* Fix text color for all elements in dark mode */
+        [data-theme="dark"] h1,
+        [data-theme="dark"] h2,
+        [data-theme="dark"] h3,
+        [data-theme="dark"] h4,
+        [data-theme="dark"] h5,
+        [data-theme="dark"] h6,
+        [data-theme="dark"] p,
+        [data-theme="dark"] label,
+        [data-theme="dark"] .text-dark {
+            color: #cccccc !important;
+        }
+
+        /* Guard: Do not set any color for Monaco editor tokens here; Monaco's theme controls it */
+
+        [data-theme="dark"] .text-primary {
+            color: #569cd6 !important;
+        }
+
+        [data-theme="dark"] .text-secondary {
+            color: #969696 !important;
+        }
+
+        /* Fix breadcrumb and navigation */
+        [data-theme="dark"] .breadcrumb {
+            background-color: #252526 !important;
+        }
+
+        [data-theme="dark"] .breadcrumb-item,
+        [data-theme="dark"] .breadcrumb-item a {
+            color: #cccccc !important;
+        }
+
+        [data-theme="dark"] .breadcrumb-item + .breadcrumb-item::before {
+            color: #808080 !important;
+        }
+
+        [data-theme="dark"] .alert {
+            background-color: #252526 !important;
+            border-color: #3e3e42 !important;
+            color: #cccccc !important;
+        }
+
+        [data-theme="dark"] .modal-content {
+            background-color: #252526 !important;
+            color: #cccccc !important;
+            border-color: #3e3e42 !important;
+        }
+
+        [data-theme="dark"] .modal-header {
+            border-color: #3e3e42 !important;
+            background-color: #252526 !important;
+        }
+
+        [data-theme="dark"] .modal-footer {
+            border-color: #3e3e42 !important;
+            background-color: #252526 !important;
+        }
+
+        [data-theme="dark"] .dropdown-menu {
+            background-color: #252526 !important;
+            border-color: #3e3e42 !important;
+        }
+
+        [data-theme="dark"] .dropdown-item {
+            color: #cccccc !important;
+        }
+
+        [data-theme="dark"] .dropdown-item:hover {
+            background-color: #2d2d30 !important;
+            color: #ffffff !important;
+        }
+
+        /* Fix all container and background elements */
+        [data-theme="dark"] .container,
+        [data-theme="dark"] .container-fluid,
+        [data-theme="dark"] .row,
+        [data-theme="dark"] .col,
+        [data-theme="dark"] .col-auto,
+        [data-theme="dark"] .col-1,
+        [data-theme="dark"] .col-2,
+        [data-theme="dark"] .col-3,
+        [data-theme="dark"] .col-4,
+        [data-theme="dark"] .col-5,
+        [data-theme="dark"] .col-6,
+        [data-theme="dark"] .col-7,
+        [data-theme="dark"] .col-8,
+        [data-theme="dark"] .col-9,
+        [data-theme="dark"] .col-10,
+        [data-theme="dark"] .col-11,
+        [data-theme="dark"] .col-12 {
+            background-color: inherit !important;
+            color: #cccccc !important;
+        }
+
+        /* Fix buttons and links */
+        [data-theme="dark"] .btn {
+            border-color: inherit !important;
+        }
+
+        [data-theme="dark"] a {
+            color: #569cd6 !important;
+        }
+
+        [data-theme="dark"] a:hover {
+            color: #4fc3f7 !important;
+        }
+
+        /* Fix stats cards specifically */
+        [data-theme="dark"] .stats-card,
+        [data-theme="dark"] .stats-card * {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%) !important;
+            color: #ffffff !important;
+        }
+
+        /* Theme Toggle Button Styles */
+        .theme-toggle-btn {
+            background: none !important;
+            border: none !important;
+            border-radius: 50% !important;
+            width: 40px !important;
+            height: 40px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 0 !important;
+            line-height: 1 !important;
+            margin-left: 0.5rem !important;
+            position: relative !important;
+            overflow: hidden !important;
+        }
+
+        /* Ensure navbar items (including toggle) are vertically centered */
+        .navbar .navbar-nav { align-items: center !important; }
+        .navbar .nav-item .theme-toggle-btn { padding: 0 !important; margin-top: 0 !important; margin-bottom: 0 !important; }
+
+        .theme-toggle-btn:hover {
+            background: rgba(132, 201, 232, 0.2) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        .theme-toggle-btn:focus {
+            box-shadow: 0 0 0 2px rgba(132, 201, 232, 0.4) !important;
+        }
+
+        .theme-icon {
+            font-size: 1.1rem !important;
+            transition: all 0.4s ease !important;
+        }
+
+        /* Dark mode navbar adjustments */
+        [data-theme="dark"] .navbar.bg-primary {
+            background-color: var(--navbar-bg) !important;
+            border-bottom-color: var(--border-color) !important;
+        }
+
+        [data-theme="dark"] .navbar-brand .shah-text {
+            color: #569cd6 !important;
+            background: linear-gradient(135deg, #569cd6 0%, #4fc3f7 25%, #29b6f6 50%, #03a9f4 75%, #0288d1 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+        }
+
+        [data-theme="dark"] .nav-link-enhanced {
+            color: var(--navbar-text) !important;
+        }
+
+        [data-theme="dark"] .nav-link-enhanced:hover {
+            background: rgba(86, 156, 214, 0.2) !important;
+            color: #ffffff !important;
+        }
+
+        [data-theme="dark"] .nav-link-enhanced.active {
+            background: linear-gradient(135deg, rgba(86, 156, 214, 0.3) 0%, rgba(86, 156, 214, 0.1) 100%) !important;
+        }
+
+        /* Dark mode footer */
+        [data-theme="dark"] footer {
+            background-color: var(--footer-bg) !important;
+            color: var(--text-secondary) !important;
+        }
+
+        /* Stats cards dark mode */
+        [data-theme="dark"] .stats-card {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%) !important;
+        }
+
+        /* Button adjustments for dark mode */
+        [data-theme="dark"] .btn-outline-primary {
+            color: #569cd6;
+            border-color: #569cd6;
+        }
+
+        [data-theme="dark"] .btn-outline-primary:hover {
+            background-color: #569cd6;
+            border-color: #569cd6;
+        }
+
+        /* Ensure Medium difficulty badges always have black text */
+        .badge.bg-warning { color: #000000 !important; }
+        [data-theme="dark"] .badge.bg-warning { color: #000000 !important; }
+
+        /* Consistent page header (blue bar) across all pages */
+        .edit-container {
+            background: var(--card-bg) !important;
+            border-radius: var(--border-radius) !important;
+            box-shadow: 0 2px 10px var(--shadow) !important;
+            color: var(--text-primary) !important;
+            border: 1px solid var(--border-color) !important;
+            margin-bottom: 2rem !important;
+        }
+        .progress-header {
+            background: linear-gradient(135deg, var(--btn-primary), #0b5585) !important;
+            color: #ffffff !important;
+            padding: 1rem !important;
+            border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+            border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+        }
+        [data-theme="dark"] .progress-header {
+            background: linear-gradient(135deg, var(--btn-primary), #094766) !important;
+            border-bottom-color: rgba(0,0,0,0.2) !important;
+        }
+        /* Buttons inside blue header */
+        .progress-header .btn { box-shadow: none !important; }
+        [data-theme="dark"] .progress-header .btn-light {
+            background-color: #3c3c3c !important;
+            color: #cccccc !important;
+            border-color: #464647 !important;
+        }
+        [data-theme="dark"] .progress-header .btn-outline-light {
+            color: #e6e6e6 !important;
+            border-color: #9aa0a6 !important;
+        }
+
+        /* Code and pre elements */
+        [data-theme="dark"] code {
+            background-color: var(--code-bg) !important;
+            color: var(--code-text) !important;
+        }
+
+        [data-theme="dark"] pre {
+            background-color: var(--code-bg) !important;
+            color: var(--text-primary) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        /* Global placeholder styling using theme tokens */
+        input::placeholder,
+        textarea::placeholder,
+        .form-control::placeholder {
+            color: var(--text-secondary) !important;
+            opacity: 1 !important;
+        }
+        /* Legacy placeholder selectors */
+        input:-ms-input-placeholder,
+        textarea:-ms-input-placeholder,
+        .form-control:-ms-input-placeholder { color: var(--text-secondary) !important; }
+        input::-ms-input-placeholder,
+        textarea::-ms-input-placeholder,
+        .form-control::-ms-input-placeholder { color: var(--text-secondary) !important; }
+
+        /* Global fixes for Bootstrap utilities used in problem pages */
+        [data-theme="dark"] .list-group-item {
+            background-color: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-primary) !important;
+        }
+        [data-theme="dark"] .badge.bg-light {
+            background-color: #3c3c3c !important;
+            color: #cccccc !important;
+            border: 1px solid var(--border-color) !important;
+        }
+        /* Code blocks inserted with bg-light should still be darker in dark mode */
+        [data-theme="dark"] pre.bg-light {
+            background-color: #2d2d30 !important;
+            color: #cccccc !important;
+            border-color: #3e3e42 !important;
+        }
+
         .navbar-brand {
             font-weight: bold;
             text-decoration: none !important;
@@ -221,7 +693,7 @@
     } %}
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
+        <div class="container-fluid px-4">
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('dashboard') }}">
                 <span class="shah-text">Shah</span>
                 <img src="{{ url_for('static', filename='images/ShahOJLogo.png') }}" alt="ShahOJ Logo" height="32" class="d-inline-block">
@@ -252,6 +724,11 @@
                             <span>Playground</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <button class="btn nav-link nav-link-enhanced theme-toggle-btn" id="themeToggle" aria-label="Toggle theme">
+                            <i class="fas fa-moon theme-icon" id="themeIcon"></i>
+                        </button>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -270,6 +747,112 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
+    <!-- Theme Toggle Script -->
+    <script>
+        // Theme Management System
+        class ThemeManager {
+            constructor() {
+                this.themeToggle = document.getElementById('themeToggle');
+                this.themeIcon = document.getElementById('themeIcon');
+                this.currentTheme = localStorage.getItem('theme') || 'light';
+                
+                this.init();
+            }
+
+            init() {
+                // Apply saved theme on page load
+                this.applyTheme(this.currentTheme);
+                
+                // Add click event listener
+                if (this.themeToggle) {
+                    this.themeToggle.addEventListener('click', () => this.toggleTheme());
+                }
+                
+                // Listen for system theme changes
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                    if (!localStorage.getItem('theme')) {
+                        this.applyTheme(e.matches ? 'dark' : 'light');
+                    }
+                });
+            }
+
+            toggleTheme() {
+                const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
+                this.currentTheme = newTheme;
+                this.applyTheme(newTheme);
+                localStorage.setItem('theme', newTheme);
+                
+                // Add a subtle animation effect
+                this.animateToggle();
+            }
+
+            applyTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+                // Temporarily enable scoped transitions to avoid interfering with other animations
+                try { document.documentElement.classList.add('theme-transition'); } catch (e) {}
+                this.updateIcon(theme);
+                this.currentTheme = theme;
+                try {
+                    document.dispatchEvent(new CustomEvent('theme:changed', { detail: { theme } }));
+                } catch (e) {}
+                // Remove transition class after a short delay
+                setTimeout(() => { try { document.documentElement.classList.remove('theme-transition'); } catch (e) {} }, 300);
+            }
+
+            updateIcon(theme) {
+                if (this.themeIcon) {
+                    if (theme === 'dark') {
+                        this.themeIcon.classList.remove('fa-moon');
+                        this.themeIcon.classList.add('fa-sun');
+                    } else {
+                        this.themeIcon.classList.remove('fa-sun');
+                        this.themeIcon.classList.add('fa-moon');
+                    }
+                }
+            }
+
+            animateToggle() {
+                if (this.themeIcon) {
+                    this.themeIcon.style.transform = 'rotate(360deg)';
+                    setTimeout(() => {
+                        this.themeIcon.style.transform = 'rotate(0deg)';
+                    }, 400);
+                }
+            }
+
+            // Public method to get current theme
+            getCurrentTheme() {
+                return this.currentTheme;
+            }
+
+            // Public method to set theme programmatically
+            setTheme(theme) {
+                if (theme === 'light' || theme === 'dark') {
+                    this.currentTheme = theme;
+                    this.applyTheme(theme);
+                    localStorage.setItem('theme', theme);
+                }
+            }
+        }
+
+        // Initialize theme manager when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            window.themeManager = new ThemeManager();
+            
+            // Optional: Expose theme manager globally for debugging
+            if (typeof window !== 'undefined') {
+                window.ThemeManager = ThemeManager;
+            }
+        });
+
+        // Apply theme immediately to prevent flash of unstyled content
+        (function() {
+            const theme = localStorage.getItem('theme') || 
+                         (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+
     <!-- Custom JS -->
     {% block extra_js %}{% endblock %}
 </body>

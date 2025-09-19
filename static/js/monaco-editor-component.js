@@ -174,6 +174,22 @@ class MonacoEditorComponent {
             setTimeout(() => {
                 this.editor.layout();
             }, 100);
+
+            // Apply current app theme to Monaco
+            const applyCurrentThemeToMonaco = () => {
+                const htmlTheme = document.documentElement.getAttribute('data-theme');
+                const monacoTheme = htmlTheme === 'dark' ? 'vs-dark' : 'vs-light';
+                try { monaco.editor.setTheme(monacoTheme); } catch (e) {}
+            };
+            applyCurrentThemeToMonaco();
+
+            // Listen for theme changes
+            this.handleThemeChange = (e) => {
+                const next = (e && e.detail && e.detail.theme) ? e.detail.theme : document.documentElement.getAttribute('data-theme');
+                const monacoTheme = next === 'dark' ? 'vs-dark' : 'vs-light';
+                try { monaco.editor.setTheme(monacoTheme); } catch (e) {}
+            };
+            document.addEventListener('theme:changed', this.handleThemeChange);
             
             // Add resize functionality if enabled
             if (this.config.resizable) {
@@ -371,6 +387,11 @@ class MonacoEditorComponent {
     
     // Cleanup method
     destroy() {
+        // Remove theme listener
+        if (this.handleThemeChange) {
+            document.removeEventListener('theme:changed', this.handleThemeChange);
+            this.handleThemeChange = null;
+        }
         if (this.resizeListeners) {
             const { handle, mousedown, mousemove, mouseup } = this.resizeListeners;
             if (handle) handle.removeEventListener('mousedown', mousedown);

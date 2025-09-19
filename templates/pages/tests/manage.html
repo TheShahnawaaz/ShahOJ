@@ -18,16 +18,16 @@
         --transition: all 0.3s ease;
     }
 
-    body {
-        background-color: #f5f7fa;
-    }
+    body { background-color: var(--primary-bg); }
 
     /* Enhanced Layout */
     .edit-container {
-        background: white;
+        background: var(--card-bg);
         border-radius: var(--border-radius);
         box-shadow: var(--box-shadow);
         margin-bottom: 2rem;
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
     }
 
     /* Progress Bar */
@@ -58,14 +58,17 @@
     .card {
         border-radius: var(--border-radius);
         box-shadow: var(--box-shadow);
-        border: 1px solid #e9ecef;
+        border: 1px solid var(--border-color);
         margin-bottom: 1.5rem;
+        background: var(--card-bg);
+        color: var(--text-primary);
     }
 
     .card-header {
-        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-        border-bottom: 1px solid #dee2e6;
+        background: var(--secondary-bg);
+        border-bottom: 1px solid var(--border-color);
         font-weight: 600;
+        color: var(--text-primary);
     }
 
     .test-case-card {
@@ -87,8 +90,8 @@
 
     /* Enhanced Statistics Cards */
     .stats-card {
-        background: linear-gradient(135deg, var(--primary-color), #0056b3);
-        color: white;
+        background: linear-gradient(135deg, var(--btn-primary), #0e5fa0);
+        color: #ffffff;
         border: none;
         text-align: center;
         transition: var(--transition);

@@ -18,16 +18,16 @@
         --transition: all 0.3s ease;
     }
 
-    body {
-        background-color: #f5f7fa;
-    }
+    body { background-color: var(--primary-bg); }
 
     /* Enhanced Layout */
     .edit-container {
-        background: white;
+        background: var(--card-bg);
         border-radius: var(--border-radius);
         box-shadow: var(--box-shadow);
         margin-bottom: 2rem;
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
     }
 
     /* Progress Bar */
@@ -58,14 +58,17 @@
     .card {
         border-radius: var(--border-radius);
         box-shadow: var(--box-shadow);
-        border: 1px solid #e9ecef;
+        border: 1px solid var(--border-color);
         margin-bottom: 1.5rem;
+        background: var(--card-bg);
+        color: var(--text-primary);
     }
 
     .card-header {
-        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-        border-bottom: 1px solid #dee2e6;
+        background: var(--secondary-bg);
+        border-bottom: 1px solid var(--border-color);
         font-weight: 600;
+        color: var(--text-primary);
     }
 
     /* Enhanced Statistics Cards */
@@ -131,23 +134,28 @@
 
     /* Enhanced Table */
     .table-hover tbody tr:hover {
-        background-color: rgba(0,123,255,0.05);
+        background-color: var(--table-hover);
         transition: var(--transition);
     }
 
     .table th {
         border-top: none;
         font-weight: 600;
-        color: var(--dark-color);
-        background-color: #f8f9fa;
+        color: var(--text-primary);
+        background-color: var(--secondary-bg);
     }
 
     /* Problem Title Links */
     .problem-title-link {
-        color: var(--primary-color);
+        color: var(--btn-primary);
         font-weight: 600;
         transition: var(--transition);
     }
+    [data-theme="dark"] .problem-title-link {
+        color: #79b8ff !important; /* brighter for dark backgrounds */
+        text-shadow: 0 0 6px rgba(86, 156, 214, 0.2);
+    }
+    [data-theme="dark"] .problem-title-link:visited { color: #79b8ff !important; }
 
     .clickable-row {
         cursor: pointer;
@@ -160,6 +168,10 @@
 
     .clickable-row:hover .problem-title-link {
         color: #0056b3;
+        text-decoration: underline;
+    }
+    [data-theme="dark"] .clickable-row:hover .problem-title-link {
+        color: #a5d1ff !important;
         text-decoration: underline;
     }
 
@@ -305,7 +317,7 @@
 
     /* Enhanced hover effect during animations */
     .table tbody tr:hover {
-        background-color: rgba(0,123,255,0.08) !important;
+        background-color: var(--table-hover) !important;
         transition: background-color 0.2s ease;
     }
 

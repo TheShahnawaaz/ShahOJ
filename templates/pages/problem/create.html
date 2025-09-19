@@ -4,6 +4,53 @@
 
 {% block extra_css %}
 <style>
+    /* Theme-aware styling */
+    .card, .card-header, .card-body {
+        background-color: var(--card-bg) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-color) !important;
+    }
+    .card-header {
+        border-bottom: 1px solid var(--border-color);
+    }
+    .form-control, .form-select, textarea {
+        background-color: var(--input-bg) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--input-border) !important;
+    }
+    .form-control:focus, .form-select:focus, textarea:focus {
+        background-color: var(--input-bg) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--btn-primary) !important;
+        box-shadow: 0 0 0 0.2rem rgba(86, 156, 214, 0.25) !important;
+    }
+
+    /* Placeholder colors to avoid black-on-dark */
+    ::placeholder {
+        color: var(--text-secondary) !important;
+        opacity: 1;
+    }
+    :-ms-input-placeholder { color: var(--text-secondary) !important; }
+    ::-ms-input-placeholder { color: var(--text-secondary) !important; }
+    /* Ensure helper text and labels are readable in dark mode */
+    [data-theme="dark"] .form-text { color: var(--text-secondary) !important; }
+    [data-theme="dark"] .form-label { color: var(--text-primary) !important; }
+    [data-theme="dark"] .card-header h4 { color: var(--text-primary) !important; }
+
+    /* Improve select caret visibility in dark mode */
+    [data-theme="dark"] .form-select {
+        background-color: #3c3c3c !important;
+        color: #cccccc !important;
+        border-color: #464647 !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23cccccc'%3e%3cpath d='M3.204 5h9.592L8 10.481 3.204 5z'/%3e%3c/svg%3e") !important;
+        background-repeat: no-repeat;
+        background-position: right .75rem center;
+        background-size: 16px 12px;
+    }
+    [data-theme="dark"] .form-select:focus {
+        border-color: #569cd6 !important;
+        box-shadow: 0 0 0 0.2rem rgba(86, 156, 214, 0.25) !important;
+    }
     .step-indicator {
         display: flex;
         justify-content: center;
@@ -25,8 +72,8 @@
     }
     
     .step.completed {
-        background-color: #28a745;
-        color: white;
+        background-color: var(--btn-success);
+        color: #ffffff;
     }
     
     .step.inactive {
@@ -59,8 +106,8 @@
     }
     
     .template-card.selected {
-        border-color: #007bff;
-        background-color: #f8f9ff;
+        border-color: var(--btn-primary);
+        background-color: var(--secondary-bg);
     }
 </style>
 {% endblock %}
