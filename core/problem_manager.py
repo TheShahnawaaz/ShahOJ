@@ -147,7 +147,6 @@ class ProblemManager:
 
         # Set additional metadata
         config.set('tags', metadata.get('tags', []))
-        config.set('description', metadata.get('description', ''))
         config.set('limits.time_ms', metadata.get('time_limit_ms', 1000))
         config.set('limits.memory_mb', metadata.get('memory_limit_mb', 256))
         config.set('checker.type', metadata.get('checker_type', 'diff'))

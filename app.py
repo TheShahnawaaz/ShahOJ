@@ -1,10 +1,15 @@
 """
-Flask web application for ShahOJ extensible judge system
+Flask web application for PocketOJ extensible judge system - Multi-User Edition
 """
 
+from dotenv import load_dotenv
+from core.middleware import setup_auth_middleware, require_auth, require_problem_access
+from core.auth import AuthService
+from core.database import DatabaseManager
 from core.config import config
 from core.problem_manager import ProblemManager
-from flask import Flask, render_template, jsonify, request, redirect, url_for, flash, send_from_directory
+from core.unified_problem_manager import UnifiedProblemManager
+from flask import Flask, render_template, jsonify, request, redirect, url_for, flash, send_from_directory, g
 import os
 import sys
 import traceback
@@ -12,22 +17,110 @@ import traceback
 # Add current directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+# Multi-user imports
+
+# Load environment variables
+load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
-app.secret_key = config.get('web.secret_key', os.urandom(24).hex())
+app.secret_key = config.get('security.secret_key', os.environ.get(
+    'SECRET_KEY', os.urandom(24).hex()))
 
-# Initialize problem manager
-problem_manager = ProblemManager()
+# Configure OAuth
+app.config['GOOGLE_CLIENT_ID'] = os.environ.get('GOOGLE_CLIENT_ID')
+app.config['GOOGLE_CLIENT_SECRET'] = os.environ.get('GOOGLE_CLIENT_SECRET')
+
+# Initialize multi-user components
+db_manager = DatabaseManager(config.get('database.path', 'pocketoj.db'))
+auth_service = AuthService(app, db_manager)
+
+# Setup authentication middleware
+setup_auth_middleware(app, auth_service)
+
+# Initialize problem managers
+problem_manager = ProblemManager()  # Legacy for compatibility
+unified_problem_manager = UnifiedProblemManager(
+    db_manager)  # New unified manager
 
 
 @app.route('/')
 def dashboard():
-    """Main dashboard showing all problems"""
+    """Main dashboard - shows login prompt if not authenticated, problems if authenticated"""
     try:
-        problems = problem_manager.list_problems()
-        stats = problem_manager.get_statistics()
-        return render_template('pages/dashboard.html', problems=problems, stats=stats)
+        user = g.get('current_user')
+
+        # Get public problems with pagination (available to everyone)
+        page = int(request.args.get('page', 1))
+        search = request.args.get('search', '')
+        difficulty = request.args.get('difficulty', '')
+
+        result = db_manager.get_public_problems(
+            search=search,
+            difficulty=difficulty,
+            page=page,
+            limit=12  # Show 12 problems per page on dashboard
+        )
+
+        # Get author information for all problems
+        author_info = {}
+        for problem in result['problems']:
+            if problem.get('author_id') and problem['author_id'] not in author_info:
+                author = db_manager.get_user_by_id(problem['author_id'])
+                if author:
+                    author_info[problem['author_id']] = author
+
+        # Get user's own problems count for stats (only if authenticated)
+        user_stats = None
+        if user:
+            user_problems = db_manager.get_user_problems(user['id'])
+            user_stats = {
+                'total_problems': len(user_problems),
+                'public_count': sum(1 for p in user_problems if p['is_public']),
+                'private_count': sum(1 for p in user_problems if not p['is_public'])
+            }
+
+        # Get overall system stats
+        try:
+            import sqlite3
+            # Count total public problems
+            public_count = result['total']
+
+            # Count total problems in database
+            with sqlite3.connect(db_manager.db_path) as conn:
+                total_problems = conn.execute(
+                    "SELECT COUNT(*) FROM problems").fetchone()[0]
+                total_users = conn.execute(
+                    "SELECT COUNT(*) FROM users").fetchone()[0]
+
+            system_stats = {
+                'total_problems': total_problems,
+                'public_problems': public_count,
+                'total_users': total_users
+            }
+        except Exception as e:
+            system_stats = {'total_problems': 0,
+                            'public_problems': 0, 'total_users': 0}
+
+        # Calculate pagination info
+        # Ceiling division for 12 items per page
+        limit = 12  # Match the limit used above
+        total_pages = (result['total'] + limit - 1) // limit
+
+        return render_template('pages/dashboard.html',
+                               problems=result['problems'],
+                               author_info=author_info,
+                               user_stats=user_stats,
+                               system_stats=system_stats,
+                               pagination={
+                                   'current_page': result['page'],
+                                   'total_pages': total_pages,
+                                   'total': result['total'],
+                                   'has_next': result['has_next']
+                               },
+                               search=search,
+                               difficulty=difficulty,
+                               is_authenticated=user is not None)
     except Exception as e:
         return f"Error loading dashboard: {e}", 500
 
@@ -48,11 +141,141 @@ def playground():
     return render_template('pages/playground.html')
 
 
+# ============================================================================
+# AUTHENTICATION ROUTES (Multi-User)
+# ============================================================================
+
+@app.route('/auth/login')
+def auth_login():
+    """Initiate Google OAuth login"""
+    redirect_uri = url_for('auth_callback', _external=True)
+    return auth_service.create_login_url(redirect_uri)
+
+
+@app.route('/auth/callback')
+def auth_callback():
+    """Handle Google OAuth callback"""
+    try:
+        user, session_token = auth_service.handle_oauth_callback()
+
+        # Set secure cookie
+        # Redirect to dashboard for now
+        response = redirect(url_for('dashboard'))
+        response.set_cookie(
+            'session_token',
+            session_token,
+            max_age=30*24*60*60,  # 30 days
+            secure=request.is_secure,  # Use secure cookies in production
+            httponly=True,
+            samesite='Lax'
+        )
+
+        flash(f'Welcome, {user["name"]}! You are now signed in.', 'success')
+        return response
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        flash('Login failed. Please try again.', 'error')
+        return redirect(url_for('dashboard'))
+
+
+@app.route('/auth/logout')
+def auth_logout():
+    """Logout user and invalidate session"""
+    session_token = request.cookies.get('session_token')
+    if session_token:
+        auth_service.logout_session(session_token)
+
+    response = redirect(url_for('dashboard'))
+    response.delete_cookie('session_token')
+    flash('You have been logged out.', 'info')
+    return response
+
+
+@app.route('/api/auth/status')
+def auth_status():
+    """Get current authentication status"""
+    user = g.get('current_user')
+    return jsonify({
+        'authenticated': user is not None,
+        'user': {
+            'id': user['id'],
+            'name': user['name'],
+            'email': user['email'],
+            'picture_url': user['picture_url']
+        } if user else None
+    })
+
+
+# ============================================================================
+# MULTI-USER PROBLEM MANAGEMENT ROUTES
+# ============================================================================
+
+# Browse problems route removed - problems now shown in dashboard
+
+
+@app.route('/my-problems')
+@require_auth
+def my_problems():
+    """User's personal problem dashboard"""
+    user = g.current_user
+    problems = db_manager.get_user_problems(user['id'])
+
+    return render_template('pages/problems/my-problems.html',
+                           problems=problems
+                           )
+
+
+@app.route('/api/problems/<slug>/toggle-visibility', methods=['POST'])
+@require_auth
+@require_problem_access('edit')
+def toggle_problem_visibility_api(slug):
+    """Toggle problem between public and private"""
+    user = g.current_user
+    new_visibility = db_manager.toggle_problem_visibility(slug, user['id'])
+
+    if new_visibility is not None:
+        status = "public" if new_visibility else "private"
+        return jsonify({
+            'success': True,
+            'is_public': new_visibility,
+            'message': f'Problem is now {status}'
+        })
+    else:
+        return jsonify({'success': False, 'error': 'Failed to update visibility'}), 500
+
+
+@app.route('/api/problems/<slug>/delete', methods=['DELETE'])
+@require_auth
+@require_problem_access('delete')
+def delete_problem_api(slug):
+    """Delete a problem (only by author)"""
+    user = g.current_user
+
+    # Delete from database
+    db_success = db_manager.delete_problem(slug, user['id'])
+
+    if db_success:
+        # Delete files
+        import shutil
+        problem_dir = unified_problem_manager.problems_dir / slug
+        if problem_dir.exists():
+            try:
+                shutil.rmtree(problem_dir)
+            except Exception as e:
+                pass  # Files might not exist
+
+        return jsonify({'success': True, 'message': 'Problem deleted successfully'})
+    else:
+        return jsonify({'success': False, 'error': 'Failed to delete problem'}), 500
+
+
 @app.route('/api/problems')
 def api_problems():
     """API endpoint to get all problems as JSON"""
     try:
-        problems = problem_manager.list_problems()
+        problems = unified_problem_manager.list_problems()
         problems_data = []
 
         for problem in problems:
@@ -66,7 +289,7 @@ def api_problems():
                 'files_info': problem.get_files_info()
             })
 
-        stats = problem_manager.get_statistics()
+        stats = unified_problem_manager.get_statistics()
         return jsonify({
             'success': True,
             'problems': problems_data,
@@ -85,14 +308,40 @@ def api_problems():
 
 
 @app.route('/problem/<slug>')
+@require_problem_access('view')
 def problem_detail(slug):
-    """Show detailed view of a specific problem"""
+    """Show detailed view of a specific problem with multi-user support"""
     try:
-        problem = problem_manager.get_problem(slug)
-        if not problem:
+        # Get problem from database
+        problem_data = db_manager.get_problem_by_slug(slug)
+        if not problem_data:
             return "Problem not found", 404
 
-        return render_template('pages/problem/detail.html', problem=problem)
+        # Get author information
+        author = db_manager.get_user_by_id(
+            problem_data['author_id']) if problem_data.get('author_id') else None
+
+        # Get current user
+        user = g.get('current_user')
+
+        # Increment view count for public problems (if not author viewing)
+        if problem_data['is_public'] and (not user or user['id'] != problem_data['author_id']):
+            db_manager.increment_view_count(slug)
+
+        # Get unified problem (database + files)
+        unified_problem = unified_problem_manager.get_problem(slug)
+
+        if not unified_problem:
+            return "Problem not found", 404
+
+        return render_template('pages/problem/detail.html',
+                               problem=unified_problem,
+                               problem_data=problem_data,
+                               author=author,
+                               current_user=user,
+                               is_author=(
+                                   user and user['id'] == problem_data.get('author_id'))
+                               )
     except Exception as e:
         return f"Error loading problem: {e}", 500
 
@@ -101,7 +350,7 @@ def problem_detail(slug):
 def api_problem_detail(slug):
     """API endpoint to get problem details as JSON"""
     try:
-        problem = problem_manager.get_problem(slug)
+        problem = unified_problem_manager.get_problem(slug)
         if not problem:
             return jsonify({'success': False, 'error': 'Problem not found'}), 404
 
@@ -123,6 +372,7 @@ def api_problem_detail(slug):
 
 
 @app.route('/create-problem')
+@require_auth
 def create_problem_form():
     """Show simplified create problem form"""
     return render_template('pages/problem/create-simple.html')
@@ -142,6 +392,7 @@ def create_problem_form_legacy():
 
 
 @app.route('/create-problem', methods=['POST'])
+@require_auth
 def create_problem():
     """Handle problem creation"""
     try:
@@ -153,7 +404,6 @@ def create_problem():
                 'slug': json_data.get('slug', '').strip(),
                 'difficulty': json_data.get('difficulty', 'Medium'),
                 'tags': [tag.strip() for tag in json_data.get('tags', '').split(',') if tag.strip()],
-                'description': json_data.get('description', '').strip(),
                 'time_limit_ms': int(json_data.get('time_limit', 1000)),
                 'memory_limit_mb': int(json_data.get('memory_limit', 256)),
                 'template': json_data.get('template', 'basic'),
@@ -173,7 +423,6 @@ def create_problem():
                 'slug': request.form.get('slug', '').strip(),
                 'difficulty': request.form.get('difficulty', 'Medium'),
                 'tags': [tag.strip() for tag in request.form.get('tags', '').split(',') if tag.strip()],
-                'description': request.form.get('description', '').strip(),
                 'time_limit_ms': int(request.form.get('time_limit', 1000)),
                 'memory_limit_mb': int(request.form.get('memory_limit', 256)),
                 'template': request.form.get('template', 'basic'),
@@ -196,7 +445,7 @@ def create_problem():
             }), 400
 
         # Check if problem already exists
-        if problem_manager.problem_exists(form_data['slug']):
+        if unified_problem_manager.problem_exists(form_data['slug']):
             return jsonify({
                 'success': False,
                 'error': f"Problem with slug '{form_data['slug']}' already exists"
@@ -208,7 +457,6 @@ def create_problem():
             'slug': form_data['slug'],
             'difficulty': form_data['difficulty'],
             'tags': form_data['tags'],
-            'description': form_data['description'],
             'author': request.remote_addr or 'web-user',
 
             # Constraints
@@ -240,7 +488,7 @@ def create_problem():
         }
 
         # Create the problem
-        problem = problem_manager.create_problem_structure(
+        problem = unified_problem_manager.create_problem_structure(
             form_data['slug'], config_data)
 
         # Save reference solution
@@ -255,7 +503,7 @@ def create_problem():
             template_manager.apply_template(problem, form_data['template'])
         except ImportError:
             # Fallback: create basic files manually
-            print("Warning: Template manager not available, creating basic files")
+            pass
 
         return jsonify({
             'success': True,
@@ -265,8 +513,8 @@ def create_problem():
         })
 
     except Exception as e:
-        print(f"Error creating problem: {e}")
-        print(traceback.format_exc())
+        import traceback
+        traceback.print_exc()
         return jsonify({
             'success': False,
             'error': f'Error creating problem: {str(e)}'
@@ -274,10 +522,11 @@ def create_problem():
 
 
 @app.route('/problem/<slug>/tests')
+@require_problem_access('edit')
 def manage_test_cases(slug):
     """Test case management page"""
     try:
-        problem = problem_manager.get_problem(slug)
+        problem = unified_problem_manager.get_problem(slug)
         if not problem:
             return "Problem not found", 404
 
@@ -292,10 +541,11 @@ def manage_test_cases(slug):
 
 
 @app.route('/problem/<slug>/test-solution')
+@require_problem_access('edit')
 def test_solution_page(slug):
     """Solution testing page"""
     try:
-        problem = problem_manager.get_problem(slug)
+        problem = unified_problem_manager.get_problem(slug)
         if not problem:
             return "Problem not found", 404
 
@@ -304,24 +554,15 @@ def test_solution_page(slug):
         return f"Error loading solution tester: {e}", 500
 
 
-@app.route('/api/problem/<slug>/delete', methods=['DELETE'])
-def delete_problem_api(slug):
-    """API endpoint to delete a problem"""
-    try:
-        success = problem_manager.delete_problem(slug)
-        if success:
-            return jsonify({'success': True})
-        else:
-            return jsonify({'success': False, 'error': 'Problem not found'}), 404
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+# Legacy delete route removed - replaced by multi-user version above
 
 
 @app.route('/api/problem/<slug>/generate-tests', methods=['POST'])
+@require_problem_access('edit')
 def generate_tests_api(slug):
     """API endpoint to generate test cases"""
     try:
-        problem = problem_manager.get_problem(slug)
+        problem = unified_problem_manager.get_problem(slug)
         if not problem:
             return jsonify({'success': False, 'error': 'Problem not found'}), 404
 
@@ -331,8 +572,6 @@ def generate_tests_api(slug):
         count = int(
             data.get('count', problem.config.get('tests.system_count', 20)))
         replace_existing = data.get('replace_existing', False)
-
-        print(f"Generating {count} test cases for {test_category} category")
 
         # Generate test cases
         from core.test_generator import TestGenerator
@@ -357,7 +596,6 @@ def generate_tests_api(slug):
         })
 
     except Exception as e:
-        print(f"Error generating tests: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({
@@ -367,10 +605,11 @@ def generate_tests_api(slug):
 
 
 @app.route('/api/problem/<slug>/add-manual-test', methods=['POST'])
+@require_problem_access('edit')
 def add_manual_test_api(slug):
     """API endpoint to add manual test case"""
     try:
-        problem = problem_manager.get_problem(slug)
+        problem = unified_problem_manager.get_problem(slug)
         if not problem:
             return jsonify({'success': False, 'error': 'Problem not found'}), 404
 
@@ -410,10 +649,12 @@ def add_manual_test_api(slug):
 
 
 @app.route('/api/problem/<slug>/test-solution', methods=['POST'])
+@require_auth
+@require_problem_access('view')
 def test_solution_api(slug):
     """API endpoint to test a C++ solution"""
     try:
-        problem = problem_manager.get_problem(slug)
+        problem = unified_problem_manager.get_problem(slug)
         if not problem:
             return jsonify({'success': False, 'error': 'Problem not found'}), 404
 
@@ -436,7 +677,6 @@ def test_solution_api(slug):
         })
 
     except Exception as e:
-        print(f"Error testing solution: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({
@@ -507,6 +747,7 @@ def test_file_integration_api():
 
 
 @app.route('/api/create-problem-v2', methods=['POST'])
+@require_auth
 def create_problem_v2_api():
     """API endpoint for new file-centric problem creation"""
     try:
@@ -518,7 +759,6 @@ def create_problem_v2_api():
             'slug': data.get('slug', '').strip(),
             'difficulty': data.get('difficulty', 'Medium'),
             'tags': [tag.strip() for tag in data.get('tags', '').split(',') if tag.strip()],
-            'description': data.get('description', '').strip(),
             'time_limit_ms': int(data.get('time_limit', 1000)),
             'memory_limit_mb': int(data.get('memory_limit', 256)),
             'checker_type': data.get('checker_type', 'diff'),
@@ -540,7 +780,7 @@ def create_problem_v2_api():
             return jsonify({'success': False, 'error': f'Missing required files: {", ".join(missing_files)}'}), 400
 
         # Check if problem already exists
-        if problem_manager.problem_exists(metadata['slug']):
+        if unified_problem_manager.problem_exists(metadata['slug']):
             # Offer to overwrite or suggest different slug
             return jsonify({
                 'success': False,
@@ -550,7 +790,7 @@ def create_problem_v2_api():
             }), 400
 
         # Create problem structure
-        problem = problem_manager.create_problem_structure(
+        problem = unified_problem_manager.create_problem_structure(
             metadata['slug'], metadata)
 
         # Save all files
@@ -576,7 +816,6 @@ def create_problem_v2_api():
                 generated_cases, 'system', replace_existing=True)
 
         except Exception as e:
-            print(f"Warning: Initial test generation failed: {e}")
             # Don't fail problem creation if test generation fails
             saved_count = 0
 
@@ -588,7 +827,6 @@ def create_problem_v2_api():
         })
 
     except Exception as e:
-        print(f"Error creating problem v2: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({
@@ -598,6 +836,7 @@ def create_problem_v2_api():
 
 
 @app.route('/api/create-problem-simple', methods=['POST'])
+@require_auth
 def create_problem_simple_api():
     """API endpoint for simplified problem creation - only requires statement"""
     try:
@@ -609,7 +848,6 @@ def create_problem_simple_api():
             'slug': data.get('slug', '').strip(),
             'difficulty': data.get('difficulty', 'Medium'),
             'tags': [tag.strip() for tag in data.get('tags', '').split(',') if tag.strip()],
-            'description': data.get('description', '').strip(),
             'time_limit_ms': int(data.get('time_limit', 1000)),
             'memory_limit_mb': int(data.get('memory_limit', 256)),
             'checker_type': data.get('checker_type', 'diff'),
@@ -621,8 +859,13 @@ def create_problem_simple_api():
         if not metadata['title'] or not metadata['slug'] or not statement_content:
             return jsonify({'success': False, 'error': 'Title, slug, and statement are required'}), 400
 
-        # Check if problem already exists
-        if problem_manager.problem_exists(metadata['slug']):
+        # Get current user
+        user = g.current_user
+        if not user:
+            return jsonify({'success': False, 'error': 'Authentication required'}), 401
+
+        # Check if problem already exists (unified check)
+        if unified_problem_manager.problem_exists(metadata['slug']):
             return jsonify({
                 'success': False,
                 'error': f"Problem '{metadata['slug']}' already exists",
@@ -630,20 +873,34 @@ def create_problem_simple_api():
                 'existing_problem_url': url_for('problem_detail', slug=metadata['slug'])
             }), 400
 
-        # Create problem structure
-        problem = problem_manager.create_problem_structure(
-            metadata['slug'], metadata)
+        # Create problem using unified manager (database + files)
+        try:
+            # Remove title and slug from metadata to avoid duplicate keyword arguments
+            # The create_problem method generates its own slug from the title
+            metadata_copy = metadata.copy()
+            title = metadata_copy.pop('title')
+            # Remove slug since it's generated automatically
+            metadata_copy.pop('slug', None)
 
-        # Save only the statement file
-        from core.file_manager import FileManager
-        file_manager = FileManager(problem.problem_dir)
+            result = unified_problem_manager.create_problem(
+                title=title,
+                author_id=user['id'],
+                **metadata_copy  # Pass remaining metadata
+            )
 
-        if not file_manager.save_file('statement.md', statement_content):
-            return jsonify({'success': False, 'error': 'Failed to save statement.md'}), 500
+            # Save the statement content
+            problem_dir = unified_problem_manager.problems_dir / \
+                result['slug']
+            statement_file = problem_dir / 'statement.md'
 
-        # Update config with file status
-        problem.config.update_file_status(problem.problem_dir)
-        problem.save_config(problem.config)
+            with open(statement_file, 'w') as f:
+                f.write(statement_content)
+
+            # Update file status in database
+            unified_problem_manager.update_file_status(result['slug'])
+
+        except Exception as e:
+            return jsonify({'success': False, 'error': f'Failed to create problem: {str(e)}'}), 500
 
         return jsonify({
             'success': True,
@@ -653,7 +910,6 @@ def create_problem_simple_api():
         })
 
     except Exception as e:
-        print(f"Error creating simple problem: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({
@@ -666,7 +922,7 @@ def create_problem_simple_api():
 def validate_input_api(slug):
     """API endpoint to validate test case input"""
     try:
-        problem = problem_manager.get_problem(slug)
+        problem = unified_problem_manager.get_problem(slug)
         if not problem:
             return jsonify({'success': False, 'error': 'Problem not found'}), 404
 
@@ -698,7 +954,7 @@ def validate_input_api(slug):
 def get_test_cases_api(slug, category):
     """API endpoint to get test cases for a category"""
     try:
-        problem = problem_manager.get_problem(slug)
+        problem = unified_problem_manager.get_problem(slug)
         if not problem:
             return jsonify({'success': False, 'error': 'Problem not found'}), 404
 
@@ -753,10 +1009,11 @@ def get_test_cases_api(slug, category):
 
 
 @app.route('/problem/<slug>/edit')
+@require_problem_access('edit')
 def edit_problem_page(slug):
     """Problem editing page"""
     try:
-        problem = problem_manager.get_problem(slug)
+        problem = unified_problem_manager.get_problem(slug)
         if not problem:
             return "Problem not found", 404
 
@@ -790,10 +1047,11 @@ def edit_problem_page(slug):
 
 
 @app.route('/api/problem/<slug>/save-all', methods=['POST'])
+@require_problem_access('edit')
 def save_problem_all_api(slug):
     """API endpoint to save all problem changes"""
     try:
-        problem = problem_manager.get_problem(slug)
+        problem = unified_problem_manager.get_problem(slug)
         if not problem:
             return jsonify({'success': False, 'error': 'Problem not found'}), 404
 
@@ -802,21 +1060,40 @@ def save_problem_all_api(slug):
         files_data = data.get('files', {})
         validator_enabled = data.get('validator_enabled', False)
 
-        # Update configuration
+        # Update configuration in database
+        metadata_updates = {}
+
         for key, value in config_data.items():
             if key == 'tags':
-                problem.config.set('tags', value)
+                metadata_updates['tags'] = value
             elif key == 'time_limit_ms':
-                problem.config.set('limits.time_ms', value)
+                metadata_updates['time_limit_ms'] = value
             elif key == 'memory_limit_mb':
-                problem.config.set('limits.memory_mb', value)
+                metadata_updates['memory_limit_mb'] = value
             elif key == 'checker_type':
-                problem.config.set('checker.type', value)
-            else:
-                problem.config.set(key, value)
+                metadata_updates['checker_type'] = value
+            elif key == 'title':
+                metadata_updates['title'] = value
+            elif key == 'difficulty':
+                metadata_updates['difficulty'] = value
+            elif key == 'sample_count':
+                metadata_updates['sample_count'] = value
+            elif key == 'system_count':
+                metadata_updates['system_count'] = value
+            elif key == 'checker_tolerance':
+                metadata_updates['checker_tolerance'] = value
 
         # Set validator configuration
-        problem.config.set('validation.enabled', validator_enabled)
+        metadata_updates['validation_enabled'] = validator_enabled
+
+        # Update metadata in database
+        if metadata_updates:
+            user = g.current_user
+            success = unified_problem_manager.update_problem_metadata(
+                slug, metadata_updates, user['id'] if user else None
+            )
+            if not success:
+                return jsonify({'success': False, 'error': 'Failed to update problem metadata'}), 500
 
         # Save files
         from core.file_manager import FileManager
@@ -839,7 +1116,7 @@ def save_problem_all_api(slug):
                         file_path.unlink()
                         deleted_files.append(filename)
                     except Exception as e:
-                        print(f"Warning: Could not delete {filename}: {e}")
+                        pass  # File might not exist
 
         # Handle validator file specifically
         if not validator_enabled and 'validator.py' not in files_data:
@@ -849,11 +1126,10 @@ def save_problem_all_api(slug):
                     validator_path.unlink()
                     deleted_files.append('validator.py')
                 except Exception as e:
-                    print(f"Warning: Could not delete validator.py: {e}")
+                    pass  # File might not exist
 
-        # Update config with new file status
-        problem.config.update_file_status(problem.problem_dir)
-        problem.save_config(problem.config)
+        # Update file status in database
+        unified_problem_manager.update_file_status(slug)
 
         message_parts = []
         if saved_files:
@@ -871,7 +1147,6 @@ def save_problem_all_api(slug):
         })
 
     except Exception as e:
-        print(f"Error saving problem: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({
@@ -921,7 +1196,7 @@ def validate_file_api():
 def compile_spj_api(slug):
     """API endpoint to compile Special Judge"""
     try:
-        problem = problem_manager.get_problem(slug)
+        problem = unified_problem_manager.get_problem(slug)
         if not problem:
             return jsonify({'success': False, 'error': 'Problem not found'}), 404
 
@@ -964,7 +1239,6 @@ def compile_spj_api(slug):
             }), 500
 
     except Exception as e:
-        print(f"Error compiling SPJ: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({
@@ -977,7 +1251,7 @@ def compile_spj_api(slug):
 def get_problem_statement_api(slug):
     """API endpoint to get problem statement"""
     try:
-        problem = problem_manager.get_problem(slug)
+        problem = unified_problem_manager.get_problem(slug)
         if not problem:
             return jsonify({'success': False, 'error': 'Problem not found'}), 404
 
@@ -1008,7 +1282,7 @@ def get_problem_statement_api(slug):
 def ai_generate_file_api(slug):
     """API endpoint to generate code files using AI"""
     try:
-        problem = problem_manager.get_problem(slug)
+        problem = unified_problem_manager.get_problem(slug)
         if not problem:
             return jsonify({'success': False, 'error': 'Problem not found'}), 404
 
@@ -1078,7 +1352,6 @@ def ai_generate_file_api(slug):
             }), 500
 
     except Exception as e:
-        print(f"Error in AI generation: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({
@@ -1091,7 +1364,7 @@ def ai_generate_file_api(slug):
 def ai_polish_statement_api(slug):
     """API endpoint to polish problem statement using AI"""
     try:
-        problem = problem_manager.get_problem(slug)
+        problem = unified_problem_manager.get_problem(slug)
         if not problem:
             return jsonify({'success': False, 'error': 'Problem not found'}), 404
 
@@ -1118,7 +1391,6 @@ def ai_polish_statement_api(slug):
         try:
             result = ai_service.polish_statement_with_explanation(
                 raw_statement)
-            print(result.code)
             return jsonify({
                 'success': True,
                 'polished_statement': result.code,
@@ -1133,7 +1405,6 @@ def ai_polish_statement_api(slug):
             }), 500
 
     except Exception as e:
-        print(f"Error in AI statement polishing: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({
@@ -1164,29 +1435,51 @@ def ai_status_api():
 
 @app.route('/health')
 def health_check():
-    """Health check endpoint"""
-    return jsonify({
-        'status': 'healthy',
-        'version': '1.0.0',
-        'problems_count': len(problem_manager.list_problems())
-    })
+    """Enhanced health check endpoint with multi-user support"""
+    try:
+        # Check database connectivity
+        db_healthy = db_manager.health_check()
+
+        # Check authentication service
+        auth_healthy = auth_service.health_check()
+
+        # Check file system
+        problems_accessible = os.access(
+            'problems/', os.R_OK | os.W_OK) if os.path.exists('problems/') else True
+
+        # Overall health status
+        is_healthy = db_healthy and auth_healthy and problems_accessible
+
+        return jsonify({
+            'status': 'healthy' if is_healthy else 'unhealthy',
+            'version': '2.0.0-multiuser',
+            'multiuser_enabled': True,
+            'database': db_healthy,
+            'authentication': auth_healthy,
+            'file_system': problems_accessible,
+            'problems_count': len(unified_problem_manager.list_problems()),
+            'timestamp': __import__('datetime').datetime.utcnow().isoformat()
+        }), 200 if is_healthy else 503
+
+    except Exception as e:
+        return jsonify({
+            'status': 'unhealthy',
+            'error': str(e),
+            'version': '2.0.0-multiuser'
+        }), 503
 
 
 if __name__ == '__main__':
     # Create config file if it doesn't exist
     if not os.path.exists('config.yaml'):
         config.save()
-        print("Created default config.yaml")
+        pass  # Config created
 
     # Run the Flask app
     host = config.get('web.host', '127.0.0.1')
     port = config.get('web.port', 5001)
     # Default to False for production safety
     debug = config.get('web.debug', False)
-
-    print(f"Starting ShahOJ web interface...")
-    print(f"Dashboard: http://{host}:{port}/")
-    print(f"API: http://{host}:{port}/api/problems")
 
     app.run(host=host, port=port, debug=debug,
             use_reloader=False)  # Disable reloader

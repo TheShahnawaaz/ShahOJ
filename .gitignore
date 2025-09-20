@@ -133,7 +133,12 @@ PERSONAL_*
 docker-compose.override.yml
 .dockerignore
 
-problems/
+# Problem data directories (not templates)
+problems/*/
+problems_backup/
+problems_backup_yaml_migration/
+
+client_secret.json
 
 # Security sensitive files
 *.pem
@@ -158,3 +163,4 @@ yarn-error.log*
 test_solution_*.cpp
 my_solution_*.cpp
 user_solution_*.cpp
+

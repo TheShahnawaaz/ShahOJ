@@ -49,7 +49,7 @@
 {% endmacro %}
 
 {# Problem Detail Header Component #}
-{% macro problem_detail_header(problem) %}
+{% macro problem_detail_header(problem, current_user=None, is_author=False, problem_data=None, author=None) %}
 <div class="edit-container">
     <div class="progress-header">
         <div class="d-flex justify-content-between align-items-start flex-wrap">
@@ -86,22 +86,49 @@
                 </div>
             </div>
             
-            <div class="d-flex gap-2 flex-wrap">
-                <a href="{{ url_for('test_solution_page', slug=problem.slug) }}" class="btn btn-light btn-enhanced">
-                    <i class="fas fa-play"></i> Test Solution
-                </a>
-                <a href="{{ url_for('manage_test_cases', slug=problem.slug) }}" class="btn btn-light btn-enhanced">
-                    <i class="fas fa-cog"></i> Manage Tests
-                </a>
-                <a href="{{ url_for('edit_problem_page', slug=problem.slug) }}" class="btn btn-light btn-enhanced">
-                    <i class="fas fa-edit"></i> Edit Problem
-                </a>
-                <button class="btn btn-light btn-enhanced" onclick="exportProblem('{{ problem.slug }}')">
-                    <i class="fas fa-download"></i> Export
-                </button>
-                <button class="btn btn-danger btn-enhanced" onclick="deleteProblem('{{ problem.slug }}')">
-                    <i class="fas fa-trash"></i> Delete
-                </button>
+            <div class="d-flex gap-2 flex-wrap align-items-center">
+                {% if current_user and is_author %}
+                    <!-- Author Management Buttons -->
+                    <a href="{{ url_for('manage_test_cases', slug=problem.slug) }}" class="btn btn-light btn-enhanced">
+                        <i class="fas fa-cog"></i> Manage Tests
+                    </a>
+                    <a href="{{ url_for('edit_problem_page', slug=problem.slug) }}" class="btn btn-light btn-enhanced">
+                        <i class="fas fa-edit"></i> Edit Problem
+                    </a>
+                    {% if problem_data and problem_data.get('is_public') %}
+                        <!-- Problem is currently PUBLIC - show "Make Private" button -->
+                        <button class="btn btn-warning btn-enhanced" 
+                                onclick="toggleVisibilityInHeader('{{ problem.slug }}', true)"
+                                id="toggle-visibility-btn-{{ problem.slug }}"
+                                title="Make Private">
+                            <i class="fas fa-lock me-1"></i>Make Private
+                        </button>
+                    {% else %}
+                        <!-- Problem is currently PRIVATE - show "Make Public" button -->
+                        <button class="btn btn-success btn-enhanced" 
+                                onclick="toggleVisibilityInHeader('{{ problem.slug }}', false)"
+                                id="toggle-visibility-btn-{{ problem.slug }}"
+                                title="Make Public">
+                            <i class="fas fa-globe me-1"></i>Make Public
+                        </button>
+                    {% endif %}
+                    <button class="btn btn-light btn-enhanced" onclick="exportProblem('{{ problem.slug }}')">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                    <button class="btn btn-danger btn-enhanced" onclick="deleteProblem('{{ problem.slug }}')">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                {% else %}
+                    <!-- Non-Author Info -->
+                    {% if author %}
+                        <div class="text-light opacity-75">
+                            <small>
+                                <i class="fas fa-user"></i> 
+                                Created by <strong>{{ author.name }}</strong>
+                            </small>
+                        </div>
+                    {% endif %}
+                {% endif %}
             </div>
         </div>
     </div>

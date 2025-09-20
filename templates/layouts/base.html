@@ -680,6 +680,32 @@
         .navbar-nav .nav-link.active:hover {
             background-color: rgba(255, 255, 255, 0.3);
         }
+
+        /* Google Logo Styling */
+        .google-logo {
+            width: 18px;
+            height: 18px;
+            vertical-align: middle;
+        }
+
+        .google-logo-lg {
+            width: 22px;
+            height: 22px;
+            vertical-align: middle;
+        }
+
+        /* White background for navbar Google logo in light mode only */
+        .navbar .google-logo {
+            background-color: white;
+            border-radius: 3px;
+            padding: 2px;
+        }
+
+        /* Remove white background in dark mode */
+        [data-theme="dark"] .navbar .google-logo {
+            background-color: transparent;
+            padding: 0;
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -713,17 +739,46 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-enhanced {{ 'active' if request.endpoint in nav_context.create else '' }}" href="{{ url_for('create_problem_form') }}">
-                            <i class="fas fa-puzzle-piece me-1"></i>
-                            <span>Create Problem</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link nav-link-enhanced {{ 'active' if request.endpoint == 'playground' else '' }}" href="{{ url_for('playground') }}">
                             <i class="fas fa-code me-1"></i>
                             <span>Playground</span>
                         </a>
                     </li>
+                    
+                    <!-- Multi-user navigation -->
+                    {% if current_user %}
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-enhanced {{ 'active' if request.endpoint in nav_context.create else '' }}" href="{{ url_for('create_problem_form') }}">
+                                <i class="fas fa-puzzle-piece me-1"></i>
+                                <span>Create Problem</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-enhanced {{ 'active' if request.endpoint == 'my_problems' else '' }}" href="{{ url_for('my_problems') }}">
+                                <i class="fas fa-user-edit me-1"></i>
+                                <span>My Problems</span>
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link nav-link-enhanced dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="{{ current_user.picture_url }}" alt="Profile" class="rounded-circle me-1" width="24" height="24">
+                                <span>{{ current_user.name }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{{ url_for('auth_logout') }}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Sign Out
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-enhanced" href="{{ url_for('auth_login') }}">
+                                <img src="{{ url_for('static', filename='images/google-logo-clean.svg') }}" alt="Google" class="google-logo me-1">
+                                <span>Sign In</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
                     <li class="nav-item">
                         <button class="btn nav-link nav-link-enhanced theme-toggle-btn" id="themeToggle" aria-label="Toggle theme">
                             <i class="fas fa-moon theme-icon" id="themeIcon"></i>

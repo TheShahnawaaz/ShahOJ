@@ -91,6 +91,9 @@ class TableSorter {
                 case 'text':
                     comparison = aVal.localeCompare(bVal);
                     break;
+                case 'number':
+                    comparison = parseFloat(aVal) - parseFloat(bVal);
+                    break;
                 case 'date':
                     comparison = new Date(aVal) - new Date(bVal);
                     break;
@@ -116,16 +119,33 @@ class TableSorter {
         let value = row.getAttribute(dataAttr);
         
         if (!value) {
-            // Fallback to text content if data attribute is missing
+            // Check for data-sort-value in the specific cell
             const columnIndex = this.getColumnIndex(column);
             const cell = row.cells[columnIndex];
-            value = cell ? cell.textContent.trim() : '';
+            
+            if (cell) {
+                // First try to find data-sort-value in the cell or its children
+                const sortValueElement = cell.querySelector('[data-sort-value]') || cell;
+                value = sortValueElement.getAttribute('data-sort-value');
+                
+                // If no data-sort-value, fall back to cell's data attribute
+                if (!value && cell.hasAttribute('data-sort-value')) {
+                    value = cell.getAttribute('data-sort-value');
+                }
+                
+                // Final fallback to text content
+                if (!value) {
+                    value = cell.textContent.trim();
+                }
+            }
         }
         
         // Clean up value based on type
         switch (type) {
             case 'text':
                 return value.toLowerCase();
+            case 'number':
+                return value || '0';
             case 'date':
                 return value || '1900-01-01';
             case 'difficulty':

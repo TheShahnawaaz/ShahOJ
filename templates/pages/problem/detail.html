@@ -4,6 +4,8 @@
 {% block title %}{{ problem.config.get('title', problem.slug) }} - ShahOJ{% endblock %}
 
 {% block extra_css %}
+<!-- Monaco Editor Component CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/monaco-editor-component.css') }}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <style>
     :root {
@@ -49,6 +51,95 @@
         font-weight: 500;
         transition: var(--transition);
         border: 1px solid transparent;
+    }
+
+    /* Enhanced Run Test Buttons */
+    .btn-run-all {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-run-all:hover {
+        background: linear-gradient(135deg, #218838, #1ea085);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        color: white;
+    }
+
+    .btn-run-all:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-run-samples {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-run-samples:hover {
+        background: linear-gradient(135deg, #0056b3, #004085);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+        color: white;
+    }
+
+    .btn-run-samples:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+    }
+
+    /* Dark mode adjustments */
+    [data-theme="dark"] .btn-run-all {
+        background: linear-gradient(135deg, #198754, #157347);
+        box-shadow: 0 4px 12px rgba(25, 135, 84, 0.4);
+    }
+
+    [data-theme="dark"] .btn-run-all:hover {
+        background: linear-gradient(135deg, #146c43, #0f5132);
+        box-shadow: 0 6px 20px rgba(25, 135, 84, 0.5);
+    }
+
+    [data-theme="dark"] .btn-run-samples {
+        background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+    }
+
+    [data-theme="dark"] .btn-run-samples:hover {
+        background: linear-gradient(135deg, #0a58ca, #084298);
+        box-shadow: 0 6px 20px rgba(13, 110, 253, 0.5);
+    }
+
+    /* Button loading state */
+    .btn-run-all:disabled,
+    .btn-run-samples:disabled {
+        opacity: 0.7;
+        transform: none;
+        cursor: not-allowed;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .btn-run-all,
+        .btn-run-samples {
+            padding: 0.6rem 1.2rem;
+            font-size: 0.9rem;
+        }
     }
 
     /* Markdown Content Styling */
@@ -266,6 +357,80 @@
         border-color: #28a745;
         color: white;
     }
+
+    /* Side-by-side layout enhancements */
+    .editor-resize-container {
+        min-height: 400px;
+    }
+
+    .monaco-editor-container {
+        height: 400px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    /* Enhanced Code Editor Container (from test-solution.html) */
+    .code-editor-container { 
+        background: var(--secondary-bg); 
+        border-radius: var(--border-radius); 
+        padding: 0; 
+        overflow: hidden; 
+    }
+
+    .code-editor-container textarea { 
+        background: var(--card-bg); 
+        border: none; 
+        border-radius: 0; 
+        color: var(--text-primary); 
+    }
+
+    /* Test results styling */
+    #testResults .card {
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+    }
+
+    #testResults .card-header {
+        background: var(--secondary-bg);
+        border-bottom: 1px solid var(--border-color);
+        font-size: 0.9rem;
+    }
+
+    #testResults pre {
+        max-height: 150px;
+        overflow-y: auto;
+        font-size: 0.8rem;
+        margin-bottom: 0;
+    }
+
+    /* Verdict styling from test-solution.html */
+    .verdict-AC { color: #28a745; font-weight: bold; }
+    .verdict-WA { color: #dc3545; font-weight: bold; }
+    .verdict-TLE { color: #ffc107; font-weight: bold; }
+    .verdict-RTE { color: #fd7e14; font-weight: bold; }
+    .verdict-CE { color: #6f42c1; font-weight: bold; }
+    .verdict-PE { color: #20c997; font-weight: bold; }
+    .verdict-JE { color: #6c757d; font-weight: bold; }
+    
+    .test-result-card {
+        transition: all 0.2s;
+    }
+    
+    .test-result-card:hover {
+        transform: translateY(-1px);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 991.98px) {
+        .col-lg-6 {
+            margin-bottom: 1rem;
+        }
+        
+        .monaco-editor-container {
+            height: 300px;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -278,93 +443,16 @@
         {'text': problem.config.get('title', problem.slug), 'icon': 'fas fa-file-code'}
     ]) }}
 
+
+
     <!-- Enhanced Problem Header -->
-    {{ problem_detail_header(problem) }}
+    {{ problem_detail_header(problem, current_user, is_author, problem_data, author) }}
 
-    <!-- Problem Information -->
+    <!-- Main Content: Side by Side Layout -->
     <div class="row">
-        
-        <!-- Configuration Panel -->
-        <div class="col-lg-3 col-md-4">
-            
-            <!-- Basic Info -->
-            {% call enhanced_card("Problem Information", "fas fa-info-circle") %}
-                <table class="table table-sm mb-0">
-                    <tr>
-                        <td><strong>Time Limit:</strong></td>
-                        <td><span class="badge bg-primary">{{ problem.config.get('limits.time_ms') or 1000 }}ms</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Memory Limit:</strong></td>
-                        <td><span class="badge bg-info">{{ problem.config.get('limits.memory_mb') or 256 }}MB</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Checker:</strong></td>
-                        <td>
-                            {% set checker_type = problem.config.get('checker.type') or 'diff' %}
-                            <span class="badge 
-                                {% if checker_type == 'diff' %}bg-primary
-                                {% elif checker_type == 'float' %}bg-info
-                                {% else %}bg-warning text-dark{% endif %}">
-                                {{ checker_type|upper }}
-                            </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><strong>Created:</strong></td>
-                        <td><small class="text-muted">{{ (problem.config.get('created_date') or 'Unknown')[:10] }}</small></td>
-                    </tr>
-                </table>
-            {% endcall %}
-
-            <!-- File Status -->
-            {% call enhanced_card("File Status", "fas fa-file-code") %}
-                {% set files = problem.get_files_info() %}
-                <div class="list-group list-group-flush">
-                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 border-0">
-                        <span><i class="fas fa-cog text-muted me-2"></i>config.yaml</span>
-                        {{ file_status_indicator(files.config_exists, true) }}
-                    </div>
-                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 border-0">
-                        <span><i class="fas fa-file-alt text-muted me-2"></i>statement.md</span>
-                        {{ file_status_indicator(files.statement_exists, true) }}
-                    </div>
-                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 border-0">
-                        <span><i class="fas fa-code text-muted me-2"></i>solution.py</span>
-                        {{ file_status_indicator(files.solution_exists, true) }}
-                    </div>
-                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 border-0">
-                        <span><i class="fas fa-random text-muted me-2"></i>generator.py</span>
-                        {{ file_status_indicator(files.generator_exists, true) }}
-                    </div>
-                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 border-0">
-                        <span><i class="fas fa-shield-alt text-muted me-2"></i>validator.py</span>
-                        {{ file_status_indicator(files.validator_exists, false) }}
-                    </div>
-                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 border-0">
-                        <span><i class="fas fa-gavel text-muted me-2"></i>checker/</span>
-                        {{ file_status_indicator(files.checker_exists, false) }}
-                    </div>
-                </div>
-            {% endcall %}
-
-            <!-- Test Cases Summary -->
-            {% call enhanced_card("Test Cases", "fas fa-vial", [
-                {'text': 'Manage', 'icon': 'fas fa-cog', 'class': 'btn-outline-primary btn-sm', 'onclick': "location.href='" + url_for('manage_test_cases', slug=problem.slug) + "'"}
-            ]) %}
-                {% set test_counts = problem.get_test_cases_count() %}
-                {{ test_case_summary(test_counts) }}
-            {% endcall %}
-
-        </div>
-
-        <!-- Main Content Panel -->
-        <div class="col-lg-9 col-md-8">
-            
-            <!-- Problem Statement -->
-            {% call enhanced_card("Problem Statement", "fas fa-file-alt", [
-                {'text': 'Edit', 'icon': 'fas fa-edit', 'class': 'btn-outline-primary btn-sm', 'onclick': "location.href='" + url_for('edit_problem_page', slug=problem.slug) + "'"}
-            ]) %}
+        <!-- Left Column: Problem Statement -->
+        <div class="col-lg-6 col-md-12">
+            {% call enhanced_card("Problem Statement", "fas fa-file-alt", []) %}
                 <div id="problemStatement">
                     <div class="text-center py-4">
                         <i class="fas fa-spinner fa-spin text-primary"></i>
@@ -372,7 +460,56 @@
                     </div>
                 </div>
             {% endcall %}
+        </div>
 
+        <!-- Right Column: Solution Editor -->
+        <div class="col-lg-6 col-md-12">
+            {% call enhanced_card("Solution Editor", "fas fa-code", [
+                {'text': 'Clear', 'icon': 'fas fa-trash', 'class': 'btn-outline-secondary btn-sm', 'id': 'clearCodeBtn'},
+                {'text': 'Template', 'icon': 'fas fa-file-code', 'class': 'btn-outline-info btn-sm', 'id': 'loadTemplateBtn'}
+            ]) %}
+                <div class="editor-resize-container">
+                    <div class="monaco-editor-container" id="cpp-solution-editor"></div>
+                    <div class="editor-resize-handle" id="cpp-solution-editor-resize-handle"></div>
+                </div>
+                
+                <!-- Test Solution Controls -->
+                <div class="mt-3 pt-3 border-top">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            {% if current_user %}
+                                <div class="d-flex gap-3 flex-wrap">
+                                    <button class="btn btn-run-all btn-enhanced" id="runTestsBtn">
+                                        <i class="fas fa-play me-2"></i>Run All Tests
+                                    </button>
+                                    <button class="btn btn-run-samples btn-enhanced" id="runSampleBtn">
+                                        <i class="fas fa-vial me-2"></i>Run Samples
+                                    </button>
+                                </div>
+                            {% else %}
+                                <div class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    You need to <a href="{{ url_for('auth_login') }}" class="text-decoration-none">sign in</a> to run or submit
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <small class="text-muted">
+                                <i class="fas fa-cog"></i> Compile with: <code>g++ -std=c++17 -O2</code>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            {% endcall %}
+
+            <!-- Test Results Section -->
+            <div id="testResults" class="mt-3" style="display: none;">
+                {% call enhanced_card("Test Results", "fas fa-chart-line", []) %}
+                    <div id="testResultsContent">
+                        <!-- Test results will be populated here -->
+                    </div>
+                {% endcall %}
+            </div>
         </div>
     </div>
 
@@ -380,16 +517,37 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Load dependencies first -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"></script>
+
+<!-- Monaco Editor JS (load after other dependencies) -->
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
+<!-- Monaco Editor Component JS -->
+<script src="{{ url_for('static', filename='js/monaco-editor-component.js') }}"></script>
+<script src="{{ url_for('static', filename='js/monaco-editor-presets.js') }}"></script>
+
 <script>
+// Global variables
+let solutionEditor = null;
+let currentTestResults = null;
+
 document.addEventListener('DOMContentLoaded', function() {
     // Load problem statement
     loadProblemStatement();
 
     // Initialize enhanced buttons
     initializeEnhancedButtons();
+
+    // Initialize solution tester (like test-solution.html)
+    setTimeout(() => {
+        try {
+            window.solutionTester = new SolutionTester();
+        } catch (error) {
+            console.error('Failed to initialize Solution Tester:', error);
+        }
+    }, 200);
 });
 
 function loadProblemStatement() {
@@ -424,11 +582,11 @@ function loadProblemStatement() {
                         Problem statement could not be loaded. ${data.error || ''}
                     </div>
                     <h4>{{ problem.config.get('title', problem.slug) }}</h4>
-                    <p class="text-muted">{{ problem.config.get('description', 'No description available.') }}</p>
                 `;
             }
         })
         .catch(error => {
+            console.error('Statement loading error:', error);
             const statementDiv = document.getElementById('problemStatement');
             statementDiv.innerHTML = `
                 <div class="alert alert-info">
@@ -436,7 +594,6 @@ function loadProblemStatement() {
                     Problem statement file not found or could not be loaded.
                 </div>
                 <h4>{{ problem.config.get('title', problem.slug) }}</h4>
-                <p class="text-muted">{{ problem.config.get('description', 'No description available.') }}</p>
             `;
         });
 }
@@ -522,6 +679,336 @@ function copyCodeBlock(codeElement, button) {
     });
 }
 
+// Solution Test Page with Reusable Monaco Editor Component (from test-solution.html)
+class SolutionTester {
+    constructor() {
+        this.cppEditor = null;
+        this.init();
+    }
+    
+    async init() {
+        try {
+            // Set up event listeners after a small delay to ensure DOM is ready
+            setTimeout(() => {
+                this.setupEventListeners();
+            }, 100);
+            
+            // Create C++ Solution Editor using our reusable component
+            this.cppEditor = MonacoEditorPresets.createCppSolutionEditor('cpp-solution-editor');
+            solutionEditor = this.cppEditor; // Set global reference
+            
+        } catch (error) {
+            console.error('Failed to initialize Solution Tester:', error);
+        }
+    }
+    
+    setupEventListeners() {
+        // Load C++ template
+        document.getElementById('loadTemplateBtn')?.addEventListener('click', () => {
+            if (this.cppEditor) {
+                // Get the default template from the preset and reload it
+                const defaultTemplate = `#include <bits/stdc++.h>
+using namespace std;
+#define int long long
+#define all(x) x.begin(), x.end()
+#define pb push_back
+const int MOD = 1000000007;
+int n, m, k;
+vector<int> a;
+
+void solve()
+{
+    cin >> n;
+    a.resize(n);
+    for (auto &i : a)
+        cin >> i;
+}
+
+signed main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+    int t;
+    cin >> t;
+    while (t--)
+        solve();
+    return 0;
+}`;
+                this.cppEditor.setValue(defaultTemplate);
+            }
+        });
+        
+        // Clear code
+        document.getElementById('clearCodeBtn')?.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear the code?')) {
+                if (this.cppEditor) {
+                    this.cppEditor.setValue('');
+                }
+            }
+        });
+        
+        // Run all tests
+        document.getElementById('runTestsBtn')?.addEventListener('click', () => {
+            // Check if user is authenticated
+            const isAuthenticated = {{ 'true' if current_user else 'false' }};
+            if (!isAuthenticated) {
+                alert('Please sign in to run tests on problems.');
+                return;
+            }
+            
+            const code = this.getCode();
+            
+            if (!code.trim()) {
+                alert('Please enter C++ code to test');
+                return;
+            }
+            
+            // Run both samples and system tests
+            const categories = ['samples', 'system'];
+            this.runAllTests(code, categories);
+        });
+
+        // Run samples only
+        document.getElementById('runSampleBtn')?.addEventListener('click', () => {
+            // Check if user is authenticated
+            const isAuthenticated = {{ 'true' if current_user else 'false' }};
+            if (!isAuthenticated) {
+                alert('Please sign in to run tests on problems.');
+                return;
+            }
+            
+            const code = this.getCode();
+            
+            if (!code.trim()) {
+                alert('Please enter C++ code to test');
+                return;
+            }
+            
+            // Run only samples
+            const categories = ['samples'];
+            this.runAllTests(code, categories);
+        });
+    }
+    
+    getCode() {
+        return this.cppEditor ? this.cppEditor.getValue() : '';
+    }
+    
+    runAllTests(code, categories) {
+        // Disable run button
+        const runBtn = categories.includes('system') ? 
+            document.getElementById('runTestsBtn') : 
+            document.getElementById('runSampleBtn');
+        const originalText = runBtn.innerHTML;
+        runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+        runBtn.disabled = true;
+        
+        fetch(`/api/problem/{{ problem.slug }}/test-solution`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                code: code,
+                categories: categories
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayTestResults(data.results);
+            } else {
+                displayError(data.error);
+            }
+        })
+        .catch(error => {
+            displayError(`Network error: ${error.message}`);
+        })
+        .finally(() => {
+            // Restore run button
+            runBtn.innerHTML = originalText;
+            runBtn.disabled = false;
+        });
+    }
+}
+
+// Helper function to safely escape strings for JavaScript template literals (from test-solution.html)
+function escapeForJs(str) {
+    if (!str) return '';
+    return str
+        .replace(/\\/g, '\\\\')   // Escape backslashes
+        .replace(/`/g, '\\`')     // Escape backticks  
+        .replace(/\$/g, '\\$')    // Escape dollar signs
+        .replace(/"/g, '\\"')     // Escape double quotes
+        .replace(/'/g, "\\'")     // Escape single quotes
+        .replace(/\n/g, '\\n')    // Escape newlines
+        .replace(/\r/g, '\\r')    // Escape carriage returns
+        .replace(/\t/g, '\\t');   // Escape tabs
+}
+
+// Display test results (from test-solution.html)
+function displayTestResults(results) {
+    const testResultsDiv = document.getElementById('testResults');
+    const testResultsContent = document.getElementById('testResultsContent');
+    
+    // Build results HTML
+    let html = '';
+    
+    // Compilation result
+    if (results.compilation.success) {
+        html += `<div class="alert alert-success">
+            <i class="fas fa-check-circle"></i> <strong>Compilation Successful</strong> 
+            (${results.compilation.time_ms.toFixed(1)}ms)
+        </div>`;
+    } else {
+        html += `<div class="alert alert-danger">
+            <i class="fas fa-times-circle"></i> <strong>Compilation Failed</strong><br>
+            <pre class="mt-2">${results.compilation.errors}</pre>
+        </div>`;
+        testResultsContent.innerHTML = html;
+        testResultsDiv.style.display = 'block';
+        return;
+    }
+    
+    // Overall statistics
+    const stats = results.statistics;
+    html += `<div class="row mb-3">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-success">${stats.passed}</h4>
+                    <small>Passed</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-danger">${stats.failed}</h4>
+                    <small>Failed</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4>${stats.total_tests}</h4>
+                    <small>Total</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4>${stats.pass_rate}%</h4>
+                    <small>Pass Rate</small>
+                </div>
+            </div>
+        </div>
+    </div>`;
+    
+    // Enhanced category results with detailed failure information
+    for (const [category, categoryResults] of Object.entries(results.test_results)) {
+        if (categoryResults.length === 0) continue;
+        
+        const categoryStats = results.categories[category];
+        const categoryClass = categoryStats.failed === 0 ? 'success' : 'danger';
+        
+        html += `<div class="card mb-3">
+            <div class="card-header bg-${categoryClass} text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-vial"></i> ${category.charAt(0).toUpperCase() + category.slice(1)} 
+                    (${categoryStats.passed}/${categoryStats.count} passed, ${categoryStats.avg_time_ms}ms avg)
+                </h6>
+            </div>
+            <div class="card-body">`;
+        
+        // Show individual test results with enhanced debugging
+        categoryResults.forEach(result => {
+            const verdictClass = `verdict-${result.verdict}`;
+            
+            if (result.verdict === 'AC') {
+                // Simple badge for passing tests
+                html += `<span class="badge bg-success me-2 mb-2">
+                    Test ${String(result.test_num).padStart(2, '0')}: ${result.verdict} (${result.time_ms.toFixed(1)}ms)
+                </span>`;
+            } else {
+                // Enhanced failure display with all debugging info
+                html += `<div class="border border-danger rounded p-3 mb-3">
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="text-danger mb-3">
+                                <span class="${verdictClass}">Test ${String(result.test_num).padStart(2, '0')}: ${result.verdict}</span>
+                                <small class="text-muted ms-2">(${result.time_ms.toFixed(1)}ms)</small>
+                            </h6>
+                            
+                            <div class="row">
+                                <!-- Input Column -->
+                                <div class="col-md-4">
+                                    <h6 class="text-info mb-2">📥 Input:</h6>
+                                    <div class="bg-light p-2 rounded">
+                                        <code class="small">${result.input_truncated || 'N/A'}</code>
+                                    </div>
+                                    ${result.input_full && result.input_full.length > 50 ? 
+                                        `<button class="btn btn-sm btn-outline-info mt-2" onclick="showFullContent('Test ${result.test_num} Input', \`${escapeForJs(result.input_full)}\`)">
+                                            <i class="fas fa-eye"></i> View Full Input
+                                        </button>` : ''}
+                                </div>
+                                
+                                <!-- Expected Column -->
+                                <div class="col-md-4">
+                                    <h6 class="text-success mb-2">✅ Expected:</h6>
+                                    <div class="bg-light p-2 rounded">
+                                        <code class="small text-success">${result.expected_truncated || 'N/A'}</code>
+                                    </div>
+                                    ${result.expected_full && result.expected_full.length > 20 ? 
+                                        `<button class="btn btn-sm btn-outline-success mt-2" onclick="showFullContent('Test ${result.test_num} Expected Output', \`${escapeForJs(result.expected_full)}\`)">
+                                            <i class="fas fa-eye"></i> View Full
+                                        </button>` : ''}
+                                </div>
+                                
+                                <!-- Actual Column -->
+                                <div class="col-md-4">
+                                    <h6 class="text-danger mb-2">❌ Your Output:</h6>
+                                    <div class="bg-light p-2 rounded">
+                                        <code class="small text-danger">${result.actual_truncated || 'N/A'}</code>
+                                    </div>
+                                    ${result.actual_full && result.actual_full.length > 20 ? 
+                                        `<button class="btn btn-sm btn-outline-danger mt-2" onclick="showFullContent('Test ${result.test_num} Your Output', \`${escapeForJs(result.actual_full)}\`)">
+                                            <i class="fas fa-eye"></i> View Full
+                                        </button>` : ''}
+                                </div>
+                            </div>
+                            
+                            <!-- Details and Actions -->
+                            <div class="row mt-3">
+                                <div class="col-md-8">
+                                    ${result.details ? `<small class="text-muted"><i class="fas fa-info-circle"></i> <strong>Details:</strong> ${result.details}</small>` : ''}
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="copyTestCase(\`${escapeForJs(result.input_full || '')}\`)">
+                                        <i class="fas fa-copy"></i> Copy Input
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+        });
+        
+        html += '</div></div>';
+    }
+    
+    testResultsContent.innerHTML = html;
+    testResultsDiv.style.display = 'block';
+    
+    // Scroll to results
+    testResultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+
 function initializeEnhancedButtons() {
     // Add hover effects to enhanced buttons
     document.querySelectorAll('.btn-enhanced').forEach(btn => {
@@ -535,9 +1022,48 @@ function initializeEnhancedButtons() {
     });
 }
 
+// Toggle problem visibility in header
+async function toggleVisibilityInHeader(slug, isCurrentlyPublic) {
+    try {
+        const response = await fetch(`/api/problems/${slug}/toggle-visibility`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Update the toggle button in header
+            const toggleBtn = document.getElementById(`toggle-visibility-btn-${slug}`);
+            
+            if (result.is_public) {
+                // Problem is now public, button should show "Make Private" (warning style)
+                toggleBtn.innerHTML = '<i class="fas fa-lock me-1"></i>Make Private';
+                toggleBtn.className = 'btn btn-warning btn-enhanced';
+                toggleBtn.setAttribute('onclick', `toggleVisibilityInHeader('${slug}', true)`);
+                toggleBtn.title = 'Make Private';
+            } else {
+                // Problem is now private, button should show "Make Public" (success style)
+                toggleBtn.innerHTML = '<i class="fas fa-globe me-1"></i>Make Public';
+                toggleBtn.className = 'btn btn-success btn-enhanced';
+                toggleBtn.setAttribute('onclick', `toggleVisibilityInHeader('${slug}', false)`);
+                toggleBtn.title = 'Make Public';
+            }
+            
+            // Success - no message needed, button change is enough feedback
+        } else {
+            console.error('Failed to update visibility:', result.error);
+        }
+    } catch (error) {
+        console.error('Error toggling visibility:', error);
+    }
+}
+
 function deleteProblem(slug) {
     if (confirm('Are you sure you want to delete this problem? This action cannot be undone.')) {
-        fetch(`/api/problem/${slug}/delete`, { method: 'DELETE' })
+        fetch(`/api/problems/${slug}/delete`, { method: 'DELETE' })
             .then(async response => {
                 const text = await response.text();
                 try {
@@ -562,6 +1088,92 @@ function deleteProblem(slug) {
 function exportProblem(slug) {
     // Placeholder for export functionality
     alert('Export functionality will be implemented soon!');
+}
+
+// Multi-user functionality
+async function toggleVisibility() {
+    try {
+        const response = await fetch(`/api/problems/{{ problem.slug }}/toggle-visibility`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Reload the page to reflect changes
+            location.reload();
+        } else {
+            alert(result.error || 'Failed to update visibility');
+        }
+    } catch (error) {
+        console.error('Error toggling visibility:', error);
+        alert('Failed to update visibility');
+    }
+}
+
+// Helper functions for displaying results (from test-solution.html)
+function showFullContent(title, content) {
+    // Create a simple modal for viewing full content
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.innerHTML = `
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">${title}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-end mb-2">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard(\`${escapeForJs(content)}\`)">
+                            <i class="fas fa-copy"></i> Copy to Clipboard
+                        </button>
+                    </div>
+                    <pre class="bg-light p-3" style="max-height: 400px; overflow-y: auto;"><code>${content}</code></pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    const bootstrapModal = new bootstrap.Modal(modal);
+    bootstrapModal.show();
+    
+    // Remove modal from DOM when hidden
+    modal.addEventListener('hidden.bs.modal', () => {
+        document.body.removeChild(modal);
+    });
+}
+
+function copyTestCase(content) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(content).then(() => {
+            // Could add a toast notification here
+        });
+    }
+}
+
+function copyToClipboard(content) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(content).then(() => {
+            // Could add a toast notification here
+        });
+    }
+}
+
+function displayError(error) {
+    const testResultsDiv = document.getElementById('testResults');
+    const testResultsContent = document.getElementById('testResultsContent');
+    testResultsContent.innerHTML = `<div class="alert alert-danger">
+        <i class="fas fa-exclamation-circle"></i> <strong>Error:</strong> ${error}
+    </div>`;
+    
+    testResultsDiv.style.display = 'block';
 }
 </script>
 {% endblock %}

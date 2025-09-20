@@ -717,11 +717,6 @@
                                 <div class="form-text">Comma-separated tags for categorization</div>
                             </div>
                             
-                            <div class="mb-0">
-                                <label for="edit_description" class="form-label">Short Description</label>
-                                <textarea class="form-control" id="edit_description" rows="3" 
-                                          placeholder="Brief description of the problem">{{ problem.config.get('description') or '' }}</textarea>
-                                </div>
                             </div>
                             
                         <!-- Limits & Constraints -->
@@ -731,7 +726,7 @@
                                     <label for="edit_time_limit" class="form-label">Time Limit (ms)</label>
                                 <div class="input-group">
                                     <input type="number" class="form-control" id="edit_time_limit" 
-                                           value="{{ problem.config.get('limits.time_ms') or 1000 }}"
+                                           value="{{ problem.config.limits.time_ms or 1000 }}"
                                            min="100" max="10000" step="100">
                                     <span class="input-group-text">ms</span>
                                 </div>
@@ -742,7 +737,7 @@
                                     <label for="edit_memory_limit" class="form-label">Memory Limit (MB)</label>
                                 <div class="input-group">
                                     <input type="number" class="form-control" id="edit_memory_limit" 
-                                           value="{{ problem.config.get('limits.memory_mb') or 256 }}"
+                                           value="{{ problem.config.limits.memory_mb or 256 }}"
                                            min="64" max="1024" step="64">
                                     <span class="input-group-text">MB</span>
                                 </div>
@@ -752,13 +747,13 @@
                             <div class="mb-0">
                                 <label for="edit_checker_type" class="form-label">Output Checker</label>
                                     <select class="form-select" id="edit_checker_type">
-                                    <option value="diff" {% if problem.config.get('checker.type') == 'diff' %}selected{% endif %}>
+                                    <option value="diff" {% if problem.config.checker.type == 'diff' %}selected{% endif %}>
                                         📝 Exact Match (diff)
                                     </option>
-                                    <option value="float" {% if problem.config.get('checker.type') == 'float' %}selected{% endif %}>
+                                    <option value="float" {% if problem.config.checker.type == 'float' %}selected{% endif %}>
                                         🔢 Floating Point (1e-6 tolerance)
                                     </option>
-                                    <option value="spj" {% if problem.config.get('checker.type') == 'spj' %}selected{% endif %}>
+                                    <option value="spj" {% if problem.config.checker.type == 'spj' %}selected{% endif %}>
                                         ⚖️ Special Judge (Custom)
                                     </option>
                                     </select>
@@ -1222,7 +1217,7 @@ class ProblemEditor {
         });
         
         // Config field changes
-    ['edit_title', 'edit_difficulty', 'edit_tags', 'edit_time_limit', 'edit_memory_limit', 'edit_checker_type', 'edit_description'].forEach(fieldId => {
+    ['edit_title', 'edit_difficulty', 'edit_tags', 'edit_time_limit', 'edit_memory_limit', 'edit_checker_type'].forEach(fieldId => {
         const field = document.getElementById(fieldId);
         if (field) {
                 field.addEventListener('input', () => {
@@ -1515,8 +1510,7 @@ class ProblemEditor {
                 tags: document.getElementById('edit_tags').value.split(',').map(t => t.trim()).filter(t => t),
                 time_limit_ms: parseInt(document.getElementById('edit_time_limit').value),
                 memory_limit_mb: parseInt(document.getElementById('edit_memory_limit').value),
-                checker_type: document.getElementById('edit_checker_type').value,
-                description: document.getElementById('edit_description').value.trim()
+                checker_type: document.getElementById('edit_checker_type').value
             },
             files: {
                     'statement.md': this.getFileContent('statement'),

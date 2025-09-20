@@ -20,566 +20,904 @@
 
     body { background-color: var(--primary-bg); }
 
-    /* Enhanced Layout */
-    .edit-container {
-        background: var(--card-bg);
+    /* Welcome Section */
+    .welcome-section {
+        background: linear-gradient(135deg, var(--primary-color), #0056b3);
+        color: white;
         border-radius: var(--border-radius);
-        box-shadow: var(--box-shadow);
+        padding: 2rem;
         margin-bottom: 2rem;
-        color: var(--text-primary);
-        border: 1px solid var(--border-color);
-    }
-
-    /* Progress Bar */
-    .progress-header {
-        background: linear-gradient(135deg, var(--primary-color), #0056b3);
-        color: white;
-        padding: 1rem;
-        border-radius: var(--border-radius) var(--border-radius) 0 0;
-    }
-
-    /* Enhanced Buttons */
-    .btn-enhanced {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        font-weight: 500;
-        transition: var(--transition);
-        border: 1px solid transparent;
-    }
-
-    .btn-enhanced:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-
-    .card {
-        border-radius: var(--border-radius);
         box-shadow: var(--box-shadow);
-        border: 1px solid var(--border-color);
-        margin-bottom: 1.5rem;
+    }
+
+    .welcome-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /* Enhanced Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card {
         background: var(--card-bg);
-        color: var(--text-primary);
-    }
-
-    .card-header {
-        background: var(--secondary-bg);
-        border-bottom: 1px solid var(--border-color);
-        font-weight: 600;
-        color: var(--text-primary);
-    }
-
-    /* Enhanced Statistics Cards */
-    .stats-card {
-        background: linear-gradient(135deg, var(--primary-color), #0056b3);
-        color: white;
-        border: none;
-        text-align: center;
-        transition: var(--transition);
-        cursor: pointer;
-    }
-
-    .stats-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(0,123,255,0.3);
-    }
-
-    .stats-card.success {
-        background: linear-gradient(135deg, var(--success-color), #1e7e34);
-    }
-
-    .stats-card.success:hover {
-        box-shadow: 0 8px 25px rgba(40,167,69,0.3);
-    }
-
-    .stats-card.info {
-        background: linear-gradient(135deg, var(--info-color), #117a8b);
-    }
-
-    .stats-card.info:hover {
-        box-shadow: 0 8px 25px rgba(23,162,184,0.3);
-    }
-
-    .stats-card.warning {
-        background: linear-gradient(135deg, var(--warning-color), #d39e00);
-        color: var(--dark-color);
-    }
-
-    .stats-card.warning:hover {
-        box-shadow: 0 8px 25px rgba(255,193,7,0.3);
-    }
-
-    .stats-card .card-body {
+        border-radius: 16px;
         padding: 2rem 1.5rem;
-    }
-
-    .stats-card i {
-        opacity: 0.8;
-        margin-bottom: 1rem;
-    }
-
-    .stats-card h2 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-    }
-
-    .stats-card p {
-        font-size: 1rem;
-        opacity: 0.9;
-        margin: 0;
-    }
-
-    /* Enhanced Table */
-    .table-hover tbody tr:hover {
-        background-color: var(--table-hover);
-        transition: var(--transition);
-    }
-
-    .table th {
-        border-top: none;
-        font-weight: 600;
-        color: var(--text-primary);
-        background-color: var(--secondary-bg);
-    }
-
-    /* Problem Title Links */
-    .problem-title-link {
-        color: var(--btn-primary);
-        font-weight: 600;
-        transition: var(--transition);
-    }
-    [data-theme="dark"] .problem-title-link {
-        color: #79b8ff !important; /* brighter for dark backgrounds */
-        text-shadow: 0 0 6px rgba(86, 156, 214, 0.2);
-    }
-    [data-theme="dark"] .problem-title-link:visited { color: #79b8ff !important; }
-
-    .clickable-row {
-        cursor: pointer;
-        transition: var(--transition);
-    }
-
-    .clickable-row:hover {
-        background-color: rgba(0,123,255,0.1) !important;
-    }
-
-    .clickable-row:hover .problem-title-link {
-        color: #0056b3;
-        text-decoration: underline;
-    }
-    [data-theme="dark"] .clickable-row:hover .problem-title-link {
-        color: #a5d1ff !important;
-        text-decoration: underline;
-    }
-
-    /* Action Buttons */
-    .action-btn-group .btn {
-        transition: var(--transition);
-    }
-
-    .action-btn-group .btn:hover {
-        transform: translateY(-1px);
-    }
-
-    /* Empty State */
-    .empty-state {
-        padding: 4rem 2rem;
         text-align: center;
-    }
-
-    .empty-state i {
-        color: #dee2e6;
-        margin-bottom: 2rem;
-    }
-
-    .empty-state h4 {
-        color: #6c757d;
-        margin-bottom: 1rem;
-    }
-
-    .empty-state p {
-        color: #6c757d;
-        margin-bottom: 2rem;
-    }
-
-    /* Difficulty Progress Bars */
-    .difficulty-progress {
-        height: 8px;
-        border-radius: 4px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
         overflow: hidden;
-        background-color: #e9ecef;
-        margin-top: 0.5rem;
     }
 
-    .difficulty-progress .progress-bar {
-        transition: width 0.6s ease;
-    }
-
-    /* System Info Cards */
-    .system-info-item {
-        padding: 1rem;
-        background: #f8f9fa;
-        border-radius: 6px;
-        margin-bottom: 1rem;
-        border-left: 4px solid var(--primary-color);
-    }
-
-    .system-info-item strong {
-        color: var(--dark-color);
-    }
-
-    .system-info-item code {
-        background: white;
-        padding: 0.2rem 0.5rem;
-        border-radius: 4px;
-        font-size: 0.9em;
-    }
-
-    /* Sortable Table Headers */
-    .sortable-header {
-        cursor: pointer;
-        user-select: none;
-        position: relative;
-        transition: var(--transition);
-        padding-right: 2rem !important;
-    }
-
-    .sortable-header:hover {
-        background-color: #e9ecef !important;
-        color: var(--primary-color);
-    }
-
-    .sort-icon {
-        position: absolute;
-        right: 0.75rem;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 0.75rem;
-        opacity: 0.5;
-        transition: var(--transition);
-    }
-
-    .sortable-header:hover .sort-icon {
-        opacity: 0.8;
-    }
-
-    .sortable-header.sort-asc .sort-icon {
-        opacity: 1;
-        color: var(--primary-color);
-    }
-
-    .sortable-header.sort-desc .sort-icon {
-        opacity: 1;
-        color: var(--primary-color);
-    }
-
-    /* Hide default sort icons and show active ones */
-    .sort-icon .fa-sort {
-        display: inline;
-    }
-
-    .sort-icon .fa-sort-up,
-    .sort-icon .fa-sort-down {
-        display: none;
-    }
-
-    .sortable-header.sort-asc .sort-icon .fa-sort {
-        display: none;
-    }
-
-    .sortable-header.sort-asc .sort-icon .fa-sort-up {
-        display: inline;
-    }
-
-    .sortable-header.sort-desc .sort-icon .fa-sort {
-        display: none;
-    }
-
-    .sortable-header.sort-desc .sort-icon .fa-sort-down {
-        display: inline;
-    }
-
-    /* Enhanced Table Row Animations */
-    .table tbody tr {
-        position: relative;
-        will-change: transform;
-    }
-
-    /* Smooth row transitions during reordering */
-    .table tbody tr.reordering {
-        z-index: 1;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        border-radius: 4px;
-    }
-
-    /* Enhanced hover effect during animations */
-    .table tbody tr:hover {
-        background-color: var(--table-hover) !important;
-        transition: background-color 0.2s ease;
-    }
-
-    /* Prevent layout shift during animations */
-    .table-responsive {
-        overflow: visible;
-        position: relative;
-    }
-
-    /* Add a subtle sorting indicator */
-    .table.sorting {
-        position: relative;
-    }
-
-    .table.sorting::before {
+    .stat-card::before {
         content: '';
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px) scale(1.01);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+    }
+
+    .stat-card:hover::before {
+        opacity: 1;
+    }
+
+    .stat-card.primary {
+        background: linear-gradient(135deg, rgba(0, 123, 255, 0.05), rgba(0, 123, 255, 0.02));
+        border-color: rgba(0, 123, 255, 0.2);
+    }
+
+    .stat-card.success {
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.05), rgba(40, 167, 69, 0.02));
+        border-color: rgba(40, 167, 69, 0.2);
+    }
+
+    .stat-card.warning {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.05), rgba(255, 193, 7, 0.02));
+        border-color: rgba(255, 193, 7, 0.2);
+    }
+
+    .stat-card.info {
+        background: linear-gradient(135deg, rgba(23, 162, 184, 0.05), rgba(23, 162, 184, 0.02));
+        border-color: rgba(23, 162, 184, 0.2);
+    }
+
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.8;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover .stat-icon {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        line-height: 1;
+        transition: all 0.3s ease;
+    }
+
+    .stat-value.primary { 
+        color: var(--primary-color);
+        text-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+    }
+    .stat-value.success { 
+        color: var(--success-color);
+        text-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+    }
+    .stat-value.warning { 
+        color: var(--warning-color);
+        text-shadow: 0 2px 4px rgba(255, 193, 7, 0.2);
+    }
+    .stat-value.info { 
+        color: var(--info-color);
+        text-shadow: 0 2px 4px rgba(23, 162, 184, 0.2);
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 0.5rem;
+    }
+
+    /* Dark mode enhancements */
+    [data-theme="dark"] .stat-card {
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    [data-theme="dark"] .stat-card:hover {
+        box-shadow: 0 12px 24px rgba(0,0,0,0.3);
+    }
+
+    [data-theme="dark"] .stat-card.primary {
+        background: linear-gradient(135deg, rgba(0, 123, 255, 0.1), rgba(0, 123, 255, 0.05));
+        border-color: rgba(0, 123, 255, 0.3);
+    }
+
+    [data-theme="dark"] .stat-card.success {
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(40, 167, 69, 0.05));
+        border-color: rgba(40, 167, 69, 0.3);
+    }
+
+    [data-theme="dark"] .stat-card.warning {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 193, 7, 0.05));
+        border-color: rgba(255, 193, 7, 0.3);
+    }
+
+    [data-theme="dark"] .stat-card.info {
+        background: linear-gradient(135deg, rgba(23, 162, 184, 0.1), rgba(23, 162, 184, 0.05));
+        border-color: rgba(23, 162, 184, 0.3);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .stat-card {
+            padding: 1.5rem 1rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+        }
+    }
+
+    /* Search and Filter Section */
+    .search-filters {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--border-color);
+    }
+
+    .search-input, .filter-select {
+        background: var(--input-bg);
+        border: 1px solid var(--input-border);
+        color: var(--text-primary);
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        transition: var(--transition);
+    }
+
+    .search-input:focus, .filter-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        background: var(--input-bg);
+        color: var(--text-primary);
+    }
+
+    /* Problem Cards */
+    .problem-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--border-color);
+        transition: var(--transition);
+        overflow: hidden;
+    }
+
+    .problem-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .problem-header {
+        background: linear-gradient(135deg, var(--success-color), #20c997);
+        color: white;
+        padding: 1rem;
+        position: relative;
+    }
+
+    .problem-stats {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+        opacity: 0.9;
+        flex-wrap: wrap;
+    }
+
+    .problem-body {
+        padding: 1.5rem;
+    }
+
+    .author-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        background: var(--secondary-bg);
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+    }
+
+    .author-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 2px solid var(--border-color);
+    }
+
+    .author-name {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .author-date {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        margin: 0;
+    }
+
+    /* Difficulty badges */
+    .difficulty-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .difficulty-easy { background: #d4edda; color: #155724; }
+    .difficulty-medium { background: #fff3cd; color: #856404; }
+    .difficulty-hard { background: #f8d7da; color: #721c24; }
+
+    /* Action buttons */
+    .btn-solve {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        transition: var(--transition);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-solve:hover {
+        background: #0056b3;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    /* Pagination */
+    .pagination-custom {
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .pagination-custom .page-link {
+        background: var(--card-bg);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .pagination-custom .page-link:hover {
+        background: var(--secondary-bg);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .pagination-custom .page-item.active .page-link {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--text-secondary);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+    }
+
+    /* Dark mode adjustments */
+    [data-theme="dark"] .problem-card,
+    [data-theme="dark"] .search-filters,
+    [data-theme="dark"] .stat-card,
+    [data-theme="dark"] .author-info {
+        border-color: var(--border-color);
+    }
+
+    [data-theme="dark"] .difficulty-easy { background: #1e7e34; color: #d4edda; }
+    [data-theme="dark"] .difficulty-medium { background: #d39e00; color: #fff3cd; }
+    [data-theme="dark"] .difficulty-hard { background: #bd2130; color: #f8d7da; }
+
+    /* Enhanced Table Styling */
+    .table-responsive {
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+    }
+
+    .table {
+        margin-bottom: 0;
+        font-size: 0.95rem;
+    }
+
+    .table thead th {
+        background: var(--primary-color);
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem 1.25rem;
+        border: none;
+        position: relative;
+    }
+
+    .table th.sortable-header {
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.3s ease;
+        padding-right: 2.5rem;
+    }
+
+    .table th.sortable-header:hover {
+        background-color: rgba(0, 123, 255, 0.9) !important;
+        transform: translateY(-1px);
+    }
+
+    [data-theme="dark"] .table th.sortable-header:hover {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+    }
+
+    .table th.sortable-header .fas.fa-sort {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
         opacity: 0.6;
-        animation: sortingIndicator 0.6s ease-in-out;
+        font-size: 0.8rem;
     }
 
-    @keyframes sortingIndicator {
-        0% {
-            transform: scaleX(0);
-        }
-        50% {
-            transform: scaleX(1);
-        }
-        100% {
-            transform: scaleX(0);
-        }
+    .table th.sortable-header:hover .fas.fa-sort {
+        opacity: 1;
     }
 
-    /* Stagger animation classes */
-    .table tbody tr.animate-in {
-        animation: slideInRow 0.4s cubic-bezier(0.2, 0, 0.2, 1) forwards;
+    .table th.sortable-header.sorting-asc::after {
+        content: " ↑";
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #ffd700;
+        font-weight: bold;
+        font-size: 1rem;
     }
 
-    @keyframes slideInRow {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
+    .table th.sortable-header.sorting-desc::after {
+        content: " ↓";
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #ffd700;
+        font-weight: bold;
+        font-size: 1rem;
+    }
+
+    .table tbody td {
+        padding: 0.75rem 1rem;
+        vertical-align: middle;
+        border-top: 1px solid var(--border-color);
+        background: var(--card-bg);
+        color: var(--text-primary);
+    }
+
+    .table tbody tr {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f8f9fa !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    [data-theme="dark"] .table tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    /* Simple Problem Title */
+    .problem-title-link {
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--primary-color);
+        text-decoration: none;
+        display: block;
+        margin-bottom: 0.2rem;
+    }
+
+    .problem-title-link:hover {
+        color: #0056b3;
+        text-decoration: underline;
+    }
+
+    .problem-slug {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        opacity: 0.7;
+    }
+
+    /* Difficulty badges matching problem_detail_header */
+
+    /* Simple Tag Chips */
+    .tag-chip {
+        background-color: #f8f9fa;
+        color: #495057;
+        border: 1px solid #dee2e6;
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+        border-radius: 0.75rem;
+        margin-right: 0.3rem;
+        margin-bottom: 0.2rem;
+        display: inline-block;
+        font-weight: 500;
+    }
+
+    [data-theme="dark"] .tag-chip {
+        background-color: #343a40;
+        color: #adb5bd;
+        border: 1px solid #495057;
+    }
+
+    /* Simple Author Info */
+    .author-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .author-avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .author-name {
+        font-weight: 500;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+    }
+
+    /* Simple Date Display */
+    .date-info {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .date-info i {
+        opacity: 0.6;
+        font-size: 0.8rem;
+    }
+
+    /* Simple Views Display */
+    .views-info {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .views-info i {
+        opacity: 0.6;
+        font-size: 0.8rem;
+    }
+
+    /* Responsive Enhancements */
+    @media (max-width: 768px) {
+        .table thead th,
+        .table tbody td {
+            padding: 0.75rem 0.5rem;
+            font-size: 0.85rem;
         }
-        to {
-            opacity: 1;
-            transform: translateY(0);
+        
+        .problem-title-link {
+            font-size: 1rem;
+        }
+        
+        .author-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    
-    <!-- Enhanced Dashboard Header -->
-    {{ problem_header(
-        'Dashboard',
-        'Manage your competitive programming problems',
-        [
-            {'text': 'Create Problem', 'icon': 'fas fa-plus', 'class': 'btn-light', 'onclick': "location.href='" + url_for('create_problem_form') + "'"},
-            {'text': 'Refresh', 'icon': 'fas fa-sync', 'class': 'btn-outline-light', 'onclick': 'location.reload()'}
-        ]
-    ) }}
-
-    <!-- Enhanced Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stats-card">
-                <div class="card-body">
-                    <i class="fas fa-file-code fa-3x"></i>
-                    <h2>{{ stats.total_problems }}</h2>
-                    <p>Total Problems</p>
-                </div>
+<div class="container-fluid px-4 py-4">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                {% if is_authenticated %}
+                    <div class="d-flex align-items-center">
+                        <img src="{{ current_user.picture_url }}" alt="{{ current_user.name }}" class="welcome-avatar me-3">
+                        <div>
+                            <h2 class="mb-1">Welcome back, {{ current_user.name }}!</h2>
+                            <p class="mb-0 opacity-75">Explore and solve competitive programming problems</p>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="d-flex align-items-center">
+                        <img src="{{ url_for('static', filename='images/ShahOJLogo.png') }}" alt="ShahOJ" class="welcome-avatar me-3">
+                        <div>
+                            <h2 class="mb-1">Welcome to ShahOJ!</h2>
+                            <p class="mb-0 opacity-75">Explore competitive programming problems</p>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stats-card success">
-                <div class="card-body">
-                    <i class="fas fa-check-circle fa-3x"></i>
-                    <h2>{{ stats.total_test_cases }}</h2>
-                    <p>Test Cases</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stats-card info">
-                <div class="card-body">
-                    <i class="fas fa-chart-line fa-3x"></i>
-                    <h2>{{ stats.difficulty_breakdown.Easy + stats.difficulty_breakdown.Medium + stats.difficulty_breakdown.Hard }}</h2>
-                    <p>Problems Ready</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stats-card warning">
-                <div class="card-body">
-                    <i class="fas fa-clock fa-3x"></i>
-                    <h2>{{ stats.recent_problems|length }}</h2>
-                    <p>Recent Problems</p>
-                </div>
+            <div class="col-md-4 text-end">
+                {% if is_authenticated %}
+                    <a href="{{ url_for('my_problems') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-user-edit me-2"></i>My Problems
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('auth_login') }}" class="btn btn-light btn-lg">
+                        <img src="{{ url_for('static', filename='images/google-logo-clean.svg') }}" alt="Google" class="google-logo-lg me-2">Sign In
+                    </a>
+                {% endif %}
             </div>
         </div>
     </div>
 
-    
-
-    <!-- Problems List -->
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5><i class="fas fa-list"></i> Problems</h5>
-            <small class="text-muted">{{ problems|length }} problems found</small>
+    <!-- Enhanced Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card primary">
+            <div class="stat-icon">
+                <i class="fas fa-globe text-primary"></i>
+            </div>
+            <div class="stat-value primary">{{ system_stats.public_problems }}</div>
+            <div class="stat-label">Public Problems</div>
         </div>
-        <div class="card-body">
-            {% if problems %}
-            <div class="table-responsive">
-                <table class="table table-hover" id="problemsTable">
-                    <thead>
-                        <tr>
-                            <th class="sortable-header" data-column="title" data-type="text">
-                                Title
-                                <span class="sort-icon">
-                                    <i class="fas fa-sort"></i>
-                                    <i class="fas fa-sort-up"></i>
-                                    <i class="fas fa-sort-down"></i>
-                                </span>
-                            </th>
-                            <th class="sortable-header" data-column="difficulty" data-type="difficulty">
-                                Difficulty
-                                <span class="sort-icon">
-                                    <i class="fas fa-sort"></i>
-                                    <i class="fas fa-sort-up"></i>
-                                    <i class="fas fa-sort-down"></i>
-                                </span>
-                            </th>
-                            <th class="sortable-header" data-column="tags" data-type="text">
-                                Tags
-                                <span class="sort-icon">
-                                    <i class="fas fa-sort"></i>
-                                    <i class="fas fa-sort-up"></i>
-                                    <i class="fas fa-sort-down"></i>
-                                </span>
-                            </th>
-                            <th class="sortable-header" data-column="created" data-type="date">
-                                Created
-                                <span class="sort-icon">
-                                    <i class="fas fa-sort"></i>
-                                    <i class="fas fa-sort-up"></i>
-                                    <i class="fas fa-sort-down"></i>
-                                </span>
-                            </th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for problem in problems %}
-                        <tr class="clickable-row" onclick="location.href='{{ url_for('problem_detail', slug=problem.slug) }}'"
-                            data-title="{{ (problem.config.get('title') or problem.slug)|lower }}"
-                            data-difficulty="{{ problem.config.get('difficulty') or 'Medium' }}"
-                            data-tags="{{ (problem.config.get('tags') or [])|join(', ')|lower }}"
-                            data-created="{{ problem.config.get('created_date') or '1900-01-01' }}">
-                            <td>
-                                <div class="problem-title-link">
-                                    {{ problem.config.get('title') or problem.slug }}
-                                </div>
-                                <small class="text-muted"><i class="fas fa-hashtag"></i> {{ problem.slug }}</small>
-                            </td>
-                            <td>
-                                {% set difficulty = problem.config.get('difficulty') or 'Medium' %}
-                                <span class="badge 
-                                    {% if difficulty == 'Easy' %}bg-success
-                                    {% elif difficulty == 'Medium' %}bg-warning text-dark
-                                    {% else %}bg-danger{% endif %}">
-                                    {{ difficulty }}
-                                </span>
-                            </td>
-                            <td>
-                                {% for tag in (problem.config.get('tags') or []) %}
-                                <span class="badge bg-light text-dark border me-1">{{ tag }}</span>
-                                {% endfor %}
-                                {% if not problem.config.get('tags') %}
-                                <small class="text-muted">No tags</small>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <small class="text-muted">
-                                    <i class="fas fa-calendar"></i> {{ (problem.config.get('created_date') or 'Unknown')[:10] }}
-                                </small>
-                            </td>
-                            <td onclick="event.stopPropagation()">
-                                <div class="btn-group btn-group-sm action-btn-group">
-                                    <a href="{{ url_for('problem_detail', slug=problem.slug) }}" class="btn btn-outline-primary btn-sm" title="View Details">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="{{ url_for('manage_test_cases', slug=problem.slug) }}" class="btn btn-outline-secondary btn-sm" title="Manage Tests">
-                                        <i class="fas fa-cog"></i>
-                                    </a>
-                                    <a href="{{ url_for('test_solution_page', slug=problem.slug) }}" class="btn btn-outline-success btn-sm" title="Test Solution">
-                                        <i class="fas fa-play"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        {% if is_authenticated and user_stats %}
+            <div class="stat-card success">
+                <div class="stat-icon">
+                    <i class="fas fa-user-edit text-success"></i>
+                </div>
+                <div class="stat-value success">{{ user_stats.total_problems }}</div>
+                <div class="stat-label">Your Problems</div>
             </div>
-            {% else %}
-            <div class="empty-state">
-                <i class="fas fa-folder-open fa-5x"></i>
-                <h4>No problems found</h4>
-                <p>Get started by creating your first competitive programming problem!</p>
-                <a href="{{ url_for('create_problem_form') }}" class="btn btn-primary btn-enhanced">
-                    <i class="fas fa-plus"></i> Create Your First Problem
+            <div class="stat-card warning">
+                <div class="stat-icon">
+                    <i class="fas fa-eye text-warning"></i>
+                </div>
+                <div class="stat-value warning">{{ user_stats.public_count }}</div>
+                <div class="stat-label">Your Public</div>
+            </div>
+            <div class="stat-card info">
+                <div class="stat-icon">
+                    <i class="fas fa-users text-info"></i>
+                </div>
+                <div class="stat-value info">{{ system_stats.total_users }}</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+        {% else %}
+            <div class="stat-card success">
+                <div class="stat-icon">
+                    <i class="fas fa-puzzle-piece text-success"></i>
+                </div>
+                <div class="stat-value success">{{ system_stats.total_problems }}</div>
+                <div class="stat-label">Total Problems</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-icon">
+                    <i class="fas fa-users text-warning"></i>
+                </div>
+                <div class="stat-value warning">{{ system_stats.total_users }}</div>
+                <div class="stat-label">Users</div>
+            </div>
+            <div class="stat-card info">
+                <div class="stat-icon">
+                    <i class="fas fa-gamepad text-info"></i>
+                </div>
+                <div class="stat-value info">🎮</div>
+                <div class="stat-label"><a href="{{ url_for('playground') }}" class="text-decoration-none text-info">Try Playground</a></div>
+            </div>
+        {% endif %}
+    </div>
+
+
+    <!-- Problems Section with Compact Search -->
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <h3 class="text-primary mb-0">
+            <i class="fas fa-puzzle-piece me-2"></i>
+            Public Problems
+        </h3>
+        
+        <!-- Compact Search and Filter -->
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <form method="GET" class="d-flex align-items-center gap-2">
+                <input type="text" 
+                       class="form-control form-control-sm" 
+                       id="search"
+                       name="search" 
+                       value="{{ search or '' }}"
+                       placeholder="Search title, tags, author..."
+                       style="width: 220px;">
+                <select class="form-select form-select-sm" id="difficulty" name="difficulty" style="width: 120px;">
+                    <option value="">All</option>
+                    <option value="Easy" {{ 'selected' if difficulty == 'Easy' else '' }}>Easy</option>
+                    <option value="Medium" {{ 'selected' if difficulty == 'Medium' else '' }}>Medium</option>
+                    <option value="Hard" {{ 'selected' if difficulty == 'Hard' else '' }}>Hard</option>
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-search"></i>
+                </button>
+                {% if search or difficulty %}
+                <a href="{{ url_for('dashboard') }}" class="text-decoration-none text-muted small">
+                    Clear
                 </a>
-            </div>
+                {% endif %}
+            </form>
+            
+            {% if pagination and pagination.total > 0 %}
+            <small class="text-muted ms-2">
+                {{ problems|length }} of {{ pagination.total }}
+                {% if pagination.current_page > 1 %}(Page {{ pagination.current_page }}){% endif %}
+            </small>
             {% endif %}
         </div>
     </div>
 
+    <!-- Problems Table -->
+    {% if problems %}
+        <div class="table-responsive">
+            <table class="table table-hover" id="problems-table">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="sortable-header" data-column="title" data-type="text">
+                            <i class="fas fa-sort me-1"></i>Problem Title
+                        </th>
+                        <th class="sortable-header" data-column="difficulty" data-type="difficulty">
+                            <i class="fas fa-sort me-1"></i>Difficulty
+                        </th>
+                        <th class="sortable-header" data-column="tags" data-type="text">
+                            <i class="fas fa-sort me-1"></i>Tags
+                        </th>
+                        <th class="sortable-header" data-column="author" data-type="text">
+                            <i class="fas fa-sort me-1"></i>Author
+                        </th>
+                        <th class="sortable-header" data-column="created_at" data-type="date">
+                            <i class="fas fa-sort me-1"></i>Published
+                        </th>
+                        <th class="sortable-header" data-column="view_count" data-type="number">
+                            <i class="fas fa-sort me-1"></i>Views
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for problem in problems %}
+                    <tr style="cursor: pointer;" data-href="{{ url_for('problem_detail', slug=problem.slug) }}">
+                        <!-- Problem Title -->
+                        <td data-sort-value="{{ problem.title }}">
+                            <div>
+                                <a href="{{ url_for('problem_detail', slug=problem.slug) }}" 
+                                   class="problem-title-link">
+                                    {{ problem.title }}
+                                </a>
+                                <div class="problem-slug">
+                                    <i class="fas fa-hashtag"></i> {{ problem.slug }}
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <!-- Difficulty -->
+                        <td data-sort-value="{{ problem.difficulty }}">
+                            <span class="badge px-2 py-1
+                                {% if problem.difficulty == 'Easy' %}bg-success
+                                {% elif problem.difficulty == 'Medium' %}bg-warning text-dark
+                                {% else %}bg-danger{% endif %}" 
+                                  style="font-size: 0.9rem;">
+                                {{ problem.difficulty }}
+                            </span>
+                        </td>
+                        
+                        <!-- Tags -->
+                        <td data-sort-value="{{ problem.tags|join(', ') if problem.tags and problem.tags != '[]' else '' }}">
+                            {% if problem.tags and problem.tags != '[]' %}
+                                {% for tag in problem.tags %}
+                                <span class="tag-chip">{{ tag }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-muted small">No tags</span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Author -->
+                        <td data-sort-value="{{ author_info[problem.author_id].name if author_info and author_info.get(problem.author_id) else 'Unknown' }}">
+                            {% if author_info and author_info.get(problem.author_id) %}
+                            {% set author = author_info[problem.author_id] %}
+                            <div class="author-info">
+                                <img src="{{ author.picture_url }}" alt="{{ author.name }}" 
+                                     class="author-avatar">
+                                <span class="author-name">{{ author.name }}</span>
+                            </div>
+                            {% else %}
+                            <span class="text-muted">Unknown</span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Published Date -->
+                        <td data-sort-value="{{ problem.created_at.isoformat() if problem.created_at else '' }}">
+                            <div class="date-info">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>{{ problem.created_at.strftime('%b %d, %Y') if problem.created_at else 'Recently' }}</span>
+                            </div>
+                        </td>
+                        
+                        <!-- Views -->
+                        <td data-sort-value="{{ problem.view_count or 0 }}">
+                            <div class="views-info">
+                                <i class="fas fa-eye"></i>
+                                <span>{{ problem.view_count or 0 }}</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if pagination and pagination.total_pages > 1 %}
+        <nav aria-label="Problem pagination">
+            <ul class="pagination pagination-custom">
+                {% if pagination.current_page > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('dashboard', page=pagination.current_page-1, search=search, difficulty=difficulty) }}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% set start_page = [1, pagination.current_page - 2]|max %}
+                {% set end_page = [pagination.total_pages + 1, pagination.current_page + 3]|min %}
+                {% for page_num in range(start_page, end_page) %}
+                <li class="page-item {{ 'active' if page_num == pagination.current_page else '' }}">
+                    <a class="page-link" href="{{ url_for('dashboard', page=page_num, search=search, difficulty=difficulty) }}">
+                        {{ page_num }}
+                    </a>
+                </li>
+                {% endfor %}
+
+                {% if pagination.current_page < pagination.total_pages %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('dashboard', page=pagination.current_page+1, search=search, difficulty=difficulty) }}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            {% if search or difficulty %}
+                <i class="fas fa-search"></i>
+                <h4>No Problems Found</h4>
+                <p>Try a different search or <a href="{{ url_for('dashboard') }}" class="text-decoration-none">clear filters</a>.</p>
+            {% else %}
+                <i class="fas fa-puzzle-piece"></i>
+                <h4>No Public Problems</h4>
+                <p>There are no public problems available yet. Be the first to create one!</p>
+                <a href="{{ url_for('create_problem_form') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Create First Problem
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Table Sorter JavaScript -->
 <script src="{{ url_for('static', filename='js/table-sorter.js') }}"></script>
-
 <script>
-// Dashboard JavaScript functionality
+// Auto-submit search form on input change
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize table sorting for problems table
-    let problemTableSorter = null;
-    const problemsTable = document.getElementById('problemsTable');
+    const searchInput = document.getElementById('search');
+    const difficultySelect = document.getElementById('difficulty');
     
-    if (problemsTable) {
-        problemTableSorter = window.initTableSorter('problemsTable');
-        
-        // Default sort by creation date (newest first)
-        problemTableSorter.sort('created', 'desc');
+    let searchTimeout;
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                this.form.submit();
+            }, 500);
+        });
     }
     
-    // Add click handlers for action buttons
-    const actionButtons = document.querySelectorAll('.btn-group .btn');
-    actionButtons.forEach(button => {
-        if (button.title) {
-            // Add tooltip functionality
-            button.setAttribute('data-bs-toggle', 'tooltip');
-            button.setAttribute('data-bs-placement', 'top');
+    if (difficultySelect) {
+        difficultySelect.addEventListener('change', function() {
+            this.form.submit();
+        });
+    }
+    
+    // Initialize table sorting
+    const problemsTable = document.getElementById('problems-table');
+    if (problemsTable) {
+        try {
+            const sorter = new TableSorter('problems-table');
+        } catch (error) {
+            console.error('Error initializing TableSorter:', error);
         }
-    });
+    }
     
-    // Initialize tooltips
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-    
-
+    // Handle row clicks (but not header clicks)
+    if (problemsTable) {
+        const rows = problemsTable.querySelectorAll('tbody tr[data-href]');
+        rows.forEach(row => {
+            row.addEventListener('click', function(e) {
+                // Don't navigate if clicking on a link
+                if (e.target.tagName === 'A' || e.target.closest('a')) {
+                    return;
+                }
+                window.location.href = this.dataset.href;
+            });
+        });
+    }
 });
 </script>
 {% endblock %}

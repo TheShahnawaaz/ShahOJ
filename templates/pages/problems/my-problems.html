@@ -1,0 +1,761 @@
+{% extends "layouts/base.html" %}
+{% from "layouts/components.html" import enhanced_breadcrumb, problem_header, enhanced_card %}
+
+{% block title %}My Problems - ShahOJ{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #007bff;
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+        --light-color: #f8f9fa;
+        --dark-color: #343a40;
+        --border-radius: 8px;
+        --box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        --transition: all 0.3s ease;
+    }
+
+    body { background-color: var(--primary-bg); }
+
+    /* Problem Card Styling */
+    .problem-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--border-color);
+        transition: var(--transition);
+        overflow: hidden;
+    }
+
+    .problem-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .problem-header {
+        background: linear-gradient(135deg, var(--primary-color), #0056b3);
+        color: white;
+        padding: 1rem;
+        position: relative;
+    }
+
+    .visibility-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+    }
+
+    .visibility-public {
+        background: var(--success-color);
+        color: white;
+    }
+
+    .visibility-private {
+        background: var(--warning-color);
+        color: #212529;
+    }
+
+    .problem-stats {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
+    .problem-body {
+        padding: 1.5rem;
+    }
+
+    .completion-progress {
+        margin-bottom: 1rem;
+    }
+
+    .progress-bar-custom {
+        background: linear-gradient(90deg, var(--success-color), #20c997);
+        border-radius: 4px;
+        transition: width 0.6s ease;
+    }
+
+    .problem-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-sm-custom {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+        border-radius: 4px;
+        font-weight: 500;
+        transition: var(--transition);
+    }
+
+
+    /* Welcome Section */
+    .welcome-section {
+        background: linear-gradient(135deg, var(--primary-color), #0056b3);
+        color: white;
+        padding: 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2rem;
+        box-shadow: var(--box-shadow);
+    }
+
+    .welcome-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        object-fit: cover;
+    }
+
+    .welcome-section h2 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .welcome-section p {
+        font-size: 1rem;
+        margin-bottom: 0;
+    }
+
+    .welcome-section .btn-light {
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        color: var(--primary-color);
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .welcome-section .btn-light:hover {
+        background: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        min-height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .empty-state-content {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .empty-state-icon {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .empty-state-icon i {
+        font-size: 3rem;
+        color: white;
+    }
+
+    .empty-state-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+
+    .empty-state-description {
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 2.5rem;
+    }
+
+    .empty-state-features {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .feature-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        background: var(--card-bg);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        min-width: 120px;
+        transition: all 0.3s ease;
+    }
+
+    .feature-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-item i {
+        font-size: 1.5rem;
+    }
+
+    .feature-item span {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+    }
+
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    /* Dark mode adjustments */
+    [data-theme="dark"] .empty-state-icon {
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+    }
+
+    [data-theme="dark"] .feature-item {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    [data-theme="dark"] .feature-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Action buttons */
+    .toggle-visibility-btn {
+        border: none;
+        padding: 0.375rem 0.75rem;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .toggle-visibility-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .btn-toggle-public {
+        background: var(--warning-color);
+        color: #212529;
+    }
+
+    .btn-toggle-private {
+        background: var(--success-color);
+        color: white;
+    }
+
+    .btn-delete {
+        background: var(--danger-color);
+        color: white;
+        border: none;
+    }
+
+    .btn-delete:hover {
+        background: #c82333;
+        color: white;
+    }
+
+    /* Difficulty badges */
+    .difficulty-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .difficulty-easy { background: #d4edda; color: #155724; }
+    .difficulty-medium { background: #fff3cd; color: #856404; }
+    .difficulty-hard { background: #f8d7da; color: #721c24; }
+
+    /* Dark mode adjustments */
+    [data-theme="dark"] .problem-card {
+        border-color: var(--border-color);
+    }
+
+
+    [data-theme="dark"] .difficulty-easy { background: #1e7e34; color: #d4edda; }
+    [data-theme="dark"] .difficulty-medium { background: #d39e00; color: #fff3cd; }
+    [data-theme="dark"] .difficulty-hard { background: #bd2130; color: #f8d7da; }
+
+    /* Enhanced Table Styling - Matching Dashboard */
+    .table-responsive {
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+    }
+
+    .table {
+        margin-bottom: 0;
+        font-size: 0.95rem;
+    }
+
+    .table thead th {
+        background: var(--primary-color);
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem 1.25rem;
+        border: none;
+        position: relative;
+    }
+
+    .table th.sortable-header {
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.3s ease;
+        padding-right: 2.5rem;
+    }
+
+    .table th.sortable-header:hover {
+        background-color: rgba(0, 123, 255, 0.9) !important;
+        transform: translateY(-1px);
+    }
+
+    [data-theme="dark"] .table th.sortable-header:hover {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+    }
+
+    .table th.sortable-header .fas.fa-sort {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0.6;
+        font-size: 0.8rem;
+    }
+
+    .table th.sortable-header:hover .fas.fa-sort {
+        opacity: 1;
+    }
+
+    .table th.sortable-header.sorting-asc::after {
+        content: " ↑";
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #ffd700;
+        font-weight: bold;
+        font-size: 1rem;
+    }
+
+    .table th.sortable-header.sorting-desc::after {
+        content: " ↓";
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #ffd700;
+        font-weight: bold;
+        font-size: 1rem;
+    }
+
+    .table tbody td {
+        padding: 0.75rem 1rem;
+        vertical-align: middle;
+        border-top: 1px solid var(--border-color);
+        background: var(--card-bg);
+        color: var(--text-primary);
+    }
+
+    .table tbody tr {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f8f9fa !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    [data-theme="dark"] .table tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    /* Simple Problem Title */
+    .problem-title-link {
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--primary-color);
+        text-decoration: none;
+        display: block;
+        margin-bottom: 0.2rem;
+    }
+
+    .problem-title-link:hover {
+        color: #0056b3;
+        text-decoration: underline;
+    }
+
+    .problem-slug {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        opacity: 0.7;
+    }
+
+    /* Simple Tag Chips */
+    .tag-chip {
+        background-color: #f8f9fa;
+        color: #495057;
+        border: 1px solid #dee2e6;
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+        border-radius: 0.75rem;
+        margin-right: 0.3rem;
+        margin-bottom: 0.2rem;
+        display: inline-block;
+        font-weight: 500;
+    }
+
+    [data-theme="dark"] .tag-chip {
+        background-color: #343a40;
+        color: #adb5bd;
+        border: 1px solid #495057;
+    }
+
+    /* Simple Date Display */
+    .date-info {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .date-info i {
+        opacity: 0.6;
+        font-size: 0.8rem;
+    }
+
+    /* Simple Views Display */
+    .views-info {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .views-info i {
+        opacity: 0.6;
+        font-size: 0.8rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center">
+                    <img src="{{ current_user.picture_url }}" alt="{{ current_user.name }}" class="welcome-avatar me-3">
+                    <div>
+                        <h2 class="mb-1">My Problems</h2>
+                        <p class="mb-0 opacity-75">Manage and organize your competitive programming problems</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{{ url_for('create_problem_form') }}" class="btn btn-light btn-lg">
+                    <i class="fas fa-plus me-2"></i>Create New Problem
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Problems Table -->
+    {% if problems %}
+        <div class="table-responsive">
+            <table class="table table-hover" id="my-problems-table">
+                <thead>
+                    <tr>
+                        <th class="sortable-header" data-column="title" data-type="text">
+                            <i class="fas fa-sort me-1"></i>Problem Title
+                        </th>
+                        <th class="sortable-header" data-column="difficulty" data-type="difficulty">
+                            <i class="fas fa-sort me-1"></i>Difficulty
+                        </th>
+                        <th class="sortable-header" data-column="tags" data-type="text">
+                            <i class="fas fa-sort me-1"></i>Tags
+                        </th>
+                        <th class="sortable-header" data-column="visibility" data-type="text">
+                            <i class="fas fa-sort me-1"></i>Visibility
+                        </th>
+                        <th class="sortable-header" data-column="created_at" data-type="date">
+                            <i class="fas fa-sort me-1"></i>Published
+                        </th>
+                        <th class="sortable-header" data-column="view_count" data-type="number">
+                            <i class="fas fa-sort me-1"></i>Views
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for problem in problems %}
+                    <tr onclick="window.location.href='{{ url_for('problem_detail', slug=problem.slug) }}'" style="cursor: pointer;">
+                        <!-- Problem Title -->
+                        <td data-sort-value="{{ problem.title }}">
+                            <div>
+                                <a href="{{ url_for('problem_detail', slug=problem.slug) }}" 
+                                   class="problem-title-link">
+                                    {{ problem.title }}
+                                </a>
+                                <div class="problem-slug">
+                                    <i class="fas fa-hashtag"></i> {{ problem.slug }}
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <!-- Difficulty -->
+                        <td>
+                            <span class="badge px-2 py-1
+                                {% if problem.difficulty == 'Easy' %}bg-success
+                                {% elif problem.difficulty == 'Medium' %}bg-warning text-dark
+                                {% else %}bg-danger{% endif %}" 
+                                  data-sort-value="{{ problem.difficulty }}"
+                                  style="font-size: 0.9rem;">
+                                {{ problem.difficulty }}
+                            </span>
+                        </td>
+                        
+                        <!-- Tags -->
+                        <td data-sort-value="{{ problem.tags|join(', ') if problem.tags and problem.tags != '[]' else '' }}">
+                            {% if problem.tags and problem.tags != '[]' %}
+                                {% for tag in problem.tags %}
+                                <span class="tag-chip">{{ tag }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-muted small">No tags</span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Visibility -->
+                        <td data-sort-value="{{ 'Public' if problem.is_public else 'Private' }}">
+                            <span class="badge px-2 py-1 {{ 'bg-success' if problem.is_public else 'bg-warning text-dark' }}" 
+                                  style="font-size: 0.9rem;">
+                                <i class="fas fa-{{ 'globe' if problem.is_public else 'lock' }} me-1"></i>
+                                {{ 'Public' if problem.is_public else 'Private' }}
+                            </span>
+                        </td>
+                        
+                        <!-- Published Date -->
+                        <td>
+                            <div class="date-info" data-sort-value="{{ problem.created_at.isoformat() if problem.created_at else '' }}">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>{{ problem.created_at.strftime('%b %d, %Y') if problem.created_at else 'Recently' }}</span>
+                            </div>
+                        </td>
+                        
+                        <!-- Views -->
+                        <td>
+                            <div class="views-info" data-sort-value="{{ problem.view_count or 0 }}">
+                                <i class="fas fa-eye"></i>
+                                <span>{{ problem.view_count or 0 }}</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <!-- Enhanced Empty State -->
+        <div class="empty-state">
+            <div class="empty-state-content">
+                <div class="empty-state-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h3 class="empty-state-title">Ready to Share Your Ideas?</h3>
+                <p class="empty-state-description">
+                    Your problem collection is waiting to be filled with creative challenges.<br>
+                    Use the <strong>"Create Problem"</strong> button in the navigation to get started.
+                </p>
+                <div class="empty-state-features">
+                    <div class="feature-item">
+                        <i class="fas fa-code text-primary"></i>
+                        <span>Write Solutions</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <span>Add Test Cases</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-share-alt text-info"></i>
+                        <span>Share Publicly</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Success/Error Messages -->
+<div id="messageContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
+
+<script src="{{ url_for('static', filename='js/table-sorter.js') }}"></script>
+<script>
+// Initialize table sorting
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('my-problems-table')) {
+        new TableSorter('my-problems-table');
+    }
+});
+
+// Toggle problem visibility
+async function toggleVisibility(slug, isCurrentlyPublic) {
+    try {
+        const response = await fetch(`/api/problems/${slug}/toggle-visibility`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Update the UI in the table row
+            const row = document.getElementById(`problem-row-${slug}`);
+            
+            // Find the visibility badge (span in the visibility column)
+            const visibilityCell = row.children[1]; // Second column (index 1)
+            const badge = visibilityCell.querySelector('span.badge');
+            
+            // Find the toggle button in the actions column
+            const actionsCell = row.children[5]; // Sixth column (index 5)
+            const toggleBtn = actionsCell.querySelector('button[onclick*="toggleVisibility"]');
+            
+            if (result.is_public) {
+                // Update badge to show "Public"
+                badge.innerHTML = '<i class="fas fa-globe me-1"></i>Public';
+                badge.className = 'badge bg-success';
+                
+                // Update button to show "Make Private" (lock icon)
+                toggleBtn.innerHTML = '<i class="fas fa-lock"></i>';
+                toggleBtn.setAttribute('onclick', `toggleVisibility('${slug}', true)`);
+                toggleBtn.title = 'Make Private';
+            } else {
+                // Update badge to show "Private"
+                badge.innerHTML = '<i class="fas fa-lock me-1"></i>Private';
+                badge.className = 'badge bg-warning';
+                
+                // Update button to show "Make Public" (globe icon)
+                toggleBtn.innerHTML = '<i class="fas fa-globe"></i>';
+                toggleBtn.setAttribute('onclick', `toggleVisibility('${slug}', false)`);
+                toggleBtn.title = 'Make Public';
+            }
+            
+            showMessage(result.message, 'success');
+        } else {
+            showMessage(result.error || 'Failed to update visibility', 'error');
+        }
+    } catch (error) {
+        console.error('Error toggling visibility:', error);
+        showMessage('Failed to update visibility', 'error');
+    }
+}
+
+// Delete problem
+async function deleteProblem(slug, title) {
+    if (!confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/problems/${slug}/delete`, {
+            method: 'DELETE',
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Remove the row from UI
+            const row = document.getElementById(`problem-row-${slug}`);
+            row.style.transition = 'all 0.3s ease';
+            row.style.opacity = '0';
+            
+            setTimeout(() => {
+                row.remove();
+                
+                // Check if this was the last problem
+                const remainingRows = document.querySelectorAll('#my-problems-table tbody tr');
+                if (remainingRows.length === 0) {
+                    location.reload(); // Reload to show empty state
+                }
+            }, 300);
+            
+            showMessage(result.message, 'success');
+        } else {
+            showMessage(result.error || 'Failed to delete problem', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting problem:', error);
+        showMessage('Failed to delete problem', 'error');
+    }
+}
+
+// Show message function
+function showMessage(message, type) {
+    const container = document.getElementById('messageContainer');
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+    
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert ${alertClass} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        <i class="fas ${iconClass} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    container.appendChild(alertDiv);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.classList.remove('show');
+            setTimeout(() => alertDiv.remove(), 150);
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}
