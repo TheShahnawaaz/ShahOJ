@@ -176,17 +176,110 @@
         object-fit: cover;
     }
 
-    /* Empty state styling */
+    /* Enhanced Empty State Styling */
     .empty-state {
         text-align: center;
         padding: 4rem 2rem;
+        min-height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .empty-state-content {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .empty-state-icon {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .empty-state-icon i {
+        font-size: 3rem;
+        color: white;
+    }
+
+    .empty-state-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+
+    .empty-state-description {
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 2.5rem;
+    }
+
+    .empty-state-features {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .feature-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        background: var(--card-bg);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        min-width: 120px;
+        transition: all 0.3s ease;
+    }
+
+    .feature-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-item i {
+        font-size: 1.5rem;
+    }
+
+    .feature-item span {
+        font-size: 0.9rem;
+        font-weight: 500;
         color: var(--text-secondary);
     }
 
-    .empty-state i {
-        font-size: 4rem;
-        color: var(--text-muted);
-        margin-bottom: 1rem;
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    /* Dark mode adjustments */
+    [data-theme="dark"] .empty-state-icon {
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+    }
+
+    [data-theme="dark"] .feature-item {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    [data-theme="dark"] .feature-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     }
 
     /* Enhanced Modal Styling */
@@ -630,14 +723,37 @@
         {% endif %}
 
     {% else %}
-        <!-- Empty State -->
+        <!-- Enhanced Empty State -->
         <div class="empty-state">
-            <i class="fas fa-paper-plane"></i>
-            <h4>No Submissions Yet</h4>
-            <p>Start solving problems to see your submissions here!</p>
-            <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
-                <i class="fas fa-puzzle-piece me-2"></i>Browse Problems
-            </a>
+            <div class="empty-state-content">
+                <div class="empty-state-icon">
+                    <i class="fas fa-paper-plane"></i>
+                </div>
+                <h3 class="empty-state-title">Ready to Start Coding?</h3>
+                <p class="empty-state-description">
+                    Your submission history is waiting to be filled with solutions.<br>
+                    Start solving problems to track your progress and achievements.
+                </p>
+                <div class="empty-state-features">
+                    <div class="feature-item">
+                        <i class="fas fa-code text-primary"></i>
+                        <span>Write Solutions</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-trophy text-warning"></i>
+                        <span>Track Progress</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-chart-line text-success"></i>
+                        <span>View Results</span>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-puzzle-piece me-2"></i>Browse Problems
+                    </a>
+                </div>
+            </div>
         </div>
     {% endif %}
 

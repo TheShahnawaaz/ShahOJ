@@ -552,6 +552,76 @@ class DatabaseManager:
                 problems.append(problem)
             return problems
 
+    def list_user_problems(self, user_id: str, page: int = 1, limit: int = 20, search: Optional[str] = None) -> Dict[str, Any]:
+        """List a user's problems with search and pagination"""
+        offset = max(0, (page - 1) * limit)
+        base_where = "WHERE author_id = ?"
+        params: List[Any] = [user_id]
+
+        if search:
+            like = f"%{search}%"
+            base_where += """ AND (
+                title LIKE ? OR 
+                slug LIKE ? OR 
+                difficulty LIKE ? OR 
+                tags LIKE ? OR 
+                CASE WHEN is_public = 1 THEN 'public' ELSE 'private' END LIKE ?
+            )"""
+            params.extend([like, like, like, like, like])
+
+        query = f"""
+            SELECT * FROM problems
+            {base_where}
+            ORDER BY updated_at DESC
+            LIMIT ? OFFSET ?
+        """
+        count_query = f"SELECT COUNT(*) FROM problems {base_where}"
+
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            items = conn.execute(query, params + [limit, offset]).fetchall()
+            total = conn.execute(count_query, params).fetchone()[0]
+
+            problems = []
+            for row in items:
+                problem = dict(row)
+                problem['tags'] = json.loads(problem['tags'])
+
+                # Convert date strings to datetime objects for template compatibility
+                from datetime import datetime
+                for date_field in ['created_at', 'updated_at']:
+                    if problem.get(date_field):
+                        try:
+                            problem[date_field] = datetime.fromisoformat(
+                                problem[date_field].replace('Z', '+00:00'))
+                        except (ValueError, AttributeError):
+                            problem[date_field] = None
+
+                problems.append(problem)
+
+            return {
+                'items': problems,
+                'total': total,
+                'page': page,
+                'has_next': (page * limit) < total
+            }
+
+    def get_submission_counts_for_problems(self, problem_slugs: List[str]) -> Dict[str, int]:
+        """Return a dict mapping problem_slug to total submission count (globally)"""
+        if not problem_slugs:
+            return {}
+        placeholders = ','.join(['?'] * len(problem_slugs))
+        query = f"""
+            SELECT problem_slug, COUNT(*) as count
+            FROM submissions
+            WHERE problem_slug IN ({placeholders})
+            GROUP BY problem_slug
+        """
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(query, problem_slugs).fetchall()
+            return {row['problem_slug']: row['count'] for row in rows}
+
     def get_public_problems(self, search: str = None, difficulty: str = None,
                             page: int = 1, limit: int = 20) -> Dict:
         """Get public problems with filtering and pagination"""

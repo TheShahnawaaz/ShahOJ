@@ -482,6 +482,62 @@
         opacity: 0.6;
         font-size: 0.8rem;
     }
+
+    /* Search Input Styling - matching My Submissions page exactly */
+    .form-control.form-control-sm {
+        border: 1px solid var(--border-color);
+        background-color: var(--input-bg);
+        color: var(--text-primary);
+        border-radius: 6px;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        height: 31px;
+    }
+
+    .form-control.form-control-sm:focus {
+        border-color: var(--primary-color);
+        background-color: var(--input-bg);
+        color: var(--text-primary);
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        outline: none;
+    }
+
+    /* Remove border from search button */
+    .btn.btn-primary.btn-sm {
+        border: none !important;
+    }
+
+    /* Dark mode search button styling */
+    [data-theme="dark"] .btn.btn-primary.btn-sm {
+        border: none !important;
+        background: linear-gradient(135deg, var(--btn-primary), #094766) !important;
+    }
+
+
+    /* Pagination styling */
+    .pagination {
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .pagination .page-link {
+        background: var(--card-bg);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .pagination .page-link:hover {
+        background: var(--secondary-bg);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .pagination .page-item.active .page-link {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
 </style>
 {% endblock %}
 
@@ -508,6 +564,43 @@
     </div>
 
 
+    <!-- Search Section -->
+    {% if problems %}
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+            <h3 class="text-primary mb-0">
+                <i class="fas fa-code me-2"></i>
+                My Problems
+            </h3>
+            
+            <!-- Search -->
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <form method="GET" class="d-flex align-items-center gap-2">
+                    <input type="text" 
+                           class="form-control form-control-sm" 
+                           name="search"
+                           value="{{ search or '' }}"
+                           placeholder="Search title, difficulty, tags..."
+                           style="width: 250px;">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    {% if search %}
+                    <a href="{{ url_for('my_problems') }}" class="btn btn-outline-secondary btn-sm">
+                        Clear
+                    </a>
+                    {% endif %}
+                </form>
+                
+                {% if pagination and pagination.total > 0 %}
+                <small class="text-muted ms-2">
+                    {{ problems|length }} of {{ pagination.total }}
+                    {% if pagination.current_page > 1 %}(Page {{ pagination.current_page }}){% endif %}
+                </small>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
     <!-- Problems Table -->
     {% if problems %}
         <div class="table-responsive">
@@ -531,6 +624,9 @@
                         </th>
                         <th class="sortable-header" data-column="view_count" data-type="number">
                             <i class="fas fa-sort me-1"></i>Views
+                        </th>
+                        <th class="sortable-header" data-column="submission_count" data-type="number">
+                            <i class="fas fa-sort me-1"></i>Submissions
                         </th>
                     </tr>
                 </thead>
@@ -597,11 +693,51 @@
                                 <span>{{ problem.view_count or 0 }}</span>
                             </div>
                         </td>
+                        <!-- Submissions -->
+                        <td>
+                            <div class="views-info" data-sort-value="{{ problem.submission_count }}">
+                                <i class="fas fa-paper-plane"></i>
+                                <span>{{ problem.submission_count }}</span>
+                            </div>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination -->
+        {% if pagination and pagination.total_pages > 1 %}
+        <nav aria-label="Problems pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if pagination.current_page > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('my_problems', page=pagination.current_page-1, search=search) }}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% set start_page = [1, pagination.current_page - 2]|max %}
+                {% set end_page = [pagination.total_pages + 1, pagination.current_page + 3]|min %}
+                {% for page_num in range(start_page, end_page) %}
+                <li class="page-item {{ 'active' if page_num == pagination.current_page else '' }}">
+                    <a class="page-link" href="{{ url_for('my_problems', page=page_num, search=search) }}">
+                        {{ page_num }}
+                    </a>
+                </li>
+                {% endfor %}
+
+                {% if pagination.current_page < pagination.total_pages %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('my_problems', page=pagination.current_page+1, search=search) }}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
     {% else %}
         <!-- Enhanced Empty State -->
         <div class="empty-state">

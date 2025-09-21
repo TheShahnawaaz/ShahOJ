@@ -64,6 +64,13 @@ def dashboard():
             limit=12  # Show 12 problems per page on dashboard
         )
 
+        # Get submission counts for all problems on this page
+        problem_slugs = [p['slug'] for p in result['problems']]
+        submission_counts = db_manager.get_submission_counts_for_problems(
+            problem_slugs)
+        for p in result['problems']:
+            p['submission_count'] = submission_counts.get(p['slug'], 0)
+
         # Get author information for all problems
         author_info = {}
         for problem in result['problems']:
@@ -220,13 +227,42 @@ def auth_status():
 @app.route('/my-problems')
 @require_auth
 def my_problems():
-    """User's personal problem dashboard"""
-    user = g.current_user
-    problems = db_manager.get_user_problems(user['id'])
+    """User's personal problem dashboard with server-side search and pagination"""
+    try:
+        user = g.current_user
+        page = int(request.args.get('page', 1))
+        search = request.args.get('search', '')
 
-    return render_template('pages/problems/my-problems.html',
-                           problems=problems
-                           )
+        # Get user's problems with search and pagination
+        result = db_manager.list_user_problems(
+            user['id'],
+            page=page,
+            limit=12,
+            search=search
+        )
+
+        # Fetch submission counts for all problems on this page
+        problem_slugs = [p['slug'] for p in result['items']]
+        submission_counts = db_manager.get_submission_counts_for_problems(
+            problem_slugs)
+        for p in result['items']:
+            p['submission_count'] = submission_counts.get(p['slug'], 0)
+
+        # Calculate pagination info
+        limit = 12
+        total_pages = max(1, (result['total'] + limit - 1) // limit)
+
+        return render_template('pages/problems/my-problems.html',
+                               problems=result['items'],
+                               pagination={
+                                   'current_page': result['page'],
+                                   'total_pages': total_pages,
+                                   'total': result['total'],
+                                   'has_next': result['has_next']
+                               },
+                               search=search)
+    except Exception as e:
+        return f"Error loading problems: {e}", 500
 
 
 @app.route('/my-submissions')
