@@ -104,6 +104,31 @@
         box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
     }
 
+    .btn-run-custom {
+        background: linear-gradient(135deg, #6f42c1, #5a32a3);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(111, 66, 193, 0.3);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-run-custom:hover {
+        background: linear-gradient(135deg, #5a32a3, #4c2a85);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(111, 66, 193, 0.4);
+        color: white;
+    }
+
+    .btn-run-custom:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(111, 66, 193, 0.3);
+    }
+
     /* Dark mode adjustments */
     [data-theme="dark"] .btn-run-all {
         background: linear-gradient(135deg, #198754, #157347);
@@ -125,9 +150,20 @@
         box-shadow: 0 6px 20px rgba(13, 110, 253, 0.5);
     }
 
+    [data-theme="dark"] .btn-run-custom {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+    }
+
+    [data-theme="dark"] .btn-run-custom:hover {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+    }
+
     /* Button loading state */
     .btn-run-all:disabled,
-    .btn-run-samples:disabled {
+    .btn-run-samples:disabled,
+    .btn-run-custom:disabled {
         opacity: 0.7;
         transform: none;
         cursor: not-allowed;
@@ -136,10 +172,190 @@
     /* Responsive adjustments */
     @media (max-width: 768px) {
         .btn-run-all,
-        .btn-run-samples {
+        .btn-run-samples,
+        .btn-run-custom {
             padding: 0.6rem 1.2rem;
             font-size: 0.9rem;
         }
+    }
+
+    /* Custom Input Modal Styling */
+    .modal-xl {
+        max-width: 95vw;
+    }
+    
+    @media (min-width: 1200px) {
+        .modal-xl {
+            max-width: 1400px;
+        }
+    }
+    
+    #customInputModal .modal-content {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+    
+    #customInputModal .modal-header {
+        background: linear-gradient(135deg, #6f42c1, #5a32a3);
+        color: white;
+        border-bottom: none;
+        border-radius: 12px 12px 0 0;
+        padding: 1.5rem;
+    }
+    
+    #customInputModal .modal-title {
+        font-weight: 600;
+        font-size: 1.25rem;
+    }
+    
+    #customInputModal .btn-close {
+        filter: brightness(0) invert(1);
+        opacity: 0.8;
+    }
+    
+    #customInputModal .btn-close:hover {
+        opacity: 1;
+    }
+    
+    #customInputModal .modal-body {
+        padding: 2rem;
+        background: var(--card-bg);
+    }
+    
+    #customInputModal .form-label {
+        color: var(--text-primary);
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    #customInputModal #customInput {
+        background: var(--input-bg, #f8f9fa) !important;
+        border: 2px solid var(--border-color) !important;
+        color: var(--text-primary) !important;
+        border-radius: 8px;
+        padding: 1rem;
+        font-size: 0.95rem;
+        line-height: 1.4;
+        resize: vertical;
+        min-height: 300px;
+        height: 90%;
+        width: 100%;
+        display: block;
+        transition: border-color 0.3s ease;
+    }
+    
+    #customInputModal #customInput:focus {
+        border-color: #6f42c1;
+        box-shadow: 0 0 0 0.2rem rgba(111, 66, 193, 0.25);
+        outline: none;
+    }
+    
+    #customInputModal #customInput::placeholder {
+        color: var(--text-muted, #6c757d);
+        opacity: 0.7;
+    }
+    
+    #customInputModal #customOutput {
+        background: var(--code-bg, #f8f9fa) !important;
+        border: 2px solid var(--border-color) !important;
+        color: var(--text-primary) !important;
+        border-radius: 8px;
+        padding: 1rem;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        min-height: 300px;
+        height: 90%;
+        width: 100%;
+        display: block;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    
+    #customInputModal .modal-footer {
+        background: var(--card-bg);
+        border-top: 1px solid var(--border-color);
+        border-radius: 0 0 12px 12px;
+        padding: 1.5rem;
+    }
+    
+    #customInputModal .btn-primary {
+        background: linear-gradient(135deg, #6f42c1, #5a32a3);
+        border: none;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    #customInputModal .btn-primary:hover {
+        background: linear-gradient(135deg, #5a32a3, #4c2a85);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(111, 66, 193, 0.3);
+    }
+    
+    #customInputModal .btn-secondary {
+        background: var(--secondary-bg);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    #customInputModal .btn-secondary:hover {
+        background: var(--hover-bg);
+        transform: translateY(-1px);
+    }
+    
+    /* Dark mode specific styles */
+    [data-theme="dark"] #customInputModal .modal-content {
+        background: var(--card-bg);
+        border-color: var(--border-color);
+    }
+    
+    [data-theme="dark"] #customInputModal .modal-header {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+    
+    [data-theme="dark"] #customInputModal #customInput {
+        background: var(--input-bg, #2d3748) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    [data-theme="dark"] #customInputModal #customInput:focus {
+        border-color: #8b5cf6 !important;
+        box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.25) !important;
+    }
+    
+    [data-theme="dark"] #customInputModal #customOutput {
+        background: var(--code-bg, #1a202c) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    [data-theme="dark"] #customInputModal .btn-primary {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+    
+    [data-theme="dark"] #customInputModal .btn-primary:hover {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+    }
+    
+    [data-theme="dark"] #customInputModal .btn-secondary {
+        background: var(--secondary-bg);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+    
+    [data-theme="dark"] #customInputModal .btn-secondary:hover {
+        background: var(--hover-bg);
+        border-color: var(--border-color);
     }
 
     /* Markdown Content Styling */
@@ -485,6 +701,9 @@
                                     <button class="btn btn-run-samples btn-enhanced" id="runSampleBtn">
                                         <i class="fas fa-vial me-2"></i>Run Samples
                                     </button>
+                                    <button class="btn btn-run-custom btn-enhanced" id="runCustomBtn">
+                                        <i class="fas fa-keyboard me-2"></i>Run Custom Input
+                                    </button>
                                 </div>
                             {% else %}
                                 <div class="text-muted">
@@ -514,6 +733,46 @@
     </div>
 
 </div>
+
+<!-- Custom Input Modal -->
+<div class="modal fade" id="customInputModal" tabindex="-1" aria-labelledby="customInputModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="customInputModalLabel">
+                    <i class="fas fa-keyboard me-2"></i>Run Custom Input
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <label for="customInput" class="form-label fw-bold">
+                            <i class="fas fa-edit me-2"></i>Input
+                        </label>
+                        <textarea id="customInput" class="form-control font-monospace" 
+                                  placeholder="Enter your test input here...&#10;&#10;Example:&#10;5&#10;1 2 3 4 5&#10;&#10;Tips:&#10;• Each line should match your program's expected input format&#10;• Use spaces or newlines as separators as needed&#10;• Empty input is allowed for programs that don't need input"></textarea>
+                    </div>
+                    <div class="col-lg-6">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-terminal me-2"></i>Output
+                        </label>
+                        <div id="customOutput" class="font-monospace" style="white-space: pre-wrap;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-primary" id="runCustomInputBtn">
+                        <i class="fas fa-play me-1"></i>Run Code
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -789,6 +1048,25 @@ signed main()
             const categories = ['samples'];
             this.runAllTests(code, categories);
         });
+
+        // Run custom input
+        document.getElementById('runCustomBtn')?.addEventListener('click', () => {
+            // Check if user is authenticated
+            const isAuthenticated = {{ 'true' if current_user else 'false' }};
+            if (!isAuthenticated) {
+                alert('Please sign in to run tests on problems.');
+                return;
+            }
+            
+            // Show the custom input modal
+            const modal = new bootstrap.Modal(document.getElementById('customInputModal'));
+            modal.show();
+        });
+
+        // Run custom input button in modal
+        document.getElementById('runCustomInputBtn')?.addEventListener('click', () => {
+            this.runCustomInput();
+        });
     }
     
     getCode() {
@@ -824,6 +1102,62 @@ signed main()
         })
         .catch(error => {
             displayError(`Network error: ${error.message}`);
+        })
+        .finally(() => {
+            // Restore run button
+            runBtn.innerHTML = originalText;
+            runBtn.disabled = false;
+        });
+    }
+
+    runCustomInput() {
+        const code = this.getCode();
+        const customInput = document.getElementById('customInput').value;
+        
+        if (!code.trim()) {
+            alert('Please enter C++ code to test');
+            return;
+        }
+        
+        if (!customInput.trim()) {
+            alert('Please enter some input to test with');
+            return;
+        }
+        
+        // Disable run button and show loading
+        const runBtn = document.getElementById('runCustomInputBtn');
+        const originalText = runBtn.innerHTML;
+        runBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Running...';
+        runBtn.disabled = true;
+        
+        // Clear previous output
+        const outputDiv = document.getElementById('customOutput');
+        outputDiv.innerHTML = '<div class="text-muted text-center py-4"><i class="fas fa-spinner fa-spin fa-2x mb-2"></i><div>Running your code...</div></div>';
+        
+        
+        fetch(`/api/quick-test`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                code: code,
+                input: customInput
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Display output
+                outputDiv.innerHTML = data.output || '<div class="text-muted">No output</div>';
+                
+            } else {
+                // Display error
+                outputDiv.innerHTML = `<div class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i><strong>Error:</strong><br><pre>${data.error || 'Unknown error occurred'}</pre></div>`;
+            }
+        })
+        .catch(error => {
+            outputDiv.innerHTML = `<div class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i><strong>Network Error:</strong><br>${error.message}</div>`;
         })
         .finally(() => {
             // Restore run button
@@ -1112,6 +1446,87 @@ async function toggleVisibility() {
         console.error('Error toggling visibility:', error);
         alert('Failed to update visibility');
     }
+}
+
+// Copy problem link to clipboard
+function copyProblemLink(slug) {
+    const problemUrl = window.location.origin + '/problem/' + slug;
+    
+    // Use the modern Clipboard API if available
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(problemUrl).then(() => {
+            showLinkCopiedNotification();
+        }).catch(err => {
+            console.error('Failed to copy link: ', err);
+            fallbackCopyTextToClipboard(problemUrl);
+        });
+    } else {
+        // Fallback for older browsers
+        fallbackCopyTextToClipboard(problemUrl);
+    }
+}
+
+// Fallback copy method for older browsers
+function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+    
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showLinkCopiedNotification();
+        } else {
+            console.error('Fallback: Copying text command was unsuccessful');
+        }
+    } catch (err) {
+        console.error('Fallback: Unable to copy', err);
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+// Show notification when link is copied
+function showLinkCopiedNotification() {
+    // Create or update notification element
+    let notification = document.getElementById('link-copied-notification');
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'link-copied-notification';
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: #28a745;
+            color: white;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        `;
+        document.body.appendChild(notification);
+    }
+    
+    // Set message and show notification
+    notification.innerHTML = '<i class="fas fa-check me-2"></i>Problem link copied to clipboard!';
+    notification.style.opacity = '1';
+    
+    // Hide after 3 seconds
+    setTimeout(() => {
+        notification.style.opacity = '0';
+    }, 3000);
 }
 
 // Helper functions for displaying results (from test-solution.html)

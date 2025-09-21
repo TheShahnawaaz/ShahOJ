@@ -244,15 +244,110 @@
         /* Fix breadcrumb and navigation */
         [data-theme="dark"] .breadcrumb {
             background-color: #252526 !important;
+            border: 1px solid #3e3e42 !important;
         }
 
-        [data-theme="dark"] .breadcrumb-item,
-        [data-theme="dark"] .breadcrumb-item a {
+        [data-theme="dark"] .breadcrumb-item {
             color: #cccccc !important;
+        }
+
+        [data-theme="dark"] .breadcrumb-item a {
+            color: #569cd6 !important;
+            text-decoration: none !important;
+        }
+
+        [data-theme="dark"] .breadcrumb-item a:hover {
+            color: #79b8ff !important;
+        }
+
+        [data-theme="dark"] .breadcrumb-item.active {
+            color: #ffffff !important;
         }
 
         [data-theme="dark"] .breadcrumb-item + .breadcrumb-item::before {
             color: #808080 !important;
+        }
+
+        /* Fix button borders in problem detail header for dark mode */
+        [data-theme="dark"] .progress-header .btn-light {
+            background-color: rgba(255, 255, 255, 0.15) !important;
+            border-color: rgba(255, 255, 255, 0.3) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        [data-theme="dark"] .progress-header .btn-light:hover {
+            background-color: rgba(255, 255, 255, 0.25) !important;
+            border-color: rgba(255, 255, 255, 0.4) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        [data-theme="dark"] .progress-header .btn-warning {
+            background-color: #ffc107 !important;
+            border-color: #ffc107 !important;
+            color: #000000 !important;
+            box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3) !important;
+        }
+
+        [data-theme="dark"] .progress-header .btn-warning:hover {
+            background-color: #e0a800 !important;
+            border-color: #e0a800 !important;
+            color: #000000 !important;
+            box-shadow: 0 4px 8px rgba(255, 193, 7, 0.4) !important;
+        }
+
+        [data-theme="dark"] .progress-header .btn-success {
+            background-color: #28a745 !important;
+            border-color: #28a745 !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3) !important;
+        }
+
+        [data-theme="dark"] .progress-header .btn-success:hover {
+            background-color: #218838 !important;
+            border-color: #218838 !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4) !important;
+        }
+
+        [data-theme="dark"] .progress-header .btn-danger {
+            background-color: #dc3545 !important;
+            border-color: #dc3545 !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3) !important;
+        }
+
+        [data-theme="dark"] .progress-header .btn-danger:hover {
+            background-color: #c82333 !important;
+            border-color: #c82333 !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.4) !important;
+        }
+
+        /* Copy link button styling */
+        .progress-header .btn-link {
+            border: none !important;
+            padding: 0.25rem !important;
+            margin: 0 !important;
+            background: none !important;
+            box-shadow: none !important;
+        }
+
+        .progress-header .btn-link:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-radius: 4px !important;
+            transform: scale(1.1) !important;
+        }
+
+        .progress-header .btn-link i {
+            transition: all 0.3s ease !important;
+            font-size: 1.1rem !important;
+        }
+
+        .progress-header .btn-link:hover i {
+            color: #ffffff !important;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.8) !important;
         }
 
         [data-theme="dark"] .alert {
@@ -441,13 +536,7 @@
             background: linear-gradient(135deg, var(--btn-primary), #094766) !important;
             border-bottom-color: rgba(0,0,0,0.2) !important;
         }
-        /* Buttons inside blue header */
-        .progress-header .btn { box-shadow: none !important; }
-        [data-theme="dark"] .progress-header .btn-light {
-            background-color: #3c3c3c !important;
-            color: #cccccc !important;
-            border-color: #464647 !important;
-        }
+        /* Buttons inside blue header - allow shadows for dark mode */
         [data-theme="dark"] .progress-header .btn-outline-light {
             color: #e6e6e6 !important;
             border-color: #9aa0a6 !important;
@@ -501,48 +590,57 @@
         .navbar-brand {
             font-weight: bold;
             text-decoration: none !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 3;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .navbar-brand:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         }
         
         .navbar-brand .shah-text {
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: 900;
-            color: #6c9bd1; /* Fallback color matching logo */
-            background: linear-gradient(135deg,rgb(132, 201, 232) 0%, rgb(132, 201, 232) 25%, rgb(132, 201, 232) 50%, rgb(132, 201, 232) 75%, rgb(132, 201, 232) 100%);
+            background: linear-gradient(135deg, #ffffff 0%, #e3f2fd 25%, #bbdefb 50%, #90caf9 75%, #64b5f6 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             
-            letter-spacing: 2px;
+            letter-spacing: 3px;
             font-family: 'Orbitron', 'Exo 2', 'Rajdhani', monospace;
             position: relative;
             transition: all 0.3s ease;
             text-transform: uppercase;
             font-variation-settings: 'wght' 900;
-            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
         }
         
         .navbar-brand:hover .shah-text {
-
-            background: linear-gradient(135deg,rgb(132, 201, 232) 0%, rgb(132, 201, 232) 25%, rgb(132, 201, 232) 50%, rgb(132, 201, 232) 75%, rgb(132, 201, 232) 100%);
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 25%, #e9ecef 50%, #dee2e6 75%, #ced4da 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)) brightness(1.15);
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)) brightness(1.2);
+            transform: scale(1.05);
         }
         
         .navbar-brand img {
-            transition: transform 0.2s ease;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
-            transition: all 0.5s ease;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+            margin-left: 0.5rem;
         }
         
         .navbar-brand:hover img {
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)) brightness(1.15);
-            rotate: 360deg;
-        }
-        
-        .navbar-brand {
-            transition: all 0.2s ease;
+            filter: drop-shadow(0 6px 12px rgba(0,0,0,0.3)) brightness(1.2) contrast(1.1);
+            transform: rotate(360deg) scale(1.1);
         }
         
         /* Enhanced Navbar Styling */
@@ -550,6 +648,23 @@
             padding: 0.75rem 0;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             border-bottom: 2px solid rgba(132, 201, 232, 0.3);
+        }
+
+        /* Sticky navbar enhancements */
+        .navbar.sticky-top {
+            z-index: 1030;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        /* Add top padding to body to prevent content from hiding behind sticky navbar */
+        body {
+            padding-top: 0;
+        }
+
+        /* Ensure smooth scrolling when navbar is sticky */
+        html {
+            scroll-padding-top: 80px;
         }
         
         .nav-link-enhanced {
@@ -718,7 +833,7 @@
         'problem': ['problem_detail', 'edit_problem_page', 'test_solution_page', 'manage_test_cases']
     } %}
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
         <div class="container-fluid px-4">
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('dashboard') }}">
                 <span class="shah-text">Shah</span>

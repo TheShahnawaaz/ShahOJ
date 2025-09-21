@@ -56,6 +56,9 @@
             <div class="flex-grow-1">
                 <h1 class="mb-2">
                     <i class="fas fa-file-code"></i> {{ problem.config.get('title') or problem.slug }}
+                    <button class="btn btn-link p-0 ms-2" onclick="copyProblemLink('{{ problem.slug }}')" title="Copy problem link">
+                        <i class="fas fa-link text-white-50"></i>
+                    </button>
                 </h1>
                 <p class="mb-2 opacity-75">{{ problem.slug }}</p>
                 
@@ -112,9 +115,6 @@
                             <i class="fas fa-globe me-1"></i>Make Public
                         </button>
                     {% endif %}
-                    <button class="btn btn-light btn-enhanced" onclick="exportProblem('{{ problem.slug }}')">
-                        <i class="fas fa-download"></i> Export
-                    </button>
                     <button class="btn btn-danger btn-enhanced" onclick="deleteProblem('{{ problem.slug }}')">
                         <i class="fas fa-trash"></i> Delete
                     </button>

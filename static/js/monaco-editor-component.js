@@ -196,6 +196,9 @@ class MonacoEditorComponent {
                 this.addResizeFeature();
             }
             
+            // Set up auto-save functionality
+            this.setupAutoSave();
+            
             // Trigger ready callback if provided
             if (this.config.onReady) {
                 this.config.onReady(this.editor);
@@ -245,6 +248,9 @@ class MonacoEditorComponent {
         if (this.config.resizable) {
             this.addResizeFeature();
         }
+        
+        // Set up auto-save for fallback editor
+        this.setupAutoSave();
         
         // Trigger ready callback if provided
         if (this.config.onReady) {
@@ -383,6 +389,128 @@ class MonacoEditorComponent {
     formatDocument() {
         const action = this.getAction('editor.action.formatDocument');
         if (action) action.run();
+    }
+    
+    setupAutoSave() {
+        if (!this.editor || this.config.disableAutoSave) {
+            return;
+        }
+        
+        // Generate storage key based on current page and editor type
+        const currentPath = window.location.pathname;
+        const storageKey = `monaco_autosave_${this.config.containerId}_${currentPath}`;
+        
+        // Load saved content on initialization
+        const savedContent = localStorage.getItem(storageKey);
+        if (savedContent && savedContent.trim() !== '') {
+            // Only load if it's different from default template
+            const currentContent = this.editor.getValue();
+            if (savedContent !== currentContent) {
+                this.editor.setValue(savedContent);
+                
+                // Show a subtle notification that content was restored
+                this.showAutoSaveNotification('Content restored from previous session', 'info');
+            }
+        }
+        
+        // Set up auto-save on content change
+        let saveTimeout;
+        
+        // Handle both Monaco editor and fallback textarea
+        if (this.editor.onDidChangeModelContent) {
+            // Monaco editor
+            this.editor.onDidChangeModelContent(() => {
+                // Clear previous timeout
+                if (saveTimeout) {
+                    clearTimeout(saveTimeout);
+                }
+                
+                // Save after 2 seconds of inactivity
+                saveTimeout = setTimeout(() => {
+                    const content = this.editor.getValue();
+                    localStorage.setItem(storageKey, content);
+                    
+                    // Show subtle save indicator
+                    this.showAutoSaveNotification('Progress saved', 'success');
+                }, 2000);
+            });
+        } else {
+            // Fallback textarea
+            const textarea = document.querySelector(`#${this.config.containerId} textarea`);
+            if (textarea) {
+                textarea.addEventListener('input', () => {
+                    // Clear previous timeout
+                    if (saveTimeout) {
+                        clearTimeout(saveTimeout);
+                    }
+                    
+                    // Save after 2 seconds of inactivity
+                    saveTimeout = setTimeout(() => {
+                        const content = this.editor.getValue();
+                        localStorage.setItem(storageKey, content);
+                        
+                        // Show subtle save indicator
+                        this.showAutoSaveNotification('Progress saved', 'success');
+                    }, 2000);
+                });
+            }
+        }
+        
+        // Save immediately when user leaves the page
+        window.addEventListener('beforeunload', () => {
+            const content = this.editor.getValue();
+            localStorage.setItem(storageKey, content);
+        });
+        
+        // Clear saved content when user explicitly clears the editor
+        const clearButton = document.getElementById('clearCodeBtn');
+        if (clearButton) {
+            clearButton.addEventListener('click', () => {
+                localStorage.removeItem(storageKey);
+            });
+        }
+    }
+    
+    showAutoSaveNotification(message, type = 'info') {
+        // Create or update notification element
+        let notification = document.getElementById('monaco-autosave-notification');
+        if (!notification) {
+            notification = document.createElement('div');
+            notification.id = 'monaco-autosave-notification';
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: 500;
+                z-index: 10000;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                pointer-events: none;
+                background: var(--bs-success);
+                color: white;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            `;
+            document.body.appendChild(notification);
+        }
+        
+        // Set message and style based on type
+        notification.textContent = message;
+        if (type === 'success') {
+            notification.style.background = '#28a745';
+        } else if (type === 'info') {
+            notification.style.background = '#17a2b8';
+        }
+        
+        // Show notification
+        notification.style.opacity = '1';
+        
+        // Hide after 2 seconds
+        setTimeout(() => {
+            notification.style.opacity = '0';
+        }, 2000);
     }
     
     // Cleanup method

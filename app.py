@@ -686,6 +686,7 @@ def test_solution_api(slug):
 
 
 @app.route('/api/quick-test', methods=['POST'])
+@require_auth
 def independent_quick_test_api():
     """Independent API endpoint for quick testing C++ code (no problem context needed)"""
     try:
