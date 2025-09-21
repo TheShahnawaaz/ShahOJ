@@ -1,0 +1,403 @@
+/**
+ * Shared Submission Modal Styles for PocketOJ
+ * Used in both My Submissions page and Problem Detail page
+ */
+
+/* Enhanced Modal Styling */
+#sharedSubmissionModal .modal-content,
+.submission-modal-content {
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+#sharedSubmissionModal .modal-header,
+.submission-modal-header {
+    background: linear-gradient(135deg, var(--primary-color), #0056b3);
+    color: white;
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+    padding: 1.5rem;
+}
+
+[data-theme="dark"] #sharedSubmissionModal .modal-header,
+[data-theme="dark"] .submission-modal-header {
+    background: linear-gradient(135deg, var(--btn-primary), #094766);
+}
+
+#sharedSubmissionModal .modal-title,
+.submission-modal-title {
+    font-weight: 600;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+#sharedSubmissionModal .btn-close,
+.submission-modal-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+}
+
+#sharedSubmissionModal .btn-close:hover,
+.submission-modal-close:hover {
+    opacity: 1;
+}
+
+#sharedSubmissionModal .modal-body,
+.submission-modal-body {
+    padding: 2rem;
+    background: var(--card-bg);
+    border-radius: 0 0 12px 12px;
+}
+
+[data-theme="dark"] #sharedSubmissionModal .modal-content,
+[data-theme="dark"] .submission-modal-content {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] #sharedSubmissionModal .modal-body,
+[data-theme="dark"] .submission-modal-body {
+    background: var(--card-bg);
+}
+
+/* Enhanced Submission Modal Details */
+.submission-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+
+
+.submission-meta-card {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem;
+    background: var(--secondary-bg);
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.submission-meta-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.submission-meta-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.submission-meta-value {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+.submission-meta-value a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.submission-meta-value a:hover {
+    text-decoration: underline;
+}
+
+.submission-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.submission-section-header h6 {
+    margin: 0;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+.submission-btn-copy {
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+}
+
+.submission-btn-copy:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+}
+
+.submission-code-block {
+    max-height: 500px;
+    overflow: auto;
+    background: var(--code-bg, #f8f9fa);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    position: relative;
+}
+
+.submission-code-block code {
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: inherit;
+}
+
+/* Better scrollbar for code blocks */
+.submission-code-block::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.submission-code-block::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.1);
+    border-radius: 4px;
+}
+
+.submission-code-block::-webkit-scrollbar-thumb {
+    background: rgba(0,123,255,0.3);
+    border-radius: 4px;
+}
+
+.submission-code-block::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,123,255,0.5);
+}
+
+/* Dark mode for modal details */
+[data-theme="dark"] .submission-meta-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .submission-meta-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+[data-theme="dark"] .submission-code-block {
+    background: #1e1e1e;
+    border-color: #3e3e42;
+    color: #d4d4d4;
+}
+
+[data-theme="dark"] .submission-code-block code {
+    color: #d4d4d4;
+}
+
+[data-theme="dark"] .submission-btn-copy {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #cccccc !important;
+}
+
+[data-theme="dark"] .submission-btn-copy:hover {
+    background: var(--btn-primary);
+    border-color: var(--btn-primary);
+    color: white !important;
+}
+
+[data-theme="dark"] .submission-code-block::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.1);
+}
+
+[data-theme="dark"] .submission-code-block::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+}
+
+[data-theme="dark"] .submission-code-block::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+/* Results table styling */
+.submission-modal-body .table-sm {
+    font-size: 0.85rem;
+}
+
+.submission-modal-body .table-sm th {
+    background: var(--secondary-bg);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 0.5rem;
+}
+
+.submission-modal-body .table-sm td {
+    border-color: var(--border-color);
+    padding: 0.5rem;
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .submission-modal-body .table-sm th {
+    background: #2d2d30;
+    border-color: #3e3e42;
+    color: #cccccc;
+}
+
+[data-theme="dark"] .submission-modal-body .table-sm td {
+    border-color: #3e3e42;
+    background: var(--card-bg);
+    color: #cccccc;
+}
+
+/* Enhanced section headers in dark mode */
+[data-theme="dark"] .submission-section-header {
+    border-bottom-color: #3e3e42;
+}
+
+[data-theme="dark"] .submission-section-header h6 {
+    color: #cccccc;
+}
+
+/* Better contrast for meta labels in dark mode */
+[data-theme="dark"] .submission-meta-label {
+    color: #969696;
+}
+
+[data-theme="dark"] .submission-meta-value {
+    color: #ffffff;
+}
+
+    /* Enhanced Table Styling - Matching My Problems */
+    .table-responsive {
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+    }
+
+    .table {
+        margin-bottom: 0;
+        font-size: 0.95rem;
+    }
+
+    .table thead th {
+        background: var(--primary-color);
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem 1.25rem;
+        border: none;
+        position: relative;
+    }
+
+    /* Bootstrap Table Variants for Modal */
+    .submission-modal-body .table-success {
+        --bs-table-color: #000;
+        --bs-table-bg: #d1e7dd;
+        --bs-table-border-color: #bcd0c7;
+        --bs-table-striped-bg: #c7dbd2;
+        --bs-table-striped-color: #000;
+        --bs-table-active-bg: #bcd0c7;
+        --bs-table-active-color: #000;
+        --bs-table-hover-bg: #c1d6cc;
+        --bs-table-hover-color: #000;
+        color: var(--bs-table-color);
+        border-color: var(--bs-table-border-color);
+        background-color: var(--bs-table-bg);
+    }
+
+    .submission-modal-body .table-danger {
+        --bs-table-color: #000;
+        --bs-table-bg: #f8d7da;
+        --bs-table-border-color: #dfc2c4;
+        --bs-table-striped-bg: #eccccf;
+        --bs-table-striped-color: #000;
+        --bs-table-active-bg: #dfc2c4;
+        --bs-table-active-color: #000;
+        --bs-table-hover-bg: #e5c7ca;
+        --bs-table-hover-color: #000;
+        color: var(--bs-table-color);
+        border-color: var(--bs-table-border-color);
+        background-color: var(--bs-table-bg);
+    }
+
+    .submission-modal-body .table-warning {
+        --bs-table-color: #000;
+        --bs-table-bg: #fff3cd;
+        --bs-table-border-color: #e6dbb9;
+        --bs-table-striped-bg: #f2e7c3;
+        --bs-table-striped-color: #000;
+        --bs-table-active-bg: #e6dbb9;
+        --bs-table-active-color: #000;
+        --bs-table-hover-bg: #ece1be;
+        --bs-table-hover-color: #000;
+        color: var(--bs-table-color);
+        border-color: var(--bs-table-border-color);
+        background-color: var(--bs-table-bg);
+    }
+
+    /* Dark mode table variants */
+    [data-theme="dark"] .submission-modal-body .table-success {
+        --bs-table-color: #75b798;
+        --bs-table-bg: #0f2419;
+        --bs-table-border-color: #174c2d;
+        --bs-table-striped-bg: #1a2e20;
+        --bs-table-striped-color: #75b798;
+        --bs-table-active-bg: #174c2d;
+        --bs-table-active-color: #75b798;
+        --bs-table-hover-bg: #1a2e20;
+        --bs-table-hover-color: #75b798;
+        color: var(--bs-table-color);
+        border-color: var(--bs-table-border-color);
+        background-color: var(--bs-table-bg);
+    }
+
+    [data-theme="dark"] .submission-modal-body .table-danger {
+        --bs-table-color: #ea868f;
+        --bs-table-bg: #2c0b0e;
+        --bs-table-border-color: #58151c;
+        --bs-table-striped-bg: #331014;
+        --bs-table-striped-color: #ea868f;
+        --bs-table-active-bg: #58151c;
+        --bs-table-active-color: #ea868f;
+        --bs-table-hover-bg: #331014;
+        --bs-table-hover-color: #ea868f;
+        color: var(--bs-table-color);
+        border-color: var(--bs-table-border-color);
+        background-color: var(--bs-table-bg);
+    }
+
+    [data-theme="dark"] .submission-modal-body .table-warning {
+        --bs-table-color: #ffda6a;
+        --bs-table-bg: #332701;
+        --bs-table-border-color: #664d03;
+        --bs-table-striped-bg: #3d2f01;
+        --bs-table-striped-color: #ffda6a;
+        --bs-table-active-bg: #664d03;
+        --bs-table-active-color: #ffda6a;
+        --bs-table-hover-bg: #3d2f01;
+        --bs-table-hover-color: #ffda6a;
+        color: var(--bs-table-color);
+        border-color: var(--bs-table-border-color);
+        background-color: var(--bs-table-bg);
+    }
+

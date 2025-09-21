@@ -924,9 +924,6 @@
             transition: transform 0.2s;
         }
         
-        .card:hover {
-            transform: translateY(-2px);
-        }
         
         .stats-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -1025,6 +1022,12 @@
                             <a class="nav-link nav-link-enhanced {{ 'active' if request.endpoint == 'my_problems' else '' }}" href="{{ url_for('my_problems') }}">
                                 <i class="fas fa-user-edit me-1"></i>
                                 <span>My Problems</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-enhanced {{ 'active' if request.endpoint == 'my_submissions_page' else '' }}" href="{{ url_for('my_submissions_page') }}">
+                                <i class="fas fa-inbox me-1"></i>
+                                <span>My Submissions</span>
                             </a>
                         </li>
                         <li class="nav-item dropdown">

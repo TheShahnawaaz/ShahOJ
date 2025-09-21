@@ -17,3 +17,6 @@ pydantic>=2.0.0
 # Multi-user authentication
 authlib>=1.2.0
 python-dotenv>=1.0.0
+
+# Memory monitoring
+psutil>=5.9.0

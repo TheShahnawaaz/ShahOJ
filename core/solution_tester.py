@@ -251,21 +251,72 @@ class SolutionTester:
                     tempfile.NamedTemporaryFile(mode='w+b') as stdout_file:
 
                 start_time = time.time()
+                memory_kb = 0
 
-                # Run with time limit
+                # Run with time limit and memory tracking
                 try:
-                    result = subprocess.run(
-                        [executable_path],
-                        stdin=stdin_file,
-                        stdout=stdout_file,
-                        stderr=subprocess.PIPE,
-                        timeout=self.time_limit_ms / 1000.0
-                    )
+                    # Create a wrapper script to measure memory usage
+                    wrapper_script = f"""#!/bin/bash
+exec /usr/bin/time -l {executable_path} 2>&1
+"""
+
+                    # For cross-platform compatibility, use psutil if available, otherwise approximate
+                    try:
+                        import psutil
+                        process = subprocess.Popen(
+                            [executable_path],
+                            stdin=stdin_file,
+                            stdout=stdout_file,
+                            stderr=subprocess.PIPE
+                        )
+
+                        # Monitor memory usage
+                        max_memory_mb = 0
+                        try:
+                            ps_process = psutil.Process(process.pid)
+                            while process.poll() is None:
+                                try:
+                                    memory_info = ps_process.memory_info()
+                                    current_memory_mb = memory_info.rss / \
+                                        (1024 * 1024)  # Convert to MB
+                                    max_memory_mb = max(
+                                        max_memory_mb, current_memory_mb)
+                                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                                    break
+                                time.sleep(0.01)  # Check every 10ms
+                        except ImportError:
+                            pass
+
+                        # Wait for process to complete with timeout
+                        try:
+                            process.wait(timeout=self.time_limit_ms / 1000.0)
+                            # Convert MB to KB
+                            memory_kb = int(max_memory_mb * 1024)
+                        except subprocess.TimeoutExpired:
+                            process.kill()
+                            return SolutionResult(test_num, 'TLE', self.time_limit_ms,
+                                                  input_content=input_content,
+                                                  expected_output=expected_output,
+                                                  actual_output="")
+
+                        result = process
+
+                    except ImportError:
+                        # Fallback: use basic subprocess without memory tracking
+                        result = subprocess.run(
+                            [executable_path],
+                            stdin=stdin_file,
+                            stdout=stdout_file,
+                            stderr=subprocess.PIPE,
+                            timeout=self.time_limit_ms / 1000.0
+                        )
+                        memory_kb = 0  # Can't measure without psutil
 
                     runtime_ms = (time.time() - start_time) * 1000
 
                     if result.returncode != 0:
                         return SolutionResult(test_num, 'RTE', runtime_ms,
+                                              memory_kb=memory_kb,
                                               details=f"Runtime error: {result.stderr.decode()[:200]}",
                                               input_content=input_content,
                                               expected_output=expected_output,
@@ -286,11 +337,13 @@ class SolutionTester:
 
                         if actual_normalized == expected_normalized:
                             return SolutionResult(test_num, 'AC', runtime_ms,
+                                                  memory_kb=memory_kb,
                                                   input_content=input_content,
                                                   expected_output=expected_output,
                                                   actual_output=actual_output)
                         else:
                             return SolutionResult(test_num, 'WA', runtime_ms,
+                                                  memory_kb=memory_kb,
                                                   details=f"Output differs",
                                                   input_content=input_content,
                                                   expected_output=expected_output,
@@ -302,11 +355,13 @@ class SolutionTester:
                             'checker.float_tolerance') or 1e-6
                         if self._compare_float_output(expected_output, actual_output, tolerance):
                             return SolutionResult(test_num, 'AC', runtime_ms,
+                                                  memory_kb=memory_kb,
                                                   input_content=input_content,
                                                   expected_output=expected_output,
                                                   actual_output=actual_output)
                         else:
                             return SolutionResult(test_num, 'WA', runtime_ms,
+                                                  memory_kb=memory_kb,
                                                   details=f"Float comparison failed (tolerance={tolerance})",
                                                   input_content=input_content,
                                                   expected_output=expected_output,
@@ -317,6 +372,7 @@ class SolutionTester:
                         spj_verdict, spj_details = self._run_special_judge(
                             input_file, stdout_file, answer_file)
                         return SolutionResult(test_num, spj_verdict, runtime_ms,
+                                              memory_kb=memory_kb,
                                               details=spj_details,
                                               input_content=input_content,
                                               expected_output=expected_output,
@@ -326,11 +382,13 @@ class SolutionTester:
                         # Unknown checker type, default to diff
                         if actual_output == expected_output:
                             return SolutionResult(test_num, 'AC', runtime_ms,
+                                                  memory_kb=memory_kb,
                                                   input_content=input_content,
                                                   expected_output=expected_output,
                                                   actual_output=actual_output)
                         else:
                             return SolutionResult(test_num, 'WA', runtime_ms,
+                                                  memory_kb=memory_kb,
                                                   details="Unknown checker type, used diff",
                                                   input_content=input_content,
                                                   expected_output=expected_output,
@@ -338,12 +396,15 @@ class SolutionTester:
 
                 except subprocess.TimeoutExpired:
                     return SolutionResult(test_num, 'TLE', self.time_limit_ms,
+                                          memory_kb=0,
                                           input_content=input_content,
                                           expected_output=expected_output,
                                           actual_output="")
 
         except Exception as e:
-            return SolutionResult(test_num, 'JE', 0, details=f"Judge error: {str(e)}",
+            return SolutionResult(test_num, 'JE', 0,
+                                  memory_kb=0,
+                                  details=f"Judge error: {str(e)}",
                                   input_content=input_content,
                                   expected_output=expected_output,
                                   actual_output="")

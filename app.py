@@ -13,6 +13,8 @@ from flask import Flask, render_template, jsonify, request, redirect, url_for, f
 import os
 import sys
 import traceback
+import hashlib
+import json
 
 # Add current directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -227,6 +229,40 @@ def my_problems():
                            )
 
 
+@app.route('/my-submissions')
+@require_auth
+def my_submissions_page():
+    """User's submissions browser with server-side rendering"""
+    try:
+        user = g.current_user
+        page = int(request.args.get('page', 1))
+        search = request.args.get('search', '')
+
+        # Get user's submissions with search and pagination
+        result = db_manager.list_user_submissions(
+            user['id'],
+            page=page,
+            limit=20,
+            search=search
+        )
+
+        # Calculate pagination info
+        limit = 20
+        total_pages = max(1, (result['total'] + limit - 1) // limit)
+
+        return render_template('pages/submissions/my-submissions.html',
+                               submissions=result['items'],
+                               pagination={
+                                   'current_page': result['page'],
+                                   'total_pages': total_pages,
+                                   'total': result['total'],
+                                   'has_next': result['has_next']
+                               },
+                               search=search)
+    except Exception as e:
+        return f"Error loading submissions: {e}", 500
+
+
 @app.route('/api/problems/<slug>/toggle-visibility', methods=['POST'])
 @require_auth
 @require_problem_access('edit')
@@ -269,6 +305,194 @@ def delete_problem_api(slug):
         return jsonify({'success': True, 'message': 'Problem deleted successfully'})
     else:
         return jsonify({'success': False, 'error': 'Failed to delete problem'}), 500
+
+
+# ============================================================================
+# SUBMISSION ROUTES (MVP: synchronous judging, dedupe by source hash)
+# ============================================================================
+
+def _normalize_code_for_hash(code: str) -> str:
+    """Moderate normalization: CRLF->LF and strip trailing spaces per line."""
+    if code is None:
+        return ''
+    code = code.replace('\r\n', '\n').replace('\r', '\n')
+    lines = code.split('\n')
+    return '\n'.join([line.rstrip() for line in lines])
+
+
+def _compute_source_hash(problem_slug: str, language: str, source_code: str) -> str:
+    payload = f"{problem_slug}\n{language}\n{_normalize_code_for_hash(source_code)}"
+    return hashlib.sha256(payload.encode('utf-8')).hexdigest()
+
+
+@app.route('/api/problem/<slug>/submit', methods=['POST'])
+@require_auth
+@require_problem_access('view')
+def submit_solution_api(slug):
+    """Submit code for a problem (stores submission and runs judge synchronously)."""
+    try:
+        user = g.current_user
+        data = request.get_json() or {}
+        language = (data.get('language') or 'cpp').strip().lower()
+        source_code = (data.get('code') or '').rstrip()
+
+        # Validate
+        if not source_code:
+            return jsonify({'success': False, 'error': 'Source code is required'}), 400
+        if language != 'cpp':
+            return jsonify({'success': False, 'error': 'Only C++ submissions are supported for now'}), 400
+        # Guard: limit size (100KB)
+        if len(source_code.encode('utf-8')) > 100 * 1024:
+            return jsonify({'success': False, 'error': 'Source too large (max 100KB)'}), 400
+
+        # Dedupe by hash for this user/problem/language
+        source_hash = _compute_source_hash(slug, language, source_code)
+        existing = db_manager.find_duplicate_submission(
+            user['id'], slug, language, source_hash)
+        if existing:
+            return jsonify({'success': False, 'error': 'Duplicate submission: same code already submitted', 'submission_id': existing}), 409
+
+        # Create submission (status running)
+        try:
+            submission_id = db_manager.create_submission(
+                user_id=user['id'],
+                problem_slug=slug,
+                language=language,
+                source_code=source_code,
+                source_hash=source_hash,
+                status='running'
+            )
+        except Exception as e:
+            # Handle rare race on unique index
+            return jsonify({'success': False, 'error': 'Duplicate submission or DB error'}), 409
+
+        # Judge synchronously
+        problem = unified_problem_manager.get_problem(slug)
+        if not problem:
+            db_manager.update_submission(submission_id, {'status': 'failed'})
+            return jsonify({'success': False, 'error': 'Problem not found'}), 404
+
+        from core.solution_tester import SolutionTester
+        tester = SolutionTester(problem)
+        results = tester.test_solution(source_code, ['samples', 'system'])
+
+        # Map results
+        compilation = results.get('compilation', {})
+        compile_time_ms = int(compilation.get('time_ms') or 0)
+        compile_output = compilation.get('errors') or ''
+        statistics = results.get('statistics', {})
+        total_time_ms = int(statistics.get('total_time_ms') or 0)
+        overall_verdict = results.get('overall_verdict') or 'JE'
+
+        # Create a compact summary instead of truncating full results
+        compact_summary = {
+            'overall_verdict': results.get('overall_verdict'),
+            'compilation': results.get('compilation', {}),
+            'statistics': results.get('statistics', {}),
+            'categories': results.get('categories', {}),
+            # Store metadata for ALL tests, not just failures
+            'test_results_summary': {}
+        }
+
+        # Add metadata for ALL tests (much smaller than full content)
+        test_results = results.get('test_results', {})
+        for category, tests in test_results.items():
+            compact_summary['test_results_summary'][category] = []
+            for test in tests:
+                # Store only essential metadata, no input/output content
+                test_metadata = {
+                    'test_num': test.get('test_num'),
+                    'verdict': test.get('verdict'),
+                    'time_ms': test.get('time_ms'),
+                    'memory_kb': test.get('memory_kb', 0)
+                }
+                # Only add details for non-AC tests to save space
+                if test.get('verdict') != 'AC' and test.get('details'):
+                    test_metadata['details'] = test.get('details', '')[:200]
+
+                compact_summary['test_results_summary'][category].append(
+                    test_metadata)
+
+        summary_json = json.dumps(compact_summary)
+
+        db_manager.update_submission(submission_id, {
+            'status': 'completed',
+            'verdict': overall_verdict,
+            'compile_time_ms': compile_time_ms,
+            'time_ms': total_time_ms,
+            'compile_output': compile_output[:100*1024],
+            'result_summary_json': summary_json
+        })
+
+        return jsonify({
+            'success': True,
+            'submission_id': submission_id,
+            'verdict': overall_verdict,
+            'statistics': statistics
+        })
+
+    except Exception as e:
+        # On unexpected error, attempt to mark submission failed if created
+        try:
+            if 'submission_id' in locals():
+                db_manager.update_submission(
+                    submission_id, {'status': 'failed'})
+        except Exception:
+            pass
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': f'Submission error: {str(e)}'}), 500
+
+
+@app.route('/api/submissions/<submission_id>')
+@require_auth
+def get_submission_api(submission_id):
+    """Get a single submission; owners see code, others see metadata only (authors allowed)."""
+    sub = db_manager.get_submission_by_id(submission_id)
+    if not sub:
+        return jsonify({'success': False, 'error': 'Submission not found'}), 404
+
+    user = g.current_user
+    # Permission: owner, or problem author
+    is_owner = sub['user_id'] == user['id']
+    prob = db_manager.get_problem_by_slug(sub['problem_slug'])
+    is_author = prob and prob.get('author_id') == user['id']
+    if not (is_owner or is_author):
+        # Hide source_code
+        sub = {k: v for k, v in sub.items() if k != 'source_code'}
+    return jsonify({'success': True, 'submission': sub})
+
+
+@app.route('/api/problem/<slug>/submissions')
+@require_auth
+@require_problem_access('view')
+def list_problem_submissions_api(slug):
+    """List current user's submissions for a problem (owner-only list)."""
+    user = g.current_user
+    page = int(request.args.get('page', 1))
+    limit = int(request.args.get('limit', 20))
+    search = request.args.get('search')
+    result = db_manager.list_user_submissions(
+        user['id'], problem_slug=slug, page=page, limit=limit, search=search)
+    # Do not include source_code in list payload for brevity
+    for item in result['items']:
+        item.pop('source_code', None)
+    return jsonify({'success': True, **result})
+
+
+@app.route('/api/my/submissions')
+@require_auth
+def list_my_submissions_api():
+    """List current user's submissions across problems (optional problem filter)."""
+    user = g.current_user
+    page = int(request.args.get('page', 1))
+    limit = int(request.args.get('limit', 20))
+    problem_slug = request.args.get('problem')
+    search = request.args.get('search')
+    result = db_manager.list_user_submissions(
+        user['id'], problem_slug=problem_slug, page=page, limit=limit, search=search)
+    for item in result['items']:
+        item.pop('source_code', None)
+    return jsonify({'success': True, **result})
 
 
 @app.route('/api/problems')

@@ -6,6 +6,7 @@
 {% block extra_css %}
 <!-- Monaco Editor Component CSS -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/monaco-editor-component.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/submission-modal.css') }}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
 <style>
     :root {
@@ -58,13 +59,14 @@
         background: linear-gradient(135deg, #28a745, #20c997);
         color: white;
         border: none;
-        padding: 0.75rem 1.5rem;
+        padding: 0.6rem 1.25rem;
         font-weight: 600;
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
+        font-size: 0.9rem;
     }
 
     .btn-run-all:hover {
@@ -83,13 +85,14 @@
         background: linear-gradient(135deg, #007bff, #0056b3);
         color: white;
         border: none;
-        padding: 0.75rem 1.5rem;
+        padding: 0.6rem 1.25rem;
         font-weight: 600;
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
+        font-size: 0.9rem;
     }
 
     .btn-run-samples:hover {
@@ -108,13 +111,14 @@
         background: linear-gradient(135deg, #6f42c1, #5a32a3);
         color: white;
         border: none;
-        padding: 0.75rem 1.5rem;
+        padding: 0.6rem 1.25rem;
         font-weight: 600;
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(111, 66, 193, 0.3);
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
+        font-size: 0.9rem;
     }
 
     .btn-run-custom:hover {
@@ -127,6 +131,32 @@
     .btn-run-custom:active {
         transform: translateY(0);
         box-shadow: 0 2px 8px rgba(111, 66, 193, 0.3);
+    }
+
+    .btn-run-submit {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border: none;
+        padding: 0.6rem 1.25rem;
+        font-weight: 600;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        font-size: 0.9rem;
+    }
+
+    .btn-run-submit:hover {
+        background: linear-gradient(135deg, #218838, #1ea085);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        color: white;
+    }
+
+    .btn-run-submit:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
     }
 
     /* Dark mode adjustments */
@@ -160,10 +190,21 @@
         box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
     }
 
+    [data-theme="dark"] .btn-run-submit {
+        background: linear-gradient(135deg, #198754, #157347);
+        box-shadow: 0 4px 12px rgba(25, 135, 84, 0.4);
+    }
+
+    [data-theme="dark"] .btn-run-submit:hover {
+        background: linear-gradient(135deg, #146c43, #0f5132);
+        box-shadow: 0 6px 20px rgba(25, 135, 84, 0.5);
+    }
+
     /* Button loading state */
     .btn-run-all:disabled,
     .btn-run-samples:disabled,
-    .btn-run-custom:disabled {
+    .btn-run-custom:disabled,
+    .btn-run-submit:disabled {
         opacity: 0.7;
         transform: none;
         cursor: not-allowed;
@@ -173,9 +214,10 @@
     @media (max-width: 768px) {
         .btn-run-all,
         .btn-run-samples,
-        .btn-run-custom {
-            padding: 0.6rem 1.2rem;
-            font-size: 0.9rem;
+        .btn-run-custom,
+        .btn-run-submit {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
         }
     }
 
@@ -1197,6 +1239,382 @@
         transform: translateY(-1px);
     }
 
+    /* Enhanced Recent Submissions Styling */
+    #recent-submissions-content .submission-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.25rem;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        margin-bottom: 0.75rem;
+        transition: all 0.3s ease;
+        background: var(--card-bg);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        position: relative;
+        overflow: hidden;
+    }
+
+    #recent-submissions-content .submission-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--primary-color);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    #recent-submissions-content .submission-item:hover {
+        background: var(--secondary-bg);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+
+    #recent-submissions-content .submission-item:hover::before {
+        opacity: 1;
+    }
+
+    #recent-submissions-content .submission-meta {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex: 1;
+    }
+
+    #recent-submissions-content .verdict-badge {
+        min-width: 65px;
+        text-align: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 0.4rem 0.75rem;
+        border-radius: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    #recent-submissions-content .submission-time {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        min-width: 120px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    #recent-submissions-content .submission-time i {
+        opacity: 0.7;
+        font-size: 0.8rem;
+    }
+
+    #recent-submissions-content .execution-time {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 0.95rem;
+        min-width: 80px;
+        text-align: right;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        background: var(--secondary-bg);
+        padding: 0.3rem 0.75rem;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    #recent-submissions-content .execution-time i {
+        opacity: 0.8;
+        font-size: 0.8rem;
+    }
+
+    #recent-submissions-content .submission-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    #recent-submissions-content .submission-actions .btn {
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
+
+    #recent-submissions-content .submission-actions .btn-outline-primary:hover {
+        background: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        color: white !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+    }
+
+    #recent-submissions-content .submission-actions .btn-outline-secondary:hover {
+        background: var(--secondary-bg) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    [data-theme="dark"] #recent-submissions-content .submission-actions .btn-outline-primary:hover {
+        background: var(--btn-primary) !important;
+        border-color: var(--btn-primary) !important;
+        color: white !important;
+    }
+
+    [data-theme="dark"] #recent-submissions-content .submission-actions .btn-outline-secondary:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+        color: #cccccc !important;
+    }
+
+    #recent-submissions-content .test-stats {
+        color: var(--text-primary);
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--secondary-bg);
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+    }
+
+    #recent-submissions-content .test-stats i {
+        opacity: 0.8;
+        font-size: 0.75rem;
+    }
+
+    #recent-submissions-content .compile-time {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-weight: 500;
+    }
+
+    #recent-submissions-content .compile-time i {
+        opacity: 0.7;
+        font-size: 0.75rem;
+    }
+
+    /* Empty submissions state */
+    #recent-submissions-content .empty-submissions {
+        text-align: center;
+        padding: 2rem 1rem;
+        color: var(--text-secondary);
+    }
+
+    #recent-submissions-content .empty-submissions i {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        opacity: 0.5;
+    }
+
+    /* Dark mode adjustments */
+    [data-theme="dark"] #recent-submissions-content .submission-item {
+        border-color: var(--border-color);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    [data-theme="dark"] #recent-submissions-content .submission-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    [data-theme="dark"] #recent-submissions-content .execution-time {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    [data-theme="dark"] #recent-submissions-content .test-stats {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Enhanced Modal Styling - Same as My Submissions */
+    .temp-submission-modal .modal-content {
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+
+    .temp-submission-modal .modal-header {
+        background: linear-gradient(135deg, var(--primary-color), #0056b3);
+        color: white;
+        border-bottom: none;
+        border-radius: 12px 12px 0 0;
+        padding: 1.5rem;
+    }
+
+    [data-theme="dark"] .temp-submission-modal .modal-header {
+        background: linear-gradient(135deg, var(--btn-primary), #094766);
+    }
+
+    .temp-submission-modal .modal-title {
+        font-weight: 600;
+        font-size: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .temp-submission-modal .btn-close {
+        filter: brightness(0) invert(1);
+        opacity: 0.8;
+    }
+
+    .temp-submission-modal .btn-close:hover {
+        opacity: 1;
+    }
+
+    .temp-submission-modal .modal-body {
+        padding: 2rem;
+        background: var(--card-bg);
+        border-radius: 0 0 12px 12px;
+    }
+
+    [data-theme="dark"] .temp-submission-modal .modal-content {
+        background: var(--card-bg);
+        border-color: var(--border-color);
+    }
+
+    [data-theme="dark"] .temp-submission-modal .modal-body {
+        background: var(--card-bg);
+    }
+
+    /* Enhanced Submission Modal Details */
+    .temp-submission-modal .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .temp-submission-modal .meta-card {
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1rem;
+        background: var(--secondary-bg);
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .temp-submission-modal .meta-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .temp-submission-modal .meta-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .temp-submission-modal .meta-value {
+        font-weight: 700;
+        color: var(--text-primary);
+        font-size: 1.1rem;
+    }
+
+    .temp-submission-modal .meta-value a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+
+    .temp-submission-modal .meta-value a:hover {
+        text-decoration: underline;
+    }
+
+    .temp-submission-modal .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .temp-submission-modal .section-header h6 {
+        margin: 0;
+        font-weight: 700;
+        color: var(--text-primary);
+        font-size: 1.1rem;
+    }
+
+    .temp-submission-modal .btn-copy {
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+        color: var(--text-primary);
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+
+    .temp-submission-modal .btn-copy:hover {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+    }
+
+    .temp-submission-modal pre.code-block {
+        max-height: 500px;
+        overflow: auto;
+        background: var(--code-bg, #f8f9fa);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        position: relative;
+    }
+
+    .temp-submission-modal pre.code-block code {
+        background: transparent;
+        border: none;
+        padding: 0;
+        color: inherit;
+    }
+
+    /* Dark mode for modal details */
+    [data-theme="dark"] .temp-submission-modal .meta-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    [data-theme="dark"] .temp-submission-modal .meta-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    [data-theme="dark"] .temp-submission-modal pre.code-block {
+        background: #1e1e1e;
+        border-color: #3e3e42;
+        color: #d4d4d4;
+    }
+
+    [data-theme="dark"] .temp-submission-modal .btn-copy {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: #cccccc !important;
+    }
+
+    [data-theme="dark"] .temp-submission-modal .btn-copy:hover {
+        background: var(--btn-primary);
+        border-color: var(--btn-primary);
+        color: white !important;
+    }
+
     /* Responsive adjustments */
     @media (max-width: 991.98px) {
         .col-lg-6 {
@@ -1205,6 +1623,17 @@
         
         .monaco-editor-container {
             height: 300px;
+        }
+
+        #recent-submissions-content .submission-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        #recent-submissions-content .submission-time,
+        #recent-submissions-content .execution-time {
+            min-width: auto;
         }
     }
 </style>
@@ -1255,33 +1684,27 @@
                 
                 <!-- Test Solution Controls -->
                 <div class="mt-3 pt-3 border-top">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            {% if current_user %}
-                                <div class="d-flex gap-3 flex-wrap">
-                                    <button class="btn btn-run-all btn-enhanced" id="runTestsBtn">
-                                        <i class="fas fa-play me-2"></i>Run All Tests
-                                    </button>
-                                    <button class="btn btn-run-samples btn-enhanced" id="runSampleBtn">
-                                        <i class="fas fa-vial me-2"></i>Run Samples
-                                    </button>
-                                    <button class="btn btn-run-custom btn-enhanced" id="runCustomBtn">
-                                        <i class="fas fa-keyboard me-2"></i>Run Custom Input
-                                    </button>
-                                </div>
-                            {% else %}
-                                <div class="text-muted">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    You need to <a href="{{ url_for('auth_login') }}" class="text-decoration-none">sign in</a> to run or submit
-                                </div>
-                            {% endif %}
+                    {% if current_user %}
+                        <div class="d-flex gap-3 flex-wrap">
+                            <button class="btn btn-run-all btn-enhanced" id="runTestsBtn">
+                                <i class="fas fa-play me-2"></i>Run All Tests
+                            </button>
+                            <button class="btn btn-run-samples btn-enhanced" id="runSampleBtn">
+                                <i class="fas fa-vial me-2"></i>Run Samples
+                            </button>
+                            <button class="btn btn-run-custom btn-enhanced" id="runCustomBtn">
+                                <i class="fas fa-keyboard me-2"></i>Run Custom Input
+                            </button>
+                            <button class="btn btn-run-submit btn-enhanced" id="submitCodeBtn">
+                                <i class="fas fa-paper-plane me-2"></i>Submit
+                            </button>
                         </div>
-                        <div class="col-md-4 text-end">
-                            <small class="text-muted">
-                                <i class="fas fa-cog"></i> Compile with: <code>g++ -std=c++17 -O2</code>
-                            </small>
+                    {% else %}
+                        <div class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            You need to <a href="{{ url_for('auth_login') }}" class="text-decoration-none">sign in</a> to run or submit
                         </div>
-                    </div>
+                    {% endif %}
                 </div>
 
                 <!-- Test Results Section (Inside Editor Card) -->
@@ -1289,6 +1712,17 @@
                     {% call enhanced_card("Test Results", "fas fa-chart-line", []) %}
                         <div id="testResultsContent">
                             <!-- Test results will be populated here -->
+                        </div>
+                    {% endcall %}
+                </div>
+                
+                <!-- Enhanced Recent Submissions Section -->
+                <div id="recentSubmissions" class="mt-3" style="display: none;">
+                    {% call enhanced_card("Recent Submissions", "fas fa-history", [
+                        {'text': 'View All', 'icon': 'fas fa-external-link-alt', 'class': 'btn-outline-primary btn-sm', 'onclick': 'viewAllSubmissionsForProblem()'}
+                    ]) %}
+                        <div id="recent-submissions-content">
+                            <!-- Will be populated by JavaScript -->
                         </div>
                     {% endcall %}
                 </div>
@@ -1354,6 +1788,7 @@
 <!-- Monaco Editor Component JS -->
 <script src="{{ url_for('static', filename='js/monaco-editor-component.js') }}"></script>
 <script src="{{ url_for('static', filename='js/monaco-editor-presets.js') }}"></script>
+<script src="{{ url_for('static', filename='js/submission-modal.js') }}"></script>
 
 <script>
 // Global variables
@@ -1375,6 +1810,9 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Failed to initialize Solution Tester:', error);
         }
     }, 200);
+
+    // Load recent submissions on page load
+    loadRecentSubmissions();
 });
 
 function loadProblemStatement() {
@@ -1634,6 +2072,58 @@ signed main()
         // Run custom input button in modal
         document.getElementById('runCustomInputBtn')?.addEventListener('click', () => {
             this.runCustomInput();
+        });
+
+        // Submit code
+        document.getElementById('submitCodeBtn')?.addEventListener('click', async () => {
+            const isAuthenticated = {{ 'true' if current_user else 'false' }};
+            if (!isAuthenticated) {
+                alert('Please sign in to submit.');
+                return;
+            }
+            const btn = document.getElementById('submitCodeBtn');
+            const original = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+            try {
+                const code = this.getCode();
+                if (!code.trim()) { alert('Please enter C++ code to submit'); return; }
+                const res = await fetch(`/api/problem/{{ problem.slug }}/submit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ language: 'cpp', code })
+                });
+                const data = await res.json();
+                if (res.status === 409) {
+                    if (this.cppEditor && this.cppEditor.showAutoSaveNotification) {
+                        this.cppEditor.showAutoSaveNotification('Duplicate submission: same code already submitted', 'info');
+                    } else {
+                        alert('Duplicate submission: same code already submitted.');
+                    }
+                } else if (data.success) {
+                    if (this.cppEditor && this.cppEditor.showAutoSaveNotification) {
+                        this.cppEditor.showAutoSaveNotification(`Submitted. Verdict: ${data.verdict}`, 'success');
+                    } else {
+                        alert(`Submitted. Verdict: ${data.verdict}`);
+                    }
+                    loadRecentSubmissions();
+                } else {
+                    if (this.cppEditor && this.cppEditor.showAutoSaveNotification) {
+                        this.cppEditor.showAutoSaveNotification(data.error || 'Submission failed', 'info');
+                    } else {
+                        alert(data.error || 'Submission failed');
+                    }
+                }
+            } catch (e) {
+                if (this.cppEditor && this.cppEditor.showAutoSaveNotification) {
+                    this.cppEditor.showAutoSaveNotification('Network error while submitting', 'info');
+                } else {
+                    alert('Network error while submitting');
+                }
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = original;
+            }
         });
     }
     
@@ -2379,5 +2869,198 @@ function displayError(error) {
     
     testResultsDiv.style.display = 'block';
 }
+
+async function loadRecentSubmissions() {
+    try {
+        const res = await fetch(`/api/problem/{{ problem.slug }}/submissions?page=1&limit=8`);
+        const data = await res.json();
+        const section = document.getElementById('recentSubmissions');
+        const content = document.getElementById('recent-submissions-content');
+        
+        if (!data.success || !data.items || data.items.length === 0) {
+            if (section) section.style.display = 'none';
+            return;
+        }
+        
+        if (section) section.style.display = '';
+        
+        let html = '';
+        data.items.forEach((submission, index) => {
+            const verdict = (submission.verdict || submission.status || '').toUpperCase();
+            const when = submission.created_at ? new Date(submission.created_at).toLocaleString() : 'Recently';
+            const timeAgo = submission.created_at ? getTimeAgo(submission.created_at) : '';
+            
+            // Verdict badge styling
+            let badgeClass = 'bg-secondary';
+            if (verdict === 'AC') badgeClass = 'bg-success';
+            else if (verdict === 'WA') badgeClass = 'bg-danger';
+            else if (verdict === 'TLE') badgeClass = 'bg-warning text-dark';
+            else if (verdict === 'RTE') badgeClass = 'bg-warning';
+            else if (verdict === 'CE') badgeClass = 'bg-secondary';
+            else if (verdict === 'PE') badgeClass = 'bg-info';
+            
+            // Parse summary for additional info
+            let summary = null;
+            let testStats = '';
+            try {
+                if (submission.result_summary_json) {
+                    summary = JSON.parse(submission.result_summary_json);
+                    if (summary.statistics) {
+                        const s = summary.statistics;
+                        testStats = `${s.passed}/${s.total_tests} passed`;
+                    }
+                }
+            } catch(e) {
+                // Try to extract basic stats from corrupted JSON if possible
+                if (submission.result_summary_json && submission.result_summary_json.includes('"statistics"')) {
+                    try {
+                        const match = submission.result_summary_json.match(/"statistics":\s*{[^}]*"total_tests":\s*(\d+)[^}]*"passed":\s*(\d+)[^}]*"failed":\s*(\d+)/);
+                        if (match) {
+                            const total = parseInt(match[1]);
+                            const passed = parseInt(match[2]);
+                            testStats = `${passed}/${total} passed`;
+                        }
+                    } catch(e2) {
+                        // If even regex parsing fails, continue without stats
+                    }
+                }
+            }
+
+            // Determine status indicator
+            let statusIcon = 'fas fa-question-circle';
+            let statusColor = 'text-muted';
+            if (verdict === 'AC') {
+                statusIcon = 'fas fa-check-circle';
+                statusColor = 'text-success';
+            } else if (verdict === 'WA') {
+                statusIcon = 'fas fa-times-circle';
+                statusColor = 'text-danger';
+            } else if (verdict === 'TLE') {
+                statusIcon = 'fas fa-clock';
+                statusColor = 'text-warning';
+            } else if (verdict === 'CE') {
+                statusIcon = 'fas fa-exclamation-triangle';
+                statusColor = 'text-secondary';
+            }
+
+            html += `
+                <div class="submission-item">
+                    <div class="submission-meta">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge ${badgeClass} verdict-badge">${verdict || '—'}</span>
+                            <i class="${statusIcon} ${statusColor}"></i>
+                        </div>
+                        <div class="submission-time">
+                            <i class="fas fa-clock me-1"></i>
+                            <span title="${when}">${timeAgo || when}</span>
+                        </div>
+                        ${testStats ? `
+                            <div class="test-stats">
+                                <i class="fas fa-vial me-1"></i>
+                                <span>${testStats}</span>
+                            </div>
+                        ` : ''}
+                        <div class="execution-time">
+                            <i class="fas fa-stopwatch me-1"></i>
+                            <span>${submission.time_ms ? submission.time_ms + 'ms' : '—'}</span>
+                        </div>
+                        ${submission.compile_time_ms ? `
+                            <div class="compile-time">
+                                <i class="fas fa-hammer me-1"></i>
+                                <span>${submission.compile_time_ms}ms</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="submission-actions">
+                        <button class="btn btn-sm btn-outline-primary" onclick="SubmissionModal.show('${submission.id}')" title="View Details">
+                            <i class="fas fa-eye me-1"></i>View
+                        </button>
+                        ${submission.source_code ? `
+                            <button class="btn btn-sm btn-outline-secondary" onclick="copySubmissionCode('${submission.id}')" title="Copy Code">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        
+        // Add info text if there are more submissions (no button)
+        if (data.total > data.items.length) {
+            html += `
+                <div class="text-center mt-3 pt-3" style="border-top: 1px solid var(--border-color);">
+                    <div class="d-flex align-items-center justify-content-center gap-2">
+                        <i class="fas fa-info-circle text-muted"></i>
+                        <small class="text-muted">Showing ${data.items.length} of ${data.total} submissions</small>
+                    </div>
+                </div>
+            `;
+        }
+        
+        content.innerHTML = html;
+        
+    } catch (e) {
+        const section = document.getElementById('recentSubmissions');
+        if (section) section.style.display = 'none';
+    }
+}
+
+function getTimeAgo(dateString) {
+    try {
+        // Handle ISO string timestamps from database
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+        
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return date.toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    } catch (e) {
+        return '';
+    }
+}
+
+// Copy submission code directly
+async function copySubmissionCode(submissionId) {
+    try {
+        const res = await fetch(`/api/submissions/${submissionId}`);
+        const data = await res.json();
+        if (data.success && data.submission.source_code) {
+            if (navigator.clipboard) {
+                await navigator.clipboard.writeText(data.submission.source_code);
+                // Show temporary feedback
+                const btn = event.target.closest('button');
+                const original = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                btn.classList.add('btn-success');
+                btn.classList.remove('btn-outline-secondary');
+                setTimeout(() => {
+                    btn.innerHTML = original;
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-outline-secondary');
+                }, 1000);
+            }
+        }
+    } catch (e) {
+        console.error('Failed to copy code:', e);
+    }
+}
+
+// Navigate to My Submissions with current problem as search filter
+function viewAllSubmissionsForProblem() {
+    const problemSlug = '{{ problem.slug }}';
+    window.location.href = `/my-submissions?search=${encodeURIComponent(problemSlug)}`;
+}
+
+// Use shared submission modal component
 </script>
 {% endblock %}

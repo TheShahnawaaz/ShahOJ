@@ -90,6 +90,38 @@ class DatabaseManager:
                 CREATE INDEX IF NOT EXISTS idx_sessions_expires ON user_sessions(expires_at);
             """)
 
+            # Create submissions table (for storing user submissions)
+            conn.executescript("""
+                CREATE TABLE IF NOT EXISTS submissions (
+                    id TEXT PRIMARY KEY,
+                    user_id TEXT NOT NULL,
+                    problem_slug TEXT NOT NULL,
+                    language TEXT NOT NULL,
+                    source_code TEXT NOT NULL,
+                    source_hash TEXT NOT NULL,
+                    status TEXT NOT NULL CHECK (status IN ('queued','running','completed','failed')),
+                    verdict TEXT,
+                    compile_time_ms INTEGER,
+                    time_ms INTEGER,
+                    memory_kb INTEGER,
+                    compile_output TEXT,
+                    runtime_stderr TEXT,
+                    result_summary_json TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users(id)
+                );
+
+                CREATE UNIQUE INDEX IF NOT EXISTS idx_submissions_dedupe
+                    ON submissions(user_id, problem_slug, language, source_hash);
+                CREATE INDEX IF NOT EXISTS idx_submissions_user_created
+                    ON submissions(user_id, created_at);
+                CREATE INDEX IF NOT EXISTS idx_submissions_problem_created
+                    ON submissions(problem_slug, created_at);
+                CREATE INDEX IF NOT EXISTS idx_submissions_status
+                    ON submissions(status);
+            """)
+
             # Run migrations for existing databases
             self._run_migrations()
             self._remove_description_column()
@@ -296,7 +328,7 @@ class DatabaseManager:
         """Create a new session for user"""
         session_token = secrets.token_urlsafe(32)
         session_id = str(uuid.uuid4())
-        expires_at = datetime.utcnow() + timedelta(days=timeout_days)
+        expires_at = datetime.now() + timedelta(days=timeout_days)
 
         with sqlite3.connect(self.db_path) as conn:
             # Clean up old sessions for this user (keep only latest 5)
@@ -403,7 +435,7 @@ class DatabaseManager:
                 problem_data.get('has_generator', False),
                 problem_data.get('has_validator', False),
                 problem_data.get('has_custom_checker', False),
-                problem_data.get('created_at', datetime.utcnow())
+                problem_data.get('created_at', datetime.now())
             ))
 
     def update_problem_metadata(self, slug: str, metadata: Dict, author_id: str = None):
@@ -433,7 +465,7 @@ class DatabaseManager:
             if update_fields:
                 # Add updated_at timestamp
                 update_fields.append("updated_at = ?")
-                values.append(datetime.utcnow())
+                values.append(datetime.now())
 
                 # Add slug for WHERE clause
                 values.append(slug)
@@ -464,7 +496,7 @@ class DatabaseManager:
                 file_status.get('has_generator', False),
                 file_status.get('has_validator', False),
                 file_status.get('has_custom_checker', False),
-                datetime.utcnow(),
+                datetime.now(),
                 slug
             ))
 
@@ -668,3 +700,114 @@ class DatabaseManager:
                 return True
         except Exception:
             return False
+
+    # ===========================
+    # Submissions - CRUD helpers
+    # ===========================
+
+    def create_submission(self, user_id: str, problem_slug: str, language: str,
+                          source_code: str, source_hash: str, status: str = 'running') -> str:
+        """Create a new submission and return its id.
+
+        Status defaults to 'running' for synchronous judging.
+        """
+        submission_id = str(uuid.uuid4())
+        # Store local time instead of UTC for better user experience
+        created_at = datetime.now().isoformat()
+        with sqlite3.connect(self.db_path) as conn:
+            conn.execute(
+                """
+                INSERT INTO submissions (
+                    id, user_id, problem_slug, language, source_code, source_hash, status, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (submission_id, user_id, problem_slug,
+                 language, source_code, source_hash, status, created_at)
+            )
+        return submission_id
+
+    def update_submission(self, submission_id: str, fields: Dict[str, Any]) -> bool:
+        """Update fields on a submission. Returns True if any row updated."""
+        if not fields:
+            return False
+
+        allowed = {
+            'status', 'verdict', 'compile_time_ms', 'time_ms', 'memory_kb',
+            'compile_output', 'runtime_stderr', 'result_summary_json'
+        }
+        set_parts = []
+        values: List[Any] = []
+        for key, value in fields.items():
+            if key in allowed:
+                set_parts.append(f"{key} = ?")
+                values.append(value)
+
+        if not set_parts:
+            return False
+
+        # Use Python datetime for consistency
+        set_parts.append("updated_at = ?")
+        values.append(datetime.now().isoformat())
+        values.append(submission_id)
+
+        sql = f"UPDATE submissions SET {', '.join(set_parts)} WHERE id = ?"
+        with sqlite3.connect(self.db_path) as conn:
+            conn.execute(sql, values)
+            return conn.total_changes > 0
+
+    def get_submission_by_id(self, submission_id: str) -> Optional[Dict]:
+        """Fetch a submission by id."""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            row = conn.execute(
+                "SELECT * FROM submissions WHERE id = ?",
+                (submission_id,)
+            ).fetchone()
+            return dict(row) if row else None
+
+    def find_duplicate_submission(self, user_id: str, problem_slug: str, language: str,
+                                  source_hash: str) -> Optional[str]:
+        """Return an existing submission id if same hash exists for this user/problem/language."""
+        with sqlite3.connect(self.db_path) as conn:
+            row = conn.execute(
+                """
+                SELECT id FROM submissions
+                WHERE user_id = ? AND problem_slug = ? AND language = ? AND source_hash = ?
+                LIMIT 1
+                """,
+                (user_id, problem_slug, language, source_hash)
+            ).fetchone()
+            return row[0] if row else None
+
+    def list_user_submissions(self, user_id: str, problem_slug: Optional[str] = None,
+                              page: int = 1, limit: int = 20, search: Optional[str] = None) -> Dict[str, Any]:
+        """List a user's submissions, optionally filtered by problem_slug."""
+        offset = max(0, (page - 1) * limit)
+        base_where = "WHERE user_id = ?"
+        params: List[Any] = [user_id]
+        if problem_slug:
+            base_where += " AND problem_slug = ?"
+            params.append(problem_slug)
+        if search:
+            like = f"%{search}%"
+            base_where += " AND (problem_slug LIKE ? OR language LIKE ? OR IFNULL(verdict,'') LIKE ? OR IFNULL(status,'') LIKE ?)"
+            params.extend([like, like, like, like])
+
+        query = f"""
+            SELECT * FROM submissions
+            {base_where}
+            ORDER BY created_at DESC
+            LIMIT ? OFFSET ?
+        """
+        count_query = f"SELECT COUNT(*) FROM submissions {base_where}"
+
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            items = conn.execute(query, params + [limit, offset]).fetchall()
+            total = conn.execute(count_query, params).fetchone()[0]
+            return {
+                'items': [dict(r) for r in items],
+                'total': total,
+                'page': page,
+                'has_next': (page * limit) < total
+            }

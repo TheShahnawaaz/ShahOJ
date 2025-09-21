@@ -1,0 +1,861 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}My Submissions - ShahOJ{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/submission-modal.css') }}">
+<style>
+    :root {
+        --primary-color: #007bff;
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+        --light-color: #f8f9fa;
+        --dark-color: #343a40;
+        --border-radius: 8px;
+        --box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        --transition: all 0.3s ease;
+    }
+
+    body { background-color: var(--primary-bg); }
+
+    /* Enhanced Table Styling - Matching My Problems */
+    .table-responsive {
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+    }
+
+    .table {
+        margin-bottom: 0;
+        font-size: 0.95rem;
+    }
+
+    .table thead th {
+        background: var(--primary-color);
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem 1.25rem;
+        border: none;
+        position: relative;
+    }
+
+    .table th.sortable-header {
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.3s ease;
+        padding-right: 2.5rem;
+    }
+
+    .table th.sortable-header:hover {
+        background-color: rgba(0, 123, 255, 0.9) !important;
+        transform: translateY(-1px);
+    }
+
+    [data-theme="dark"] .table th.sortable-header:hover {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+    }
+
+    .table th.sortable-header .fas.fa-sort {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0.6;
+        font-size: 0.8rem;
+    }
+
+    .table th.sortable-header:hover .fas.fa-sort {
+        opacity: 1;
+    }
+
+    .table th.sortable-header.sorting-asc::after {
+        content: " ↑";
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #ffd700;
+        font-weight: bold;
+        font-size: 1rem;
+    }
+
+    .table th.sortable-header.sorting-desc::after {
+        content: " ↓";
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #ffd700;
+        font-weight: bold;
+        font-size: 1rem;
+    }
+
+    .table tbody td {
+        padding: 0.75rem 1rem;
+        vertical-align: middle;
+        border-top: 1px solid var(--border-color);
+        background: var(--card-bg);
+        color: var(--text-primary);
+    }
+
+    .table tbody tr {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f8f9fa !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    [data-theme="dark"] .table tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    /* Pagination styling */
+    .pagination {
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .pagination .page-link {
+        background: var(--card-bg);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .pagination .page-link:hover {
+        background: var(--secondary-bg);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .pagination .page-item.active .page-link {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    /* Remove border from search button */
+    .btn.btn-primary.btn-sm {
+        border: none !important;
+    }
+
+    /* Dark mode search button styling */
+    [data-theme="dark"] .btn.btn-primary.btn-sm {
+        border: none !important;
+        background: linear-gradient(135deg, var(--btn-primary), #094766) !important;
+    }
+
+    /* Enhanced Welcome Section */
+    .welcome-section {
+        background: linear-gradient(135deg, var(--primary-color), #0056b3);
+        color: white;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    [data-theme="dark"] .welcome-section {
+        background: linear-gradient(135deg, var(--btn-primary), #094766) !important;
+    }
+
+    .welcome-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        object-fit: cover;
+    }
+
+    /* Empty state styling */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-secondary);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+    }
+
+    /* Enhanced Modal Styling */
+    #submissionModal .modal-content {
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+
+    #submissionModal .modal-header {
+        background: linear-gradient(135deg, var(--primary-color), #0056b3);
+        color: white;
+        border-bottom: none;
+        border-radius: 12px 12px 0 0;
+        padding: 1.5rem;
+    }
+
+    [data-theme="dark"] #submissionModal .modal-header {
+        background: linear-gradient(135deg, var(--btn-primary), #094766);
+    }
+
+    #submissionModal .modal-title {
+        font-weight: 600;
+        font-size: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    #submissionModal .btn-close {
+        filter: brightness(0) invert(1);
+        opacity: 0.8;
+    }
+
+    #submissionModal .btn-close:hover {
+        opacity: 1;
+    }
+
+    #submissionModal .modal-body {
+        padding: 2rem;
+        background: var(--card-bg);
+        border-radius: 0 0 12px 12px;
+    }
+
+    [data-theme="dark"] #submissionModal .modal-content {
+        background: var(--card-bg);
+        border-color: var(--border-color);
+    }
+
+    [data-theme="dark"] #submissionModal .modal-body {
+        background: var(--card-bg);
+    }
+
+    /* Enhanced Submission Modal Details */
+    #submission-details .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    #submission-details .meta-card {
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1rem;
+        background: var(--secondary-bg);
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    #submission-details .meta-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    #submission-details .meta-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    #submission-details .meta-value {
+        font-weight: 700;
+        color: var(--text-primary);
+        font-size: 1.1rem;
+    }
+
+    #submission-details .meta-value a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+
+    #submission-details .meta-value a:hover {
+        text-decoration: underline;
+    }
+
+    #submission-details .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    #submission-details .section-header h6 {
+        margin: 0;
+        font-weight: 700;
+        color: var(--text-primary);
+        font-size: 1.1rem;
+    }
+
+    #submission-details .btn-copy {
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+        color: var(--text-primary);
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+
+    #submission-details .btn-copy:hover {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+    }
+
+    #submission-details pre.code-block {
+        max-height: 500px;
+        overflow: auto;
+        background: var(--code-bg, #f8f9fa);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        position: relative;
+    }
+
+    #submission-details pre.code-block code {
+        background: transparent;
+        border: none;
+        padding: 0;
+        color: inherit;
+    }
+
+    /* Dark mode for modal details */
+    [data-theme="dark"] #submission-details .meta-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    [data-theme="dark"] #submission-details .meta-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    [data-theme="dark"] #submission-details pre.code-block {
+        background: #1e1e1e;
+        border-color: #3e3e42;
+        color: #d4d4d4;
+    }
+
+    /* Enhanced syntax highlighting for C++ in dark mode */
+    [data-theme="dark"] #submission-details pre.code-block code {
+        color: #d4d4d4;
+    }
+
+    /* Better scrollbar for code blocks */
+    #submission-details pre.code-block::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    #submission-details pre.code-block::-webkit-scrollbar-track {
+        background: rgba(0,0,0,0.1);
+        border-radius: 4px;
+    }
+
+    #submission-details pre.code-block::-webkit-scrollbar-thumb {
+        background: rgba(0,123,255,0.3);
+        border-radius: 4px;
+    }
+
+    #submission-details pre.code-block::-webkit-scrollbar-thumb:hover {
+        background: rgba(0,123,255,0.5);
+    }
+
+    [data-theme="dark"] #submission-details pre.code-block::-webkit-scrollbar-track {
+        background: rgba(255,255,255,0.1);
+    }
+
+    [data-theme="dark"] #submission-details pre.code-block::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.2);
+    }
+
+    [data-theme="dark"] #submission-details pre.code-block::-webkit-scrollbar-thumb:hover {
+        background: rgba(255,255,255,0.3);
+    }
+
+    [data-theme="dark"] #submission-details .btn-copy {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: #cccccc !important;
+    }
+
+    [data-theme="dark"] #submission-details .btn-copy:hover {
+        background: var(--btn-primary);
+        border-color: var(--btn-primary);
+        color: white !important;
+    }
+
+    /* Results table styling */
+    #submission-details .table-sm {
+        font-size: 0.85rem;
+    }
+
+    #submission-details .table-sm th {
+        background: var(--secondary-bg);
+        color: var(--text-primary);
+        border-color: var(--border-color);
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        padding: 0.5rem;
+    }
+
+    #submission-details .table-sm td {
+        border-color: var(--border-color);
+        padding: 0.5rem;
+        color: var(--text-primary);
+    }
+
+    [data-theme="dark"] #submission-details .table-sm th {
+        background: #2d2d30;
+        border-color: #3e3e42;
+        color: #cccccc;
+    }
+
+    [data-theme="dark"] #submission-details .table-sm td {
+        border-color: #3e3e42;
+        background: var(--card-bg);
+        color: #cccccc;
+    }
+
+    /* Enhanced section headers in dark mode */
+    [data-theme="dark"] #submission-details .section-header {
+        border-bottom-color: #3e3e42;
+    }
+
+    [data-theme="dark"] #submission-details .section-header h6 {
+        color: #cccccc;
+    }
+
+    /* Better contrast for meta labels in dark mode */
+    [data-theme="dark"] #submission-details .meta-label {
+        color: #969696;
+    }
+
+    [data-theme="dark"] #submission-details .meta-value {
+        color: #ffffff;
+    }
+
+    /* Custom Input Modal Styling */
+    .modal-xl {
+        max-width: 95vw;
+    }
+    
+    @media (min-width: 1200px) {
+        .modal-xl {
+            max-width: 1400px;
+        }
+    }
+    
+
+    
+
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center">
+                    <img src="{{ current_user.picture_url }}" alt="{{ current_user.name }}" class="welcome-avatar me-3">
+                    <div>
+                        <h2 class="mb-1">My Submissions</h2>
+                        <p class="mb-0 opacity-75">Track your solution attempts and results</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg">
+                    <i class="fas fa-home me-2"></i>Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <h3 class="text-primary mb-0">
+            <i class="fas fa-inbox me-2"></i>
+            My Submissions
+        </h3>
+        
+        <!-- Search -->
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <form method="GET" class="d-flex align-items-center gap-2">
+                <input type="text" 
+                       class="form-control form-control-sm" 
+                       name="search"
+                       value="{{ search or '' }}"
+                       placeholder="Search problem, language, verdict..."
+                       style="width: 250px;">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-search"></i>
+                </button>
+                {% if search %}
+                <a href="{{ url_for('my_submissions_page') }}" class="btn btn-outline-secondary btn-sm">
+                    Clear
+                </a>
+                {% endif %}
+            </form>
+            
+            {% if pagination and pagination.total > 0 %}
+            <small class="text-muted ms-2">
+                {{ submissions|length }} of {{ pagination.total }}
+                {% if pagination.current_page > 1 %}(Page {{ pagination.current_page }}){% endif %}
+            </small>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Submissions Table -->
+    {% if submissions %}
+        <div class="table-responsive">
+            <table class="table table-hover" id="subs-table">
+                <thead>
+                    <tr>
+                        <th class="sortable-header" data-column="verdict" data-type="text"><i class="fas fa-sort me-1"></i>Verdict</th>
+                        <th class="sortable-header" data-column="created_at" data-type="date"><i class="fas fa-sort me-1"></i>Time</th>
+                        <th class="sortable-header" data-column="problem_slug" data-type="text"><i class="fas fa-sort me-1"></i>Problem</th>
+                        <th class="sortable-header" data-column="language" data-type="text"><i class="fas fa-sort me-1"></i>Language</th>
+                        <th class="sortable-header" data-column="time_ms" data-type="number"><i class="fas fa-sort me-1"></i>Exec (ms)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for submission in submissions %}
+                    <tr>
+                        <td data-sort-value="{{ (submission.verdict or submission.status or '').upper() }}">
+                            <span class="badge px-2 py-1
+                                {% if submission.verdict == 'AC' %}bg-success
+                                {% elif submission.verdict == 'WA' %}bg-danger
+                                {% elif submission.verdict == 'TLE' %}bg-warning text-dark
+                                {% elif submission.verdict == 'RTE' %}bg-warning
+                                {% elif submission.verdict == 'CE' %}bg-secondary
+                                {% elif submission.verdict == 'PE' %}bg-info
+                                {% elif submission.verdict == 'JE' %}bg-secondary
+                                {% else %}bg-secondary{% endif %}" 
+                                  style="font-size: 0.9rem;">
+                                {{ (submission.verdict or submission.status or '—').upper() }}
+                            </span>
+                        </td>
+                        <td data-sort-value="{{ submission.created_at or '' }}">
+                            <span class="submission-time" data-timestamp="{{ submission.created_at or '' }}">
+                                {% if submission.created_at %}
+                                    {{ submission.created_at[:19] | replace('T', ' ') }}
+                                {% else %}
+                                    Recently
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td data-sort-value="{{ submission.problem_slug }}">
+                            <a href="{{ url_for('problem_detail', slug=submission.problem_slug) }}" class="text-decoration-none">
+                                {{ submission.problem_slug }}
+                            </a>
+                        </td>
+                        <td data-sort-value="{{ (submission.language or '').upper() }}">
+                            {{ (submission.language or '').upper() }}
+                        </td>
+                        <td data-sort-value="{{ submission.time_ms or 0 }}">
+                            {{ submission.time_ms or '—' }}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" data-id="{{ submission.id }}">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if pagination and pagination.total_pages > 1 %}
+        <nav aria-label="Submission pagination">
+            <ul class="pagination justify-content-center">
+                {% if pagination.current_page > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('my_submissions_page', page=pagination.current_page-1, search=search) }}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% set start_page = [1, pagination.current_page - 2]|max %}
+                {% set end_page = [pagination.total_pages + 1, pagination.current_page + 3]|min %}
+                {% for page_num in range(start_page, end_page) %}
+                <li class="page-item {{ 'active' if page_num == pagination.current_page else '' }}">
+                    <a class="page-link" href="{{ url_for('my_submissions_page', page=page_num, search=search) }}">
+                        {{ page_num }}
+                    </a>
+                </li>
+                {% endfor %}
+
+                {% if pagination.current_page < pagination.total_pages %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('my_submissions_page', page=pagination.current_page+1, search=search) }}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <i class="fas fa-paper-plane"></i>
+            <h4>No Submissions Yet</h4>
+            <p>Start solving problems to see your submissions here!</p>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                <i class="fas fa-puzzle-piece me-2"></i>Browse Problems
+            </a>
+        </div>
+    {% endif %}
+
+</div>
+
+<!-- Enhanced Submission Modal -->
+<div class="modal fade" id="submissionModal" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="submission-modal-title">Submission</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="submission-details">
+          <!-- Filled dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+    
+  <style>
+    #submission-details .meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .75rem; margin-bottom: 1rem; }
+    #submission-details .meta-card { border: 1px solid var(--border-color); border-radius: 8px; padding: .75rem; background: var(--card-bg); }
+    #submission-details .meta-label { font-size: .8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .4px; }
+    #submission-details .meta-value { font-weight: 600; color: var(--text-primary); }
+    #submission-details pre.code-block { max-height: 420px; overflow: auto; background: var(--code-bg, #f8f9fa); border: 1px solid var(--border-color); border-radius: 8px; padding: .75rem; }
+    #submission-details .section-header { display:flex; align-items:center; justify-content:space-between; margin-top: 1rem; margin-bottom: .5rem; }
+    #submission-details .section-header h6 { margin: 0; font-weight: 700; }
+    #submission-details .btn-copy { border: 1px solid var(--border-color); }
+    [data-theme="dark"] #submission-details pre.code-block { background: #2d2d30; border-color: #3e3e42; color: #ccc; }
+  </style>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/table-sorter.js') }}"></script>
+<script src="{{ url_for('static', filename='js/submission-modal.js') }}"></script>
+<script>
+// Initialize table sorting
+document.addEventListener('DOMContentLoaded', function() {
+    // Format timestamps in table
+    formatTableTimestamps();
+    
+    if (document.getElementById('subs-table')) {
+        new TableSorter('subs-table');
+    }
+    
+    // Bind view buttons for modal
+    document.querySelectorAll('button[data-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-id');
+            SubmissionModal.show(id);
+        });
+    });
+});
+
+function formatTime(ts) {
+    if (!ts) return '';
+    try {
+        // Handle ISO string timestamps from database
+        const date = new Date(ts);
+        // Format in user's local timezone with better formatting
+        return date.toLocaleString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+        });
+    } catch (e) {
+        return ts;
+    }
+}
+
+// Format timestamps in table on page load
+function formatTableTimestamps() {
+    document.querySelectorAll('.submission-time[data-timestamp]').forEach(span => {
+        const timestamp = span.getAttribute('data-timestamp');
+        if (timestamp) {
+            const formatted = formatTime(timestamp);
+            if (formatted && formatted !== timestamp) {
+                span.textContent = formatted;
+            }
+        }
+    });
+}
+</script>
+<script>
+function escapeHtml(str){
+  if(str===null||str===undefined) return '';
+  return String(str).replace(/[&<>"']/g, s=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[s]));
+}
+
+function copyText(text){
+  if(navigator.clipboard){ navigator.clipboard.writeText(text||''); }
+}
+
+function renderSubmissionModal(sub){
+  console.log(sub);
+  const title = document.getElementById('submission-modal-title');
+  const verdict = (sub.verdict || sub.status || '').toUpperCase();
+  title.innerHTML = `<i class="fas fa-code me-2"></i>Submission <span class="chip chip-${verdict} ms-2">${verdict || '—'}</span>`;
+
+  let summary = null;
+  try { if (sub.result_summary_json) summary = JSON.parse(sub.result_summary_json); } catch(e) {
+    console.error(e);
+  }
+  console.log(summary);
+
+  const meta = `
+    <div class="meta-grid">
+      <div class="meta-card">
+        <div class="meta-label"><i class="fas fa-puzzle-piece me-1"></i>Problem</div>
+        <div class="meta-value"><a href="/problem/${escapeHtml(sub.problem_slug)}">${escapeHtml(sub.problem_slug)}</a></div>
+      </div>
+      <div class="meta-card">
+        <div class="meta-label"><i class="fas fa-code me-1"></i>Language</div>
+        <div class="meta-value">${escapeHtml((sub.language||'').toUpperCase())}</div>
+      </div>
+      <div class="meta-card">
+        <div class="meta-label"><i class="fas fa-clock me-1"></i>Submitted</div>
+        <div class="meta-value">${formatTime(sub.created_at)}</div>
+      </div>
+      <div class="meta-card">
+        <div class="meta-label"><i class="fas fa-stopwatch me-1"></i>Exec Time</div>
+        <div class="meta-value">${sub.time_ms ?? '—'} ms</div>
+      </div>
+      <div class="meta-card">
+        <div class="meta-label"><i class="fas fa-hammer me-1"></i>Compile Time</div>
+        <div class="meta-value">${sub.compile_time_ms ?? '—'} ms</div>
+      </div>
+    </div>`;
+
+  const codeBlock = `
+    <div class="section-header">
+      <h6><i class="fas fa-file-code me-2 text-primary"></i>Source Code</h6>
+      <button class="btn btn-sm btn-copy" onclick="copyText(atob(this.dataset.src))" data-src="${btoa(unescape(encodeURIComponent(sub.source_code || '')))}">
+        <i class="fas fa-copy me-1"></i>Copy Code
+      </button>
+    </div>
+    <pre class="code-block"><code>${escapeHtml(sub.source_code || '')}</code></pre>`;
+
+  let compileOut = '';
+  if (sub.compile_output) {
+    compileOut = `
+      <div class="section-header">
+        <h6><i class="fas fa-terminal me-2 text-warning"></i>Compilation Output</h6>
+        <button class="btn btn-sm btn-copy" onclick="copyText(atob(this.dataset.src))" data-src="${btoa(unescape(encodeURIComponent(sub.compile_output || '')))}">
+          <i class="fas fa-copy me-1"></i>Copy Output
+        </button>
+      </div>
+      <pre class="code-block"><code>${escapeHtml(sub.compile_output)}</code></pre>`;
+  }
+
+  let runtimeErr = '';
+  if (sub.runtime_stderr) {
+    runtimeErr = `
+      <div class="section-header">
+        <h6><i class="fas fa-bug me-2 text-danger"></i>Runtime Error</h6>
+        <button class="btn btn-sm btn-copy" onclick="copyText(atob(this.dataset.src))" data-src="${btoa(unescape(encodeURIComponent(sub.runtime_stderr || '')))}">
+          <i class="fas fa-copy me-1"></i>Copy Error
+        </button>
+      </div>
+      <pre class="code-block"><code>${escapeHtml(sub.runtime_stderr)}</code></pre>`;
+  }
+
+  let summaryHtml = '';
+  if (summary && summary.statistics) {
+    const s = summary.statistics;
+    let failing = [];
+    try {
+      const tr = summary.test_results || {};
+      Object.keys(tr).forEach(cat => {
+        (tr[cat]||[]).forEach(r => { if ((r.verdict||'') !== 'AC' && failing.length < 5) failing.push({cat, ...r}); });
+      });
+    } catch(e) {}
+    summaryHtml = `
+      <div class="section-header"><h6><i class="fas fa-chart-line me-2 text-info"></i>Results Summary</h6></div>
+      <div class="meta-grid">
+        <div class="meta-card">
+          <div class="meta-label"><i class="fas fa-list-ol me-1"></i>Total Tests</div>
+          <div class="meta-value">${s.total_tests}</div>
+        </div>
+        <div class="meta-card">
+          <div class="meta-label"><i class="fas fa-check-circle me-1"></i>Passed</div>
+          <div class="meta-value text-success">${s.passed}</div>
+        </div>
+        <div class="meta-card">
+          <div class="meta-label"><i class="fas fa-times-circle me-1"></i>Failed</div>
+          <div class="meta-value text-danger">${s.failed}</div>
+        </div>
+        <div class="meta-card">
+          <div class="meta-label"><i class="fas fa-stopwatch me-1"></i>Total Time</div>
+          <div class="meta-value">${s.total_time_ms} ms</div>
+        </div>
+      </div>
+      ${failing.length ? `
+        <div class="mt-3">
+          <div class="section-header">
+            <h6><i class="fas fa-exclamation-triangle me-2 text-warning"></i>Top Failures</h6>
+          </div>
+          <div class="table-responsive"><table class="table table-sm">
+            <thead><tr><th><i class="fas fa-folder me-1"></i>Category</th><th><i class="fas fa-hashtag me-1"></i>Test</th><th><i class="fas fa-gavel me-1"></i>Verdict</th><th><i class="fas fa-clock me-1"></i>Time (ms)</th></tr></thead>
+            <tbody>
+              ${failing.map(f=>`<tr><td><span class="badge bg-secondary">${escapeHtml(f.cat)}</span></td><td>${f.test_num ?? ''}</td><td><span class="chip chip-${f.verdict||''}">${escapeHtml(f.verdict||'')}</span></td><td>${(f.time_ms ?? '').toString()}</td></tr>`).join('')}
+            </tbody>
+          </table></div>
+        </div>` : ''}
+    `;
+  }
+
+  document.getElementById('submission-details').innerHTML = meta + codeBlock + compileOut + runtimeErr + summaryHtml;
+}
+</script>
+{% endblock %}
+
+
