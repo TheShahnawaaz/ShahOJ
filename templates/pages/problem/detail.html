@@ -179,6 +179,566 @@
         }
     }
 
+    /* Resizable Layout Styling */
+    .resizable-container-wrapper {
+        position: relative;
+        border-radius: 8px;
+        overflow: visible; /* Changed from hidden to visible */
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        max-height: none !important; /* Ensure no height constraints */
+        height: auto !important; /* Allow dynamic height */
+    }
+    
+    .resizable-container {
+        display: flex;
+        height: calc(100vh - 280px); /* Default height, will be overridden by JS */
+        min-height: 400px;
+        max-height: none !important; /* No maximum height constraint */
+        gap: 10px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .resizable-panel {
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .resizable-panel-left {
+        flex: 0 0 50%;
+        min-width: 300px;
+        max-width: 80%;
+    }
+    
+    .resizable-panel-right {
+        flex: 1;
+        min-width: 300px;
+    }
+    
+    .resize-divider {
+        width: 5px;
+        background: var(--border-color, #dee2e6);
+        cursor: col-resize;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s ease;
+        user-select: none;
+        flex-shrink: 0;
+    }
+    
+    .resize-divider:hover {
+        background: var(--btn-primary, #007bff);
+    }
+    
+    .resize-divider::before {
+        content: '';
+        position: absolute;
+        width: 2px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 2px;
+        box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .resize-divider:hover::before {
+        background: rgba(255, 255, 255, 1);
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .resize-divider.dragging {
+        background: var(--btn-primary, #007bff);
+    }
+    
+    .resize-divider.dragging::before {
+        background: rgba(255, 255, 255, 1);
+        box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+    }
+    
+    /* Bottom resize divider for height adjustment */
+    .resize-divider-bottom {
+        height: 8px;
+        width: 100%;
+        background: var(--border-color, #dee2e6);
+        cursor: row-resize;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s ease;
+        user-select: none;
+        flex-shrink: 0;
+        margin-top: 0;
+        border-radius: 0 0 8px 8px;
+    }
+    
+    .resize-divider-bottom:hover {
+        background: var(--btn-primary, #007bff);
+    }
+    
+    .resize-divider-bottom::before {
+        content: '';
+        position: absolute;
+        width: 40px;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 2px;
+        box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .resize-divider-bottom:hover::before {
+        background: rgba(255, 255, 255, 1);
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .resize-divider-bottom.dragging {
+        background: var(--btn-primary, #007bff);
+    }
+    
+    .resize-divider-bottom.dragging::before {
+        background: rgba(255, 255, 255, 1);
+        box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+    }
+    
+    /* Dark mode adjustments */
+    [data-theme="dark"] .resize-divider {
+        background: var(--border-color, #3e3e42);
+    }
+    
+    [data-theme="dark"] .resize-divider:hover {
+        background: var(--btn-primary, #0d6efd);
+    }
+    
+    [data-theme="dark"] .resize-divider::before {
+        background: rgba(255, 255, 255, 0.6);
+    }
+    
+    [data-theme="dark"] .resize-divider:hover::before,
+    [data-theme="dark"] .resize-divider.dragging::before {
+        background: rgba(255, 255, 255, 0.9);
+    }
+    
+    /* Dark mode for bottom divider */
+    [data-theme="dark"] .resize-divider-bottom {
+        background: var(--border-color, #3e3e42);
+    }
+    
+    [data-theme="dark"] .resize-divider-bottom:hover {
+        background: var(--btn-primary, #0d6efd);
+    }
+    
+    [data-theme="dark"] .resize-divider-bottom::before {
+        background: rgba(255, 255, 255, 0.6);
+    }
+    
+    [data-theme="dark"] .resize-divider-bottom:hover::before,
+    [data-theme="dark"] .resize-divider-bottom.dragging::before {
+        background: rgba(255, 255, 255, 0.9);
+    }
+    
+    /* Dark mode for wrapper */
+    [data-theme="dark"] .resizable-container-wrapper {
+        border-color: #3e3e42;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    
+    /* Dark mode for test results */
+    [data-theme="dark"] #testResults {
+        background-color: var(--card-bg) !important;
+    }
+    
+    [data-theme="dark"] #testResults .card {
+        background-color: var(--card-bg) !important;
+        border-color: var(--border-color) !important;
+    }
+    
+    [data-theme="dark"] #testResults .card-header {
+        background-color: var(--secondary-bg) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    [data-theme="dark"] #testResults .card-body {
+        background-color: var(--card-bg) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    /* Dark mode for test result statistics cards */
+    [data-theme="dark"] #testResults .card.text-center {
+        background-color: #2d2d30 !important;
+        border-color: #3e3e42 !important;
+        color: #cccccc !important;
+    }
+    
+    /* Fix newline handling in test case content */
+    #testResults .bg-light {
+        word-wrap: break-word !important;
+        font-family: 'Courier New', Consolas, Monaco, 'Lucida Console', monospace !important;
+        font-size: 0.875rem !important;
+        line-height: 1.4 !important;
+        padding: 0.75rem !important;
+        border-radius: 6px !important;
+        border: 1px solid #dee2e6 !important;
+        overflow-x: auto !important;
+        background-color: #f8f9fa !important;
+        color: #212529 !important;
+    }
+    
+    /* Dark mode for test result content */
+    [data-theme="dark"] #testResults .bg-light {
+        background-color: #2d2d30 !important;
+        color: #cccccc !important;
+        border-color: #3e3e42 !important;
+    }
+    
+    /* Ensure code elements also respect newlines */
+    #testResults .bg-light code,
+    #testResults .bg-light pre {
+        white-space: pre-wrap !important;
+        word-wrap: break-word !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        color: inherit !important;
+    }
+    
+    /* Enhanced styling for test category headers */
+    #testResults .card-header {
+        color: white !important;
+        border: none !important;
+        padding: 1rem 1.5rem !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        border-radius: 8px 8px 0 0 !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    }
+    
+    /* Default green gradient for successful test categories */
+    #testResults .card-header:not(.bg-danger):not(.bg-warning) {
+        background: linear-gradient(135deg, #28a745, #20c997) !important;
+    }
+    
+    #testResults .card-header h6 {
+        margin: 0 !important;
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+    }
+    
+    #testResults .card-header i {
+        font-size: 1.1rem !important;
+        opacity: 0.9 !important;
+    }
+    
+    /* Enhanced styling for the main Test Results header */
+    #testResults > .card > .card-header {
+        background: linear-gradient(135deg, #007bff, #0056b3) !important;
+        color: white !important;
+        font-weight: 700 !important;
+        font-size: 1.1rem !important;
+        padding: 1.25rem 1.5rem !important;
+        border-radius: 8px 8px 0 0 !important;
+        box-shadow: 0 2px 8px rgba(0,123,255,0.3) !important;
+        border: none !important;
+    }
+    
+    #testResults > .card > .card-header h5,
+    #testResults > .card > .card-header h6 {
+        margin: 0 !important;
+        font-size: 1.1rem !important;
+        font-weight: 700 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.75rem !important;
+    }
+    
+    #testResults > .card > .card-header i {
+        font-size: 1.2rem !important;
+        opacity: 1 !important;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
+    }
+    
+    [data-theme="dark"] #testResults .text-success {
+        color: #4caf50 !important;
+    }
+    
+    [data-theme="dark"] #testResults .text-danger {
+        color: #f44336 !important;
+    }
+    
+    [data-theme="dark"] #testResults .text-info {
+        color: #2196f3 !important;
+    }
+    
+    [data-theme="dark"] #testResults .text-warning {
+        color: #ff9800 !important;
+    }
+    
+    /* Dark mode for compilation success/error messages */
+    [data-theme="dark"] #testResults .alert-success {
+        background-color: rgba(76, 175, 80, 0.1) !important;
+        border-color: rgba(76, 175, 80, 0.3) !important;
+        color: #4caf50 !important;
+    }
+    
+    [data-theme="dark"] #testResults .alert-danger {
+        background-color: rgba(244, 67, 54, 0.1) !important;
+        border-color: rgba(244, 67, 54, 0.3) !important;
+        color: #f44336 !important;
+    }
+    
+    /* Dark mode for test badges */
+    [data-theme="dark"] #testResults .badge.bg-success {
+        background-color: #4caf50 !important;
+        color: #ffffff !important;
+    }
+    
+    [data-theme="dark"] #testResults .badge.bg-danger {
+        background-color: #f44336 !important;
+        color: #ffffff !important;
+    }
+    
+    [data-theme="dark"] #testResults .badge.bg-warning {
+        background-color: #ff9800 !important;
+        color: #000000 !important;
+    }
+    
+    [data-theme="dark"] #testResults .badge.bg-info {
+        background-color: #2196f3 !important;
+        color: #ffffff !important;
+    }
+    
+    /* Fix test category headers in dark mode */
+    [data-theme="dark"] #testResults .card-header {
+        background-color: #2d2d30 !important;
+        color: #cccccc !important;
+        border-color: #3e3e42 !important;
+    }
+    
+    /* Specific colors for different test result categories in dark mode */
+    [data-theme="dark"] #testResults .card-header.bg-success {
+        background: linear-gradient(135deg, #2d5a3d, #1e4d2b) !important;
+        color: #ffffff !important;
+    }
+    
+    [data-theme="dark"] #testResults .card-header.bg-danger {
+        background: linear-gradient(135deg, #8b2635, #5f1e2d) !important;
+        color: #ffffff !important;
+    }
+    
+    [data-theme="dark"] #testResults .card-header.bg-warning {
+        background: linear-gradient(135deg, #8b4513, #654321) !important;
+        color: #ffffff !important;
+    }
+    
+    [data-theme="dark"] #testResults .card-header.bg-primary,
+    [data-theme="dark"] #testResults .card-header.bg-info {
+        background: linear-gradient(135deg, #1e3a5f, #0d2748) !important;
+        color: #ffffff !important;
+    }
+    
+    /* Default dark header for samples/system tests */
+    [data-theme="dark"] #testResults .card-header:not(.bg-success):not(.bg-danger):not(.bg-warning):not(.bg-primary):not(.bg-info) {
+        color: #cccccc !important;
+    }
+    
+    /* Make the main "Test Results" header colorful in dark mode */
+    [data-theme="dark"] #testResults > .card > .card-header {
+        background: linear-gradient(135deg, #1e3a5f, #0d2748) !important;
+        color: #ffffff !important;
+        border-color: #3e3e42 !important;
+    }
+    
+    /* Alternative: Make it match the primary theme color */
+    [data-theme="dark"] .resizable-panel-right #testResults > .card > .card-header {
+        background: linear-gradient(135deg, var(--btn-primary), #094766) !important;
+        color: #ffffff !important;
+        border-color: #3e3e42 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+    }
+    
+    /* Ensure cards fill the panel height with proper scrolling */
+    .resizable-panel .card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 0;
+        overflow: hidden;
+    }
+    
+    .resizable-panel .card-body {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        min-height: 0; /* Important for flex child scrolling */
+    }
+    
+    /* Right panel should be one scrollable unit */
+    .resizable-panel-right .card-body {
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 1rem;
+    }
+    
+    /* Editor container takes fixed height */
+    .resizable-panel-right .editor-resize-container {
+        min-height: 300px;
+        margin-bottom: 1rem;
+    }
+    
+    .resizable-panel-right .monaco-editor-container {
+        min-height: 250px;
+    }
+    
+    /* Test results are part of the scrollable content */
+    .resizable-panel-right #testResults {
+        margin-top: 1rem;
+        border-top: 1px solid var(--border-color);
+        padding-top: 1rem;
+    }
+    
+    .resizable-panel-right #testResults .card {
+        margin-bottom: 0;
+        border: none;
+        background: transparent;
+    }
+    
+    .resizable-panel-right #testResults .card-header {
+        background: var(--secondary-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .resizable-panel-right #testResults .card-body {
+        border: 1px solid var(--border-color);
+        border-radius: 0 0 8px 8px;
+        background: var(--card-bg);
+        overflow: visible;
+        max-height: none;
+    }
+    
+    /* Custom Scrollbar Styling for Theme Responsiveness */
+    
+    /* Webkit browsers (Chrome, Safari, Edge) */
+    .resizable-panel .card-body::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .resizable-panel .card-body::-webkit-scrollbar-track {
+        background: var(--secondary-bg, #f8f9fa);
+        border-radius: 4px;
+    }
+    
+    .resizable-panel .card-body::-webkit-scrollbar-thumb {
+        background: var(--border-color, #dee2e6);
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+    
+    .resizable-panel .card-body::-webkit-scrollbar-thumb:hover {
+        background: var(--btn-primary, #007bff);
+    }
+    
+    /* Dark mode scrollbar */
+    [data-theme="dark"] .resizable-panel .card-body::-webkit-scrollbar-track {
+        background: #2d2d30;
+    }
+    
+    [data-theme="dark"] .resizable-panel .card-body::-webkit-scrollbar-thumb {
+        background: #464647;
+    }
+    
+    [data-theme="dark"] .resizable-panel .card-body::-webkit-scrollbar-thumb:hover {
+        background: var(--btn-primary, #0d6efd);
+    }
+    
+    /* Firefox scrollbar */
+    .resizable-panel .card-body {
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-color, #dee2e6) var(--secondary-bg, #f8f9fa);
+    }
+    
+    [data-theme="dark"] .resizable-panel .card-body {
+        scrollbar-color: #464647 #2d2d30;
+    }
+    
+    /* Test results specific scrollbar styling */
+    #testResults .card-body::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    #testResults .card-body::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    #testResults .card-body::-webkit-scrollbar-thumb {
+        background: rgba(0, 123, 255, 0.3);
+        border-radius: 3px;
+    }
+    
+    #testResults .card-body::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 123, 255, 0.6);
+    }
+    
+    [data-theme="dark"] #testResults .card-body::-webkit-scrollbar-thumb {
+        background: rgba(13, 110, 253, 0.4);
+    }
+    
+    [data-theme="dark"] #testResults .card-body::-webkit-scrollbar-thumb:hover {
+        background: rgba(13, 110, 253, 0.7);
+    }
+
+    /* Responsive behavior */
+    @media (max-width: 768px) {
+        .resizable-container {
+            flex-direction: column;
+            height: auto;
+            max-height: none;
+            min-height: auto;
+        }
+        
+        .resizable-panel-left,
+        .resizable-panel-right {
+            flex: none;
+            min-width: auto;
+            max-width: none;
+            height: auto;
+        }
+        
+        .resizable-panel-left .card,
+        .resizable-panel-right .card {
+            height: auto;
+            min-height: 400px;
+        }
+        
+        .resizable-panel-right .card-body {
+            padding: 1rem;
+            overflow-y: auto;
+        }
+        
+        .resizable-panel-right .editor-resize-container {
+            min-height: 300px;
+        }
+        
+        .resizable-panel-right #testResults {
+            margin-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+        }
+        
+        .resize-divider,
+        .resize-divider-bottom {
+            display: none;
+        }
+    }
+
     /* Custom Input Modal Styling */
     .modal-xl {
         max-width: 95vw;
@@ -664,22 +1224,26 @@
     <!-- Enhanced Problem Header -->
     {{ problem_detail_header(problem, current_user, is_author, problem_data, author) }}
 
-    <!-- Main Content: Side by Side Layout -->
-    <div class="row">
-        <!-- Left Column: Problem Statement -->
-        <div class="col-lg-6 col-md-12">
-            {% call enhanced_card("Problem Statement", "fas fa-file-alt", []) %}
-                <div id="problemStatement">
-                    <div class="text-center py-4">
-                        <i class="fas fa-spinner fa-spin text-primary"></i>
-                        <p class="mt-2 text-muted">Loading problem statement...</p>
+    <!-- Main Content: Resizable Side by Side Layout -->
+    <div class="resizable-container-wrapper">
+        <div class="resizable-container" id="resizableContainer">
+            <!-- Left Panel: Problem Statement -->
+            <div class="resizable-panel resizable-panel-left">
+                {% call enhanced_card("Problem Statement", "fas fa-file-alt", []) %}
+                    <div id="problemStatement">
+                        <div class="text-center py-4">
+                            <i class="fas fa-spinner fa-spin text-primary"></i>
+                            <p class="mt-2 text-muted">Loading problem statement...</p>
+                        </div>
                     </div>
-                </div>
-            {% endcall %}
-        </div>
+                {% endcall %}
+            </div>
 
-        <!-- Right Column: Solution Editor -->
-        <div class="col-lg-6 col-md-12">
+            <!-- Resize Divider -->
+            <div class="resize-divider" id="resizeDivider"></div>
+
+            <!-- Right Panel: Solution Editor -->
+            <div class="resizable-panel resizable-panel-right">
             {% call enhanced_card("Solution Editor", "fas fa-code", [
                 {'text': 'Clear', 'icon': 'fas fa-trash', 'class': 'btn-outline-secondary btn-sm', 'id': 'clearCodeBtn'},
                 {'text': 'Template', 'icon': 'fas fa-file-code', 'class': 'btn-outline-info btn-sm', 'id': 'loadTemplateBtn'}
@@ -719,18 +1283,22 @@
                         </div>
                     </div>
                 </div>
-            {% endcall %}
 
-            <!-- Test Results Section -->
-            <div id="testResults" class="mt-3" style="display: none;">
-                {% call enhanced_card("Test Results", "fas fa-chart-line", []) %}
-                    <div id="testResultsContent">
-                        <!-- Test results will be populated here -->
-                    </div>
-                {% endcall %}
-            </div>
+                <!-- Test Results Section (Inside Editor Card) -->
+                <div id="testResults" class="mt-3" style="display: none;">
+                    {% call enhanced_card("Test Results", "fas fa-chart-line", []) %}
+                        <div id="testResultsContent">
+                            <!-- Test results will be populated here -->
+                        </div>
+                    {% endcall %}
+                </div>
+            {% endcall %}
         </div>
     </div>
+    
+    <!-- Bottom Resize Divider for Height Adjustment -->
+    <div class="resize-divider-bottom" id="resizeDividerBottom"></div>
+</div>
 
 </div>
 
@@ -1528,6 +2096,227 @@ function showLinkCopiedNotification() {
         notification.style.opacity = '0';
     }, 3000);
 }
+
+// Resizable panels functionality
+class ResizablePanels {
+    constructor() {
+        this.isDragging = false;
+        this.isHeightDragging = false;
+        this.startX = 0;
+        this.startY = 0;
+        this.startLeftWidth = 0;
+        this.startContainerHeight = 0;
+        this.container = null;
+        this.leftPanel = null;
+        this.rightPanel = null;
+        this.divider = null;
+        this.bottomDivider = null;
+        
+        this.init();
+    }
+    
+    init() {
+        this.container = document.querySelector('.resizable-container');
+        this.leftPanel = document.querySelector('.resizable-panel-left');
+        this.rightPanel = document.querySelector('.resizable-panel-right');
+        this.divider = document.getElementById('resizeDivider');
+        this.bottomDivider = document.getElementById('resizeDividerBottom');
+        
+        if (!this.container || !this.leftPanel || !this.rightPanel || !this.divider || !this.bottomDivider) {
+            return;
+        }
+        
+        // Load saved panel sizes from localStorage
+        this.loadPanelSizes();
+        
+        // Add event listeners for width resizing
+        this.divider.addEventListener('mousedown', this.startDrag.bind(this));
+        
+        // Add event listeners for height resizing
+        this.bottomDivider.addEventListener('mousedown', this.startHeightDrag.bind(this));
+        
+        // Global mouse events
+        document.addEventListener('mousemove', this.drag.bind(this));
+        document.addEventListener('mouseup', this.stopDrag.bind(this));
+        
+        // Handle window resize
+        window.addEventListener('resize', this.handleWindowResize.bind(this));
+        
+        // Prevent text selection during drag
+        document.addEventListener('selectstart', this.preventSelection.bind(this));
+    }
+    
+    startDrag(e) {
+        this.isDragging = true;
+        this.startX = e.clientX;
+        this.startLeftWidth = this.leftPanel.offsetWidth;
+        
+        this.divider.classList.add('dragging');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+        
+        e.preventDefault();
+    }
+    
+    startHeightDrag(e) {
+        this.isHeightDragging = true;
+        this.startY = e.clientY;
+        this.startContainerHeight = this.container.offsetHeight;
+        
+        this.bottomDivider.classList.add('dragging');
+        document.body.style.cursor = 'row-resize';
+        document.body.style.userSelect = 'none';
+        
+        e.preventDefault();
+    }
+    
+    drag(e) {
+        if (this.isDragging) {
+            this.dragWidth(e);
+        } else if (this.isHeightDragging) {
+            this.dragHeight(e);
+        }
+    }
+    
+    dragWidth(e) {
+        const deltaX = e.clientX - this.startX;
+        const containerWidth = this.container.offsetWidth;
+        const dividerWidth = this.divider.offsetWidth;
+        
+        let newLeftWidth = this.startLeftWidth + deltaX;
+        
+        // Enforce minimum and maximum widths
+        const minWidth = 300;
+        const maxLeftWidth = containerWidth * 0.8 - dividerWidth;
+        const maxRightWidth = containerWidth - minWidth - dividerWidth;
+        
+        newLeftWidth = Math.max(minWidth, Math.min(newLeftWidth, maxLeftWidth));
+        newLeftWidth = Math.min(newLeftWidth, maxRightWidth);
+        
+        // Calculate percentage for flex-basis
+        const leftPercentage = (newLeftWidth / containerWidth) * 100;
+        
+        this.leftPanel.style.flexBasis = `${leftPercentage}%`;
+        
+        e.preventDefault();
+    }
+    
+    dragHeight(e) {
+        const deltaY = e.clientY - this.startY;
+        let newHeight = this.startContainerHeight + deltaY;
+        
+        // Enforce minimum and maximum heights
+        const minHeight = 400;
+        const maxHeight = window.innerHeight * 10; // Remove practical limit - allow very large heights
+        
+        newHeight = Math.max(minHeight, Math.min(newHeight, maxHeight));
+        
+        // Apply the new height with !important to override any CSS
+        this.container.style.setProperty('height', `${newHeight}px`, 'important');
+        this.container.style.setProperty('max-height', 'none', 'important');
+        this.container.style.setProperty('min-height', 'auto', 'important');
+        
+        e.preventDefault();
+    }
+    
+    stopDrag() {
+        if (!this.isDragging && !this.isHeightDragging) return;
+        
+        if (this.isDragging) {
+            this.isDragging = false;
+            this.divider.classList.remove('dragging');
+        }
+        
+        if (this.isHeightDragging) {
+            this.isHeightDragging = false;
+            this.bottomDivider.classList.remove('dragging');
+        }
+        
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        
+        // Save the current panel sizes
+        this.savePanelSizes();
+        
+        // Trigger Monaco editor resize if it exists
+        this.triggerEditorResize();
+    }
+    
+    preventSelection(e) {
+        if (this.isDragging || this.isHeightDragging) {
+            e.preventDefault();
+        }
+    }
+    
+    handleWindowResize() {
+        // Recalculate panel sizes on window resize
+        const containerWidth = this.container.offsetWidth;
+        const currentLeftWidth = this.leftPanel.offsetWidth;
+        const leftPercentage = (currentLeftWidth / containerWidth) * 100;
+        
+        // Ensure panels stay within bounds
+        const clampedPercentage = Math.max(20, Math.min(80, leftPercentage));
+        this.leftPanel.style.flexBasis = `${clampedPercentage}%`;
+        
+        // Trigger editor resize
+        setTimeout(() => this.triggerEditorResize(), 100);
+    }
+    
+    savePanelSizes() {
+        const containerWidth = this.container.offsetWidth;
+        const leftWidth = this.leftPanel.offsetWidth;
+        const leftPercentage = (leftWidth / containerWidth) * 100;
+        const containerHeight = this.container.offsetHeight;
+        
+        localStorage.setItem('problemPageLeftPanelWidth', leftPercentage.toString());
+        localStorage.setItem('problemPageContainerHeight', containerHeight.toString());
+    }
+    
+    loadPanelSizes() {
+        // Load width
+        const savedWidth = localStorage.getItem('problemPageLeftPanelWidth');
+        if (savedWidth) {
+            const percentage = parseFloat(savedWidth);
+            if (percentage >= 20 && percentage <= 80) {
+                this.leftPanel.style.flexBasis = `${percentage}%`;
+            }
+        }
+        
+        // Load height
+        const savedHeight = localStorage.getItem('problemPageContainerHeight');
+        if (savedHeight) {
+            const height = parseFloat(savedHeight);
+            const minHeight = 400;
+            const maxHeight = window.innerHeight * 2; // Remove practical limit - allow very large heights
+            
+            if (height >= minHeight && height <= maxHeight) {
+                this.container.style.setProperty('height', `${height}px`, 'important');
+                this.container.style.setProperty('max-height', 'none', 'important');
+                this.container.style.setProperty('min-height', 'auto', 'important');
+            }
+        }
+    }
+    
+    triggerEditorResize() {
+        // Trigger Monaco editor resize if it exists
+        if (window.cppEditor && typeof window.cppEditor.layout === 'function') {
+            setTimeout(() => {
+                window.cppEditor.layout();
+            }, 50);
+        }
+        
+        // Also trigger resize event for other components that might need it
+        window.dispatchEvent(new Event('resize'));
+    }
+}
+
+// Initialize resizable panels when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Only initialize on desktop (not mobile)
+    if (window.innerWidth > 768) {
+        new ResizablePanels();
+    }
+});
 
 // Helper functions for displaying results (from test-solution.html)
 function showFullContent(title, content) {

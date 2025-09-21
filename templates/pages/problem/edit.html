@@ -193,6 +193,14 @@
 
     .editor-header { background: var(--secondary-bg); padding: 1rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; color: var(--text-primary); }
 
+    /* Beautiful gradient for editor headers in dark mode */
+    [data-theme="dark"] .editor-header {
+        background: linear-gradient(135deg, var(--btn-primary), #094766) !important;
+        color: #ffffff !important;
+        border-color: #3e3e42 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+    }
+
     .editor-actions {
         display: flex;
         align-items: center;
@@ -252,6 +260,57 @@
 
     .ai-polish-btn.loading .fas {
         animation: sparkle 1.5s ease-in-out infinite;
+    }
+
+    /* Dark mode styling for AI buttons */
+    [data-theme="dark"] .ai-generate-btn {
+        background-color: rgba(0, 123, 255, 0.1) !important;
+        border-color: var(--btn-primary) !important;
+        color: #79b8ff !important;
+    }
+
+    [data-theme="dark"] .ai-generate-btn:hover {
+        background: linear-gradient(135deg, var(--btn-primary), #094766) !important;
+        border-color: var(--btn-primary) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4) !important;
+    }
+
+    [data-theme="dark"] .ai-polish-btn {
+        background-color: rgba(40, 167, 69, 0.1) !important;
+        border-color: #28a745 !important;
+        color: #4caf50 !important;
+    }
+
+    [data-theme="dark"] .ai-polish-btn:hover {
+        background: linear-gradient(135deg, #28a745, #1e7e34) !important;
+        border-color: #28a745 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4) !important;
+    }
+
+    [data-theme="dark"] .ai-generate-btn:disabled,
+    [data-theme="dark"] .ai-polish-btn:disabled {
+        background-color: rgba(108, 117, 125, 0.1) !important;
+        border-color: #6c757d !important;
+        color: #6c757d !important;
+        opacity: 0.6;
+    }
+
+    /* Dark mode styling for validator control section */
+    [data-theme="dark"] .validator-control-section {
+        background-color: var(--secondary-bg) !important;
+        border-color: var(--border-color) !important;
+    }
+
+    [data-theme="dark"] .validator-control-section .alert-info {
+        background-color: rgba(23, 162, 184, 0.1) !important;
+        border-color: rgba(23, 162, 184, 0.2) !important;
+        color: #79b8ff !important;
+    }
+
+    [data-theme="dark"] .validator-control-section .alert-info strong {
+        color: #ffffff !important;
     }
 
     @keyframes spin {
@@ -862,7 +921,7 @@
                         </div>
                     </div>
                     
-                    <div class="p-3 bg-light border-bottom">
+                    <div class="p-3 bg-light border-bottom validator-control-section">
                         <div class="alert alert-info mb-0">
                             <i class="fas fa-info-circle"></i>
                             <strong>Validator Control:</strong> 

@@ -104,7 +104,6 @@
 
         [data-theme="dark"] .bg-light,
         [data-theme="dark"] .bg-light * {
-            background-color: #252526 !important;
             color: #cccccc !important;
         }
 
@@ -356,15 +355,169 @@
             color: #cccccc !important;
         }
 
+        /* Global Custom Scrollbar Styling */
+        
+        /* Webkit browsers (Chrome, Safari, Edge) */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--secondary-bg, #f8f9fa);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color, #dee2e6);
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--btn-primary, #007bff);
+        }
+        
+        ::-webkit-scrollbar-corner {
+            background: var(--secondary-bg, #f8f9fa);
+        }
+        
+        /* Dark mode global scrollbar */
+        [data-theme="dark"] ::-webkit-scrollbar-track {
+            background: #2d2d30;
+        }
+        
+        [data-theme="dark"] ::-webkit-scrollbar-thumb {
+            background: #464647;
+        }
+        
+        [data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+            background: var(--btn-primary, #0d6efd);
+        }
+        
+        [data-theme="dark"] ::-webkit-scrollbar-corner {
+            background: #2d2d30;
+        }
+        
+        /* Firefox scrollbar */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-color, #dee2e6) var(--secondary-bg, #f8f9fa);
+        }
+        
+        [data-theme="dark"] * {
+            scrollbar-color: #464647 #2d2d30;
+        }
+        
+        /* Special styling for code areas and Monaco editor */
+        .monaco-editor .scroll-decoration,
+        .monaco-editor .scrollbar {
+            background: transparent !important;
+        }
+        
+        .monaco-editor .slider {
+            background: var(--border-color, #dee2e6) !important;
+            border-radius: 4px !important;
+        }
+        
+        [data-theme="dark"] .monaco-editor .slider {
+            background: #464647 !important;
+        }
+        
+        .monaco-editor .slider:hover {
+            background: var(--btn-primary, #007bff) !important;
+        }
+        
+        [data-theme="dark"] .monaco-editor .slider:hover {
+            background: var(--btn-primary, #0d6efd) !important;
+        }
+
         [data-theme="dark"] .modal-content {
             background-color: #252526 !important;
             color: #cccccc !important;
             border-color: #3e3e42 !important;
         }
 
+        /* Global beautiful gradient for card headers in dark mode */
+        [data-theme="dark"] .card-header {
+            background: linear-gradient(135deg, var(--btn-primary), #094766) !important;
+            color: #ffffff !important;
+            border-color: #3e3e42 !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+        }
+        
+        /* Global gradient for progress headers (like problem detail header) */
+        [data-theme="dark"] .progress-header {
+            background: linear-gradient(135deg, var(--btn-primary), #094766) !important;
+        }
+        
+        /* Global gradient for welcome sections */
+        [data-theme="dark"] .welcome-section {
+            background: linear-gradient(135deg, var(--btn-primary), #094766) !important;
+        }
+        
+        /* Reverted: Keep original styling for navbar in dark mode */
+        
+        /* Global gradient for buttons with primary background */
+        [data-theme="dark"] .btn-primary {
+            background: linear-gradient(135deg, var(--btn-primary), #094766) !important;
+            border-color: var(--btn-primary) !important;
+        }
+        
+        [data-theme="dark"] .btn-primary:hover {
+            background: linear-gradient(135deg, #0056b3, #073d52) !important;
+            border-color: #0056b3 !important;
+        }
+        
+        /* Reverted: Keep original styling for stats cards in dark mode */
+        
+        /* Reverted: Keep original styling for table headers in dark mode */
+
         [data-theme="dark"] .modal-header {
             border-color: #3e3e42 !important;
-            background-color: #252526 !important;
+            background: linear-gradient(135deg, var(--btn-primary), #094766) !important;
+            color: #ffffff !important;
+        }
+        
+        /* Global gradient for breadcrumb backgrounds */
+        [data-theme="dark"] .breadcrumb {
+            background: linear-gradient(135deg, #2d2d30, #1e1e1e) !important;
+        }
+        
+        /* Global gradient for pagination */
+        [data-theme="dark"] .page-item.active .page-link {
+            background: linear-gradient(135deg, var(--btn-primary), #094766) !important;
+            border-color: var(--btn-primary) !important;
+        }
+        
+        /* Global gradient for alerts with primary styling */
+        [data-theme="dark"] .alert-primary {
+            background: linear-gradient(135deg, rgba(0, 123, 255, 0.1), rgba(9, 71, 102, 0.1)) !important;
+            border-color: var(--btn-primary) !important;
+            color: #79b8ff !important;
+        }
+        
+        /* Global gradient for badges */
+        [data-theme="dark"] .badge.bg-primary {
+            background: linear-gradient(135deg, var(--btn-primary), #094766) !important;
+        }
+        
+        /* Global gradient for dropdown headers */
+        [data-theme="dark"] .dropdown-header {
+            background: linear-gradient(135deg, #2d2d30, #1e1e1e) !important;
+            color: #cccccc !important;
+        }
+        
+        /* Global gradient for form control focus */
+        [data-theme="dark"] .form-control:focus {
+            border-color: var(--btn-primary) !important;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+        }
+        
+        /* Global gradient for custom file input */
+        [data-theme="dark"] .form-file-button {
+            background: linear-gradient(135deg, var(--btn-primary), #094766) !important;
+            color: #ffffff !important;
         }
 
         [data-theme="dark"] .modal-footer {
@@ -908,7 +1061,7 @@
     {% block content %}{% endblock %}
 
     <!-- Footer -->
-    <footer class="bg-light text-center text-muted py-3 mt-5">
+    <footer class="bg-light text-center text-muted py-3 mt-1">
         <div class="container">
             <small>ShahOJ v1.0.0 - Extensible Competitive Programming Judge System</small>
         </div>
