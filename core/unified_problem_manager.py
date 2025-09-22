@@ -8,6 +8,37 @@ import shutil
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Any
+from collections.abc import Mapping
+
+
+class ProblemConfigView(dict):
+    """Mapping wrapper that supports dotted key access via get()."""
+
+    _MISSING = object()
+
+    def __init__(self, data: Dict[str, Any]):
+        super().__init__(data)
+
+    def get(self, key: str, default=None):  # type: ignore[override]
+        if isinstance(key, str) and '.' in key:
+            result = self._get_nested(key.split('.'))
+            return default if result is self._MISSING else result
+        return super().get(key, default)
+
+    def _get_nested(self, parts: List[str]):
+        current: Any = self
+        for part in parts:
+            if isinstance(current, Mapping):
+                if isinstance(current, ProblemConfigView):
+                    value = dict.get(current, part, self._MISSING)
+                else:
+                    value = current.get(part, self._MISSING)  # type: ignore[call-arg]
+                if value is self._MISSING:
+                    return self._MISSING
+                current = value
+            else:
+                return self._MISSING
+        return current
 
 from .database import DatabaseManager
 from .config import config
@@ -339,7 +370,7 @@ class UnifiedProblem:
     @property
     def config(self) -> Dict:
         """Get problem configuration from database (compatibility with old code)"""
-        return {
+        data = {
             'title': self.db_data.get('title', ''),
             'slug': self.db_data.get('slug', ''),
             'difficulty': self.db_data.get('difficulty', 'Medium'),
@@ -368,6 +399,7 @@ class UnifiedProblem:
                 'has_custom_checker': self.db_data.get('has_custom_checker', False)
             }
         }
+        return ProblemConfigView(data)
 
     def get(self, key: str, default=None):
         """Get configuration value (compatibility method)"""
