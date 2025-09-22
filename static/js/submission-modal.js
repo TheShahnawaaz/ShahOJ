@@ -91,13 +91,26 @@ class SubmissionModal {
             return String(str).replace(/[&<>"']/g, s => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[s]));
         }
 
-        function formatTime(ts) {
+        function normalizeTimestamp(ts) {
             if (!ts) return '';
+            let value = String(ts).trim();
+            if (!value) return '';
+            if (value.includes(' ')) {
+                value = value.replace(' ', 'T');
+            }
+            if (!/[zZ]|[+-]\d{2}:\d{2}$/.test(value)) {
+                value = `${value}Z`;
+            }
+            return value;
+        }
+
+        function formatTime(ts) {
+            const normalized = normalizeTimestamp(ts);
+            if (!normalized) return '';
             try {
-                // Handle ISO string timestamps from database
-                const date = new Date(ts);
-                // Format in user's local timezone
-                return date.toLocaleString(undefined, {
+                const date = new Date(normalized);
+                return date.toLocaleString('en-IN', {
+                    timeZone: 'Asia/Kolkata',
                     year: 'numeric',
                     month: 'short',
                     day: 'numeric',
@@ -161,7 +174,7 @@ class SubmissionModal {
                         <i class="fas fa-clock me-1"></i>Submitted
                     </div>
                     <div class="submission-meta-value">
-                        ${formatTime(sub.created_at)}
+                        ${formatTime(sub.created_at_ist || sub.created_at)}
                     </div>
                 </div>
                 <div class="submission-meta-card">

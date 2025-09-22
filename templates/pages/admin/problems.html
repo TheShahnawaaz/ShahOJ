@@ -74,7 +74,7 @@
                                 <span class="meta-primary">{{ problem.submission_count }}</span>
                             </div>
                         </td>
-                        <td data-sort-value="{{ problem.updated_display }}">
+                        <td data-sort-value="{{ problem.updated_at_iso or '' }}">
                             <div class="admin-meta-cell">
                                 <i class="fas fa-clock text-primary"></i>
                                 <span class="meta-primary">{{ problem.updated_display or '—' }}</span>

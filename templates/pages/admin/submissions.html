@@ -86,7 +86,7 @@
                                 <span class="meta-primary">{{ submission.time_ms or '—' }} ms</span>
                             </div>
                         </td>
-                        <td data-sort-value="{{ submission.created_display or '' }}">
+                        <td data-sort-value="{{ submission.created_at_ist or submission.created_at or '' }}">
                             <div class="admin-meta-cell">
                                 <i class="fas fa-clock text-primary"></i>
                                 <span class="meta-primary">{{ submission.created_display or '—' }}</span>

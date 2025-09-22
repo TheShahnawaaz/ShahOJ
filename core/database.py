@@ -7,9 +7,11 @@ import sqlite3
 import uuid
 import secrets
 import json
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Any
+
+from .time_utils import format_ist, to_ist, to_ist_iso, to_utc, utc_now, utc_now_iso
 
 
 class DatabaseManager:
@@ -351,7 +353,7 @@ class DatabaseManager:
         """Create a new session for user"""
         session_token = secrets.token_urlsafe(32)
         session_id = str(uuid.uuid4())
-        expires_at = datetime.now() + timedelta(days=timeout_days)
+        expires_at = (utc_now() + timedelta(days=timeout_days)).isoformat()
 
         with sqlite3.connect(self.db_path) as conn:
             # Clean up old sessions for this user (keep only latest 5)
@@ -462,7 +464,7 @@ class DatabaseManager:
                 problem_data.get('has_generator', False),
                 problem_data.get('has_validator', False),
                 problem_data.get('has_custom_checker', False),
-                problem_data.get('created_at', datetime.now())
+                (to_utc(problem_data.get('created_at')) or utc_now()).isoformat()
             ))
 
     def update_problem_metadata(self, slug: str, metadata: Dict, author_id: str = None):
@@ -492,7 +494,7 @@ class DatabaseManager:
             if update_fields:
                 # Add updated_at timestamp
                 update_fields.append("updated_at = ?")
-                values.append(datetime.now())
+                values.append(utc_now_iso())
 
                 # Add slug for WHERE clause
                 values.append(slug)
@@ -523,7 +525,7 @@ class DatabaseManager:
                 file_status.get('has_generator', False),
                 file_status.get('has_validator', False),
                 file_status.get('has_custom_checker', False),
-                datetime.now(),
+                utc_now_iso(),
                 slug
             ))
 
@@ -538,15 +540,12 @@ class DatabaseManager:
                 # Parse tags JSON
                 problem['tags'] = json.loads(problem['tags'])
 
-                # Convert date strings to datetime objects for template compatibility
-                from datetime import datetime
                 for date_field in ['created_at', 'updated_at']:
-                    if problem.get(date_field):
-                        try:
-                            problem[date_field] = datetime.fromisoformat(
-                                problem[date_field].replace('Z', '+00:00'))
-                        except (ValueError, AttributeError):
-                            problem[date_field] = None
+                    raw_value = problem.get(date_field)
+                    localized = to_ist(raw_value)
+                    problem[f'{date_field}_display'] = format_ist(raw_value)
+                    problem[f'{date_field}_iso'] = localized.isoformat() if localized else ''
+                    problem[date_field] = localized
 
                 return problem
             return None
@@ -566,15 +565,12 @@ class DatabaseManager:
                 problem = dict(row)
                 problem['tags'] = json.loads(problem['tags'])
 
-                # Convert date strings to datetime objects for template compatibility
-                from datetime import datetime
                 for date_field in ['created_at', 'updated_at']:
-                    if problem.get(date_field):
-                        try:
-                            problem[date_field] = datetime.fromisoformat(
-                                problem[date_field].replace('Z', '+00:00'))
-                        except (ValueError, AttributeError):
-                            problem[date_field] = None
+                    raw_value = problem.get(date_field)
+                    localized = to_ist(raw_value)
+                    problem[f'{date_field}_display'] = format_ist(raw_value)
+                    problem[f'{date_field}_iso'] = localized.isoformat() if localized else ''
+                    problem[date_field] = localized
 
                 problems.append(problem)
             return problems
@@ -614,15 +610,12 @@ class DatabaseManager:
                 problem = dict(row)
                 problem['tags'] = json.loads(problem['tags'])
 
-                # Convert date strings to datetime objects for template compatibility
-                from datetime import datetime
                 for date_field in ['created_at', 'updated_at']:
-                    if problem.get(date_field):
-                        try:
-                            problem[date_field] = datetime.fromisoformat(
-                                problem[date_field].replace('Z', '+00:00'))
-                        except (ValueError, AttributeError):
-                            problem[date_field] = None
+                    raw_value = problem.get(date_field)
+                    localized = to_ist(raw_value)
+                    problem[f'{date_field}_display'] = format_ist(raw_value)
+                    problem[f'{date_field}_iso'] = localized.isoformat() if localized else ''
+                    problem[date_field] = localized
 
                 problems.append(problem)
 
@@ -691,15 +684,12 @@ class DatabaseManager:
                 problem = dict(row)
                 problem['tags'] = json.loads(problem['tags'])
 
-                # Convert date strings to datetime objects for template compatibility
-                from datetime import datetime
                 for date_field in ['created_at', 'updated_at']:
-                    if problem.get(date_field):
-                        try:
-                            problem[date_field] = datetime.fromisoformat(
-                                problem[date_field].replace('Z', '+00:00'))
-                        except (ValueError, AttributeError):
-                            problem[date_field] = None
+                    raw_value = problem.get(date_field)
+                    localized = to_ist(raw_value)
+                    problem[f'{date_field}_display'] = format_ist(raw_value)
+                    problem[f'{date_field}_iso'] = localized.isoformat() if localized else ''
+                    problem[date_field] = localized
 
                 # Add author info
                 problem['author'] = {
@@ -831,8 +821,8 @@ class DatabaseManager:
         Status defaults to 'running' for synchronous judging.
         """
         submission_id = str(uuid.uuid4())
-        # Store local time instead of UTC for better user experience
-        created_at = datetime.now().isoformat()
+        # Store timestamps in UTC for consistent conversions
+        created_at = utc_now_iso()
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 """
@@ -864,9 +854,9 @@ class DatabaseManager:
         if not set_parts:
             return False
 
-        # Use Python datetime for consistency
+        # Always update modified timestamp in UTC
         set_parts.append("updated_at = ?")
-        values.append(datetime.now().isoformat())
+        values.append(utc_now_iso())
         values.append(submission_id)
 
         sql = f"UPDATE submissions SET {', '.join(set_parts)} WHERE id = ?"
@@ -882,7 +872,15 @@ class DatabaseManager:
                 "SELECT * FROM submissions WHERE id = ?",
                 (submission_id,)
             ).fetchone()
-            return dict(row) if row else None
+            if not row:
+                return None
+
+            submission = dict(row)
+            submission['created_display'] = format_ist(submission.get('created_at'))
+            submission['created_at_ist'] = to_ist_iso(submission.get('created_at'))
+            submission['updated_display'] = format_ist(submission.get('updated_at'))
+            submission['updated_at_ist'] = to_ist_iso(submission.get('updated_at'))
+            return submission
 
     def find_duplicate_submission(self, user_id: str, problem_slug: str, language: str,
                                   source_hash: str) -> Optional[str]:
@@ -924,12 +922,22 @@ class DatabaseManager:
             conn.row_factory = sqlite3.Row
             items = conn.execute(query, params + [limit, offset]).fetchall()
             total = conn.execute(count_query, params).fetchone()[0]
-            return {
-                'items': [dict(r) for r in items],
-                'total': total,
-                'page': page,
-                'has_next': (page * limit) < total
-            }
+
+        submissions: List[Dict[str, Any]] = []
+        for row in items:
+            submission = dict(row)
+            submission['created_display'] = format_ist(submission.get('created_at'))
+            submission['created_at_ist'] = to_ist_iso(submission.get('created_at'))
+            submission['updated_display'] = format_ist(submission.get('updated_at'))
+            submission['updated_at_ist'] = to_ist_iso(submission.get('updated_at'))
+            submissions.append(submission)
+
+        return {
+            'items': submissions,
+            'total': total,
+            'page': page,
+            'has_next': (page * limit) < total
+        }
 
     def list_all_problems(self, page: int = 1, limit: int = 20, search: Optional[str] = None) -> Dict[str, Any]:
         """List problems for admin view with author and submission counts"""
@@ -980,12 +988,11 @@ class DatabaseManager:
                     problem['tags'] = []
             problem['is_public'] = bool(problem.get('is_public'))
             for date_field in ['created_at', 'updated_at']:
-                value = problem.get(date_field)
-                if value:
-                    try:
-                        problem[date_field] = datetime.fromisoformat(value.replace('Z', '+00:00'))
-                    except Exception:
-                        problem[date_field] = value
+                raw_value = problem.get(date_field)
+                localized = to_ist(raw_value)
+                problem[f'{date_field}_display'] = format_ist(raw_value)
+                problem[f'{date_field}_iso'] = localized.isoformat() if localized else ''
+                problem[date_field] = localized
             problems.append(problem)
 
         return {
@@ -1066,7 +1073,15 @@ class DatabaseManager:
             items = conn.execute(query, params + [limit, offset]).fetchall()
             total = conn.execute(count_query, params).fetchone()[0]
 
-        submissions = [dict(row) for row in items]
+        submissions: List[Dict[str, Any]] = []
+        for row in items:
+            submission = dict(row)
+            submission['created_display'] = format_ist(submission.get('created_at'))
+            submission['created_at_ist'] = to_ist_iso(submission.get('created_at'))
+            submission['updated_display'] = format_ist(submission.get('updated_at'))
+            submission['updated_at_ist'] = to_ist_iso(submission.get('updated_at'))
+            submissions.append(submission)
+
         return {
             'items': submissions,
             'total': total,

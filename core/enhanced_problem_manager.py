@@ -12,6 +12,7 @@ from typing import Dict, List, Optional, Any
 
 from .database import DatabaseManager
 from .config import config
+from .time_utils import utc_now_iso
 
 
 class EnhancedProblemManager:
@@ -117,7 +118,7 @@ class EnhancedProblemManager:
                 'enabled': False,
                 'strict_mode': True
             },
-            'created_date': datetime.utcnow().isoformat(),
+            'created_date': utc_now_iso(),
             '_multiuser_problem': True,
             '_problem_id': problem_data['id']
         }
@@ -352,7 +353,7 @@ class EnhancedProblemManager:
 
                 config_data.update({
                     '_migrated_to_multiuser': True,
-                    '_migration_date': datetime.utcnow().isoformat(),
+                    '_migration_date': utc_now_iso(),
                     '_problem_id': problem_data['id']
                 })
 

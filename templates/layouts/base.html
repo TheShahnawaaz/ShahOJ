@@ -1013,14 +1013,6 @@
                     
                     <!-- Multi-user navigation -->
                     {% if current_user %}
-                        {% if current_user.is_superuser %}
-                        <li class="nav-item">
-                            <a class="nav-link nav-link-enhanced {{ 'active' if request.endpoint in nav_context.admin else '' }}" href="{{ url_for('admin_dashboard') }}">
-                                <i class="fas fa-shield-alt me-1"></i>
-                                <span>Admin</span>
-                            </a>
-                        </li>
-                        {% endif %}
                         <li class="nav-item">
                             <a class="nav-link nav-link-enhanced {{ 'active' if request.endpoint in nav_context.create else '' }}" href="{{ url_for('create_problem_form') }}">
                                 <i class="fas fa-puzzle-piece me-1"></i>
@@ -1039,6 +1031,14 @@
                                 <span>My Submissions</span>
                             </a>
                         </li>
+                        {% if current_user.is_superuser %}
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-enhanced {{ 'active' if request.endpoint in nav_context.admin else '' }}" href="{{ url_for('admin_dashboard') }}">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                <span>Admin</span>
+                            </a>
+                        </li>
+                        {% endif %}
                         <li class="nav-item dropdown">
                             <a class="nav-link nav-link-enhanced dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <img src="{{ current_user.picture_url }}" alt="Profile" class="rounded-circle me-1" width="24" height="24">

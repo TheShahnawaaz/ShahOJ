@@ -11,6 +11,7 @@ from typing import Dict, List, Optional, Any
 
 from .config import config
 from .problem_config import ProblemConfig
+from .time_utils import utc_now_iso
 
 
 class Problem:
@@ -152,7 +153,7 @@ class ProblemManager:
         config.set('checker.type', metadata.get('checker_type', 'diff'))
         config.set('tests.sample_count', metadata.get('sample_count', 3))
         config.set('tests.system_count', metadata.get('system_count', 20))
-        config.set('created_date', datetime.now().isoformat())
+        config.set('created_date', utc_now_iso())
 
         # Create problem instance and save config
         problem = Problem(slug, problem_dir)

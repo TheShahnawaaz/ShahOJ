@@ -2870,6 +2870,19 @@ function displayError(error) {
     testResultsDiv.style.display = 'block';
 }
 
+function normalizeTimestamp(ts) {
+    if (!ts) return '';
+    let value = String(ts).trim();
+    if (!value) return '';
+    if (value.includes(' ')) {
+        value = value.replace(' ', 'T');
+    }
+    if (!/[zZ]|[+-]\d{2}:\d{2}$/.test(value)) {
+        value = `${value}Z`;
+    }
+    return value;
+}
+
 async function loadRecentSubmissions() {
     try {
         const res = await fetch(`/api/problem/{{ problem.slug }}/submissions?page=1&limit=8`);
@@ -2887,8 +2900,20 @@ async function loadRecentSubmissions() {
         let html = '';
         data.items.forEach((submission, index) => {
             const verdict = (submission.verdict || submission.status || '').toUpperCase();
-            const when = submission.created_at ? new Date(submission.created_at).toLocaleString() : 'Recently';
-            const timeAgo = submission.created_at ? getTimeAgo(submission.created_at) : '';
+            const normalizedCreated = normalizeTimestamp(submission.created_at);
+            const when = normalizedCreated
+                ? new Date(normalizedCreated).toLocaleString('en-IN', {
+                    timeZone: 'Asia/Kolkata',
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true
+                })
+                : 'Recently';
+            const timeAgo = normalizedCreated ? getTimeAgo(normalizedCreated) : '';
             
             // Verdict badge styling
             let badgeClass = 'bg-secondary';
@@ -3007,19 +3032,21 @@ async function loadRecentSubmissions() {
 
 function getTimeAgo(dateString) {
     try {
-        // Handle ISO string timestamps from database
-        const date = new Date(dateString);
+        const normalized = normalizeTimestamp(dateString);
+        if (!normalized) return '';
+        const date = new Date(normalized);
         const now = new Date();
         const diffMs = now - date;
         const diffMins = Math.floor(diffMs / 60000);
         const diffHours = Math.floor(diffMs / 3600000);
         const diffDays = Math.floor(diffMs / 86400000);
-        
+
         if (diffMins < 1) return 'Just now';
         if (diffMins < 60) return `${diffMins}m ago`;
         if (diffHours < 24) return `${diffHours}h ago`;
         if (diffDays < 7) return `${diffDays}d ago`;
-        return date.toLocaleDateString(undefined, {
+        return date.toLocaleDateString('en-IN', {
+            timeZone: 'Asia/Kolkata',
             year: 'numeric',
             month: 'short',
             day: 'numeric'

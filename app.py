@@ -9,13 +9,13 @@ from core.database import DatabaseManager
 from core.config import config
 from core.problem_manager import ProblemManager
 from core.unified_problem_manager import UnifiedProblemManager
+from core.time_utils import format_ist, to_ist_iso
 from flask import Flask, render_template, jsonify, request, redirect, url_for, flash, send_from_directory, g
 import os
 import sys
 import traceback
 import hashlib
 import json
-from datetime import datetime
 
 # Add current directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -315,10 +315,12 @@ def admin_dashboard():
         submission['user_picture'] = submission.get('user_picture') or ''
         submission['verdict_display'] = (submission.get('verdict') or submission.get('status') or '—').upper()
         submission['created_display'] = _format_timestamp(submission.get('created_at'))
+        submission['created_at_ist'] = to_ist_iso(submission.get('created_at'))
     recent_users = db_manager.list_all_users(page=1, limit=5).get('items', [])
     for user in recent_users:
         user['picture_url'] = user.get('picture_url') or ''
         user['created_display'] = _format_timestamp(user.get('created_at'))
+        user['created_at_ist'] = to_ist_iso(user.get('created_at'))
     return render_template('pages/admin/dashboard.html',
                            stats=stats,
                            recent_problems=recent_problems,
@@ -371,6 +373,8 @@ def admin_users():
     for user in users:
         user['created_display'] = _format_timestamp(user.get('created_at'))
         user['last_login_display'] = _format_timestamp(user.get('last_login'))
+        user['created_at_ist'] = to_ist_iso(user.get('created_at'))
+        user['last_login_ist'] = to_ist_iso(user.get('last_login'))
 
     total_pages = max(1, (result['total'] + limit - 1) // limit)
     pagination = {
@@ -401,6 +405,7 @@ def admin_submissions():
         submission['created_display'] = _format_timestamp(submission.get('created_at'))
         submission['verdict_display'] = (submission.get('verdict') or submission.get('status') or '—').upper()
         submission['user_picture'] = submission.get('user_picture') or ''
+        submission['created_at_ist'] = to_ist_iso(submission.get('created_at'))
 
     total_pages = max(1, (result['total'] + limit - 1) // limit)
     pagination = {
@@ -499,14 +504,7 @@ def _normalize_code_for_hash(code: str) -> str:
 
 def _format_timestamp(value):
     """Format stored timestamps for display"""
-    if not value:
-        return ''
-    if isinstance(value, datetime):
-        return value.strftime('%b %d, %Y · %H:%M')
-    try:
-        return datetime.fromisoformat(str(value).replace('Z', '+00:00')).strftime('%b %d, %Y · %H:%M')
-    except Exception:
-        return str(value)
+    return format_ist(value)
 
 
 def _compute_source_hash(problem_slug: str, language: str, source_code: str) -> str:

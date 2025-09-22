@@ -659,10 +659,10 @@
                                 {{ (submission.verdict or submission.status or '—').upper() }}
                             </span>
                         </td>
-                        <td data-sort-value="{{ submission.created_at or '' }}">
-                            <div class="admin-meta-cell submission-time" data-timestamp="{{ submission.created_at or '' }}">
+                        <td data-sort-value="{{ submission.created_at_ist or submission.created_at or '' }}">
+                            <div class="admin-meta-cell submission-time" data-timestamp="{{ submission.created_at_ist or submission.created_at or '' }}">
                                 <i class="fas fa-clock text-primary"></i>
-                                <span class="meta-primary">{% if submission.created_at %}{{ submission.created_at[:19] | replace('T', ' ') }}{% else %}Recently{% endif %}</span>
+                                <span class="meta-primary">{{ submission.created_display or 'Recently' }}</span>
                             </div>
                         </td>
                         <td data-sort-value="{{ submission.problem_slug }}">
@@ -817,13 +817,26 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-function formatTime(ts) {
+function normalizeTimestamp(ts) {
     if (!ts) return '';
+    let value = String(ts).trim();
+    if (!value) return '';
+    if (value.includes(' ')) {
+        value = value.replace(' ', 'T');
+    }
+    if (!/[zZ]|[+-]\d{2}:\d{2}$/.test(value)) {
+        value = `${value}Z`;
+    }
+    return value;
+}
+
+function formatTime(ts) {
+    const normalized = normalizeTimestamp(ts);
+    if (!normalized) return '';
     try {
-        // Handle ISO string timestamps from database
-        const date = new Date(ts);
-        // Format in user's local timezone with better formatting
-        return date.toLocaleString(undefined, {
+        const date = new Date(normalized);
+        return date.toLocaleString('en-IN', {
+            timeZone: 'Asia/Kolkata',
             year: 'numeric',
             month: 'short',
             day: 'numeric',
@@ -885,7 +898,7 @@ function renderSubmissionModal(sub){
       </div>
       <div class="meta-card">
         <div class="meta-label"><i class="fas fa-clock me-1"></i>Submitted</div>
-        <div class="meta-value">${formatTime(sub.created_at)}</div>
+        <div class="meta-value">${formatTime(sub.created_at_ist || sub.created_at)}</div>
       </div>
       <div class="meta-card">
         <div class="meta-label"><i class="fas fa-stopwatch me-1"></i>Exec Time</div>
@@ -979,5 +992,3 @@ function renderSubmissionModal(sub){
 }
 </script>
 {% endblock %}
-
-
