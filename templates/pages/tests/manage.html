@@ -161,6 +161,43 @@
         ]
     ) }}
 
+    {% set has_solution = file_status['solution.py'] %}
+    {% set has_generator = file_status['generator.py'] %}
+    {% set solution_ready = has_solution and not solution_empty %}
+    {% set generator_ready = has_generator and not generator_empty %}
+
+    {% if not has_solution %}
+    <div class="alert alert-warning d-flex align-items-center" role="alert">
+        <i class="fas fa-info-circle me-2"></i>
+        <div>
+            Add a reference solution in <code>solution.py</code> before creating manual or generated tests. The runner uses it to compute expected answers automatically.
+        </div>
+    </div>
+    {% elif solution_empty %}
+    <div class="alert alert-warning d-flex align-items-center" role="alert">
+        <i class="fas fa-info-circle me-2"></i>
+        <div>
+            Your <code>solution.py</code> file is currently empty. Implement the reference solution so the platform can validate test cases.
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not has_generator %}
+    <div class="alert alert-info d-flex align-items-center" role="alert">
+        <i class="fas fa-lightbulb me-2"></i>
+        <div>
+            To auto-generate test cases, create a <code>generator.py</code> script in the problem directory that prints inputs when invoked as <code>python generator.py &lt;case_num&gt; &lt;seed&gt;</code>.
+        </div>
+    </div>
+    {% elif generator_empty %}
+    <div class="alert alert-info d-flex align-items-center" role="alert">
+        <i class="fas fa-lightbulb me-2"></i>
+        <div>
+            Your <code>generator.py</code> exists but is empty. Add generation logic before requesting new system tests.
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Enhanced Statistics Overview -->
     <div class="row mb-4">
         <div class="col-lg-3 col-md-6 mb-3">
@@ -385,12 +422,29 @@ Example for this problem:
 
 {% block extra_js %}
 <script>
+const testResources = {{ {
+    'hasSolution': file_status['solution.py'],
+    'solutionEmpty': solution_empty,
+    'hasGenerator': file_status['generator.py'],
+    'generatorEmpty': generator_empty
+} | tojson }};
+testResources.solutionReady = testResources.hasSolution && !testResources.solutionEmpty;
+testResources.generatorReady = testResources.hasGenerator && !testResources.generatorEmpty;
+
 document.addEventListener('DOMContentLoaded', function() {
     
     // Header button event listeners
     const generateHeaderBtn = document.getElementById('generateTestsHeaderBtn');
     if (generateHeaderBtn) {
         generateHeaderBtn.addEventListener('click', function() {
+            if (!testResources.solutionReady) {
+                showAlert('warning', 'Add or complete your reference solution (solution.py) before generating test cases.');
+                return;
+            }
+            if (!testResources.generatorReady) {
+                showAlert('info', 'Create generator.py with the required interface to generate test cases automatically.');
+                return;
+            }
 
             const modal = new bootstrap.Modal(document.getElementById('generateModal'));
             modal.show();
@@ -402,6 +456,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const addManualHeaderBtn = document.getElementById('addManualHeaderBtn');
     if (addManualHeaderBtn) {
         addManualHeaderBtn.addEventListener('click', function() {
+            if (!testResources.solutionReady) {
+                showAlert('warning', 'Add or complete your reference solution (solution.py) before adding manual test cases.');
+                return;
+            }
 
             const modal = new bootstrap.Modal(document.getElementById('manualModal'));
             modal.show();
@@ -414,19 +472,28 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('generateTestsBtn').addEventListener('click', function() {
         const btn = this;
         const originalText = btn.innerHTML;
-        
-        // Show loading state
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
-        btn.disabled = true;
-        
+
+        if (!testResources.solutionReady) {
+            showAlert('warning', 'Add or complete your reference solution (solution.py) before generating test cases.');
+            return;
+        }
+        if (!testResources.generatorReady) {
+            showAlert('info', 'Create generator.py with the required interface to generate test cases automatically.');
+            return;
+        }
+
         const category = document.getElementById('testCategory').value;
         const replaceExisting = document.getElementById('replaceExisting').checked;
 
         const count = parseInt(document.getElementById('testCount').value) || 0;
         if (count <= 0) {
-            alert('Please specify test case count > 0');
+            showAlert('warning', 'Please specify a test case count greater than zero.');
             return;
         }
+
+        // Show loading state
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+        btn.disabled = true;
 
         fetch(`/api/problem/{{ problem.slug }}/generate-tests`, {
             method: 'POST',
@@ -466,7 +533,12 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('addManualTestBtn').addEventListener('click', function() {
         const btn = this;
         const originalText = btn.innerHTML;
-        
+
+        if (!testResources.solutionReady) {
+            showAlert('warning', 'Add or complete your reference solution (solution.py) before adding manual test cases.');
+            return;
+        }
+
         const input = document.getElementById('manualInput').value.trim();
         const category = document.getElementById('manualCategory').value;
         
@@ -593,14 +665,19 @@ function showAlert(type, message) {
     
     // Insert alert at top of page
     const container = document.querySelectorAll('.container-fluid');
-    console.log(container);
-    container.insertAdjacentHTML('afterbegin', alertHtml);
     
+    if (container.length > 1) {
+        container[1].insertAdjacentHTML('afterbegin', alertHtml);
+    } else {
+        container[0].insertAdjacentHTML('afterbegin', alertHtml);
+    }
+    
+
     // Auto-remove after 5 seconds
     setTimeout(() => {
-        const alerts = document.querySelectorAll('.alert');
-        if (alerts.length > 0) {
-            alerts[alerts.length - 1].remove();
+        const alertEl = document.querySelector('.alert');
+        if (alertEl) {
+            alertEl.remove();
         }
     }, 5000);
 }

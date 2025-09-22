@@ -949,7 +949,18 @@ def manage_test_cases(slug):
         test_generator = TestGenerator(problem)
         stats = test_generator.get_test_case_statistics()
 
-        return render_template('pages/tests/manage.html', problem=problem, stats=stats)
+        files_info = problem.get_files_info()
+        solution_path = problem.problem_dir / 'solution.py'
+        generator_path = problem.problem_dir / 'generator.py'
+        solution_empty = solution_path.exists() and solution_path.stat().st_size == 0
+        generator_empty = generator_path.exists() and generator_path.stat().st_size == 0
+
+        return render_template('pages/tests/manage.html',
+                               problem=problem,
+                               stats=stats,
+                               file_status=files_info,
+                               solution_empty=solution_empty,
+                               generator_empty=generator_empty)
     except Exception as e:
         return f"Error loading test management: {e}", 500
 
@@ -979,6 +990,30 @@ def generate_tests_api(slug):
         problem = unified_problem_manager.get_problem(slug)
         if not problem:
             return jsonify({'success': False, 'error': 'Problem not found'}), 404
+
+        solution_path = problem.problem_dir / 'solution.py'
+        if not solution_path.exists() or not solution_path.is_file():
+            return jsonify({
+                'success': False,
+                'error': 'Reference solution (solution.py) is required before generating tests. Add the file and try again.'
+            }), 400
+        if solution_path.stat().st_size == 0:
+            return jsonify({
+                'success': False,
+                'error': 'Your reference solution (solution.py) is empty. Implement the solution so answers can be generated automatically.'
+            }), 400
+
+        generator_path = problem.problem_dir / 'generator.py'
+        if not generator_path.exists() or not generator_path.is_file():
+            return jsonify({
+                'success': False,
+                'error': 'Test generator (generator.py) not found. Create it to generate test cases automatically.'
+            }), 400
+        if generator_path.stat().st_size == 0:
+            return jsonify({
+                'success': False,
+                'error': 'Your generator.py file is empty. Implement it so the platform can create test cases.'
+            }), 400
 
         # Get generation parameters
         data = request.get_json() or {}
@@ -1026,6 +1061,18 @@ def add_manual_test_api(slug):
         problem = unified_problem_manager.get_problem(slug)
         if not problem:
             return jsonify({'success': False, 'error': 'Problem not found'}), 404
+
+        solution_path = problem.problem_dir / 'solution.py'
+        if not solution_path.exists() or not solution_path.is_file():
+            return jsonify({
+                'success': False,
+                'error': 'Reference solution (solution.py) is required before adding manual tests. Add the file and try again.'
+            }), 400
+        if solution_path.stat().st_size == 0:
+            return jsonify({
+                'success': False,
+                'error': 'Your reference solution (solution.py) is empty. Implement the solution so answers can be generated automatically.'
+            }), 400
 
         data = request.get_json()
         input_text = data.get('input', '').strip()
