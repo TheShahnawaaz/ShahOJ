@@ -4,6 +4,7 @@
 {% block title %}My Problems - ShahOJ{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 <style>
     :root {
         --primary-color: #007bff;
@@ -634,16 +635,11 @@
                     {% for problem in problems %}
                     <tr onclick="window.location.href='{{ url_for('problem_detail', slug=problem.slug) }}'" style="cursor: pointer;">
                         <!-- Problem Title -->
-                        <td data-sort-value="{{ problem.title }}">
-                            <div>
-                                <a href="{{ url_for('problem_detail', slug=problem.slug) }}" 
-                                   class="problem-title-link">
-                                    {{ problem.title }}
-                                </a>
-                                <div class="problem-slug">
-                                    <i class="fas fa-hashtag"></i> {{ problem.slug }}
-                                </div>
-                            </div>
+                        <td data-sort-value="{{ problem.title or problem.slug }}">
+                            <a href="{{ url_for('problem_detail', slug=problem.slug) }}" class="admin-problem-link">
+                                <span class="problem-title">{{ problem.title or problem.slug }}</span>
+                                <span class="problem-slug">#{{ problem.slug }}</span>
+                            </a>
                         </td>
                         
                         <!-- Difficulty -->
@@ -679,25 +675,25 @@
                         </td>
                         
                         <!-- Published Date -->
-                        <td>
-                            <div class="date-info" data-sort-value="{{ problem.created_at.isoformat() if problem.created_at else '' }}">
-                                <i class="fas fa-calendar-alt"></i>
-                                <span>{{ problem.created_at.strftime('%b %d, %Y') if problem.created_at else 'Recently' }}</span>
+                        <td data-sort-value="{{ problem.created_at.isoformat() if problem.created_at else '' }}">
+                            <div class="admin-meta-cell">
+                                <i class="fas fa-calendar-alt text-primary"></i>
+                                <span class="meta-primary">{{ problem.created_at.strftime('%b %d, %Y') if problem.created_at else 'Recently' }}</span>
                             </div>
                         </td>
                         
                         <!-- Views -->
-                        <td>
-                            <div class="views-info" data-sort-value="{{ problem.view_count or 0 }}">
-                                <i class="fas fa-eye"></i>
-                                <span>{{ problem.view_count or 0 }}</span>
+                        <td data-sort-value="{{ problem.view_count or 0 }}">
+                            <div class="admin-meta-cell">
+                                <i class="fas fa-eye text-info"></i>
+                                <span class="meta-primary">{{ problem.view_count or 0 }}</span>
                             </div>
                         </td>
                         <!-- Submissions -->
-                        <td>
-                            <div class="views-info" data-sort-value="{{ problem.submission_count }}">
-                                <i class="fas fa-paper-plane"></i>
-                                <span>{{ problem.submission_count }}</span>
+                        <td data-sort-value="{{ problem.submission_count }}">
+                            <div class="admin-meta-cell">
+                                <i class="fas fa-paper-plane text-success"></i>
+                                <span class="meta-primary">{{ problem.submission_count }}</span>
                             </div>
                         </td>
                     </tr>

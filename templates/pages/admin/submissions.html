@@ -1,0 +1,154 @@
+{% extends "layouts/base.html" %}
+{% from "layouts/components.html" import admin_nav %}
+
+{% block title %}Admin · Submissions - ShahOJ{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/submission-modal.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 admin-page">
+    {{ admin_nav('submissions') }}
+
+    <div class="admin-section">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+            <h3 class="mb-0"><i class="fas fa-stream text-primary"></i> Submission Feed</h3>
+            <div class="admin-search">
+                <form method="GET" class="d-flex align-items-center gap-2">
+                    <input type="text" class="form-control form-control-sm" name="search" value="{{ search }}" placeholder="Search problem, user, verdict...">
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+                    {% if search %}
+                    <a href="{{ url_for('admin_submissions') }}" class="btn btn-outline-secondary btn-sm">Clear</a>
+                    {% endif %}
+                </form>
+                {% if pagination.total > 0 %}
+                <small class="text-muted">Showing {{ submissions|length }} of {{ pagination.total }}</small>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if submissions %}
+        <div class="admin-table-wrapper">
+            <table class="table table-hover" id="admin-submissions-table">
+                <thead>
+                    <tr>
+                        <th class="sortable-header" data-column="verdict" data-type="text"><i class="fas fa-sort me-1"></i>Verdict</th>
+                        <th class="sortable-header" data-column="problem" data-type="text"><i class="fas fa-sort me-1"></i>Problem</th>
+                        <th class="sortable-header" data-column="user" data-type="text"><i class="fas fa-sort me-1"></i>User</th>
+                        <th class="sortable-header" data-column="language" data-type="text"><i class="fas fa-sort me-1"></i>Language</th>
+                        <th class="sortable-header" data-column="time" data-type="number"><i class="fas fa-sort me-1"></i>Exec (ms)</th>
+                        <th class="sortable-header" data-column="created" data-type="date"><i class="fas fa-sort me-1"></i>Submitted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for submission in submissions %}
+                    <tr>
+                        <td data-sort-value="{{ submission.verdict_display }}">
+                            <span class="badge px-2 py-1
+                                {% if submission.verdict == 'AC' %}bg-success
+                                {% elif submission.verdict == 'WA' %}bg-danger
+                                {% elif submission.verdict == 'TLE' %}bg-warning text-dark
+                                {% elif submission.verdict == 'RTE' %}bg-warning
+                                {% elif submission.verdict == 'CE' %}bg-secondary
+                                {% elif submission.verdict == 'PE' %}bg-info
+                                {% elif submission.verdict == 'JE' %}bg-secondary
+                                {% else %}bg-secondary{% endif %}">
+                                {{ submission.verdict_display }}
+                            </span>
+                        </td>
+                        <td data-sort-value="{{ submission.problem_slug }}">
+                            <a href="{{ url_for('problem_detail', slug=submission.problem_slug) }}" class="admin-problem-link">
+                                <span class="problem-title">{{ submission.problem_title or submission.problem_slug }}</span>
+                                <span class="problem-slug">#{{ submission.problem_slug }}</span>
+                            </a>
+                        </td>
+                        <td data-sort-value="{{ submission.user_email or '' }}">
+                            <div class="d-flex align-items-center gap-2">
+                                <img src="{{ submission.user_picture or url_for('static', filename='images/ShahOJLogo.png') }}" alt="{{ submission.user_name or submission.user_email or 'User' }}" class="admin-avatar-sm">
+                                <div class="d-flex flex-column">
+                                    <span>{{ submission.user_name or '—' }}</span>
+                                    <small class="text-muted">{{ submission.user_email or '—' }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td data-sort-value="{{ (submission.language or '').upper() }}">
+                            <div class="admin-meta-cell">
+                                <i class="fas fa-code text-secondary"></i>
+                                <span class="meta-primary">{{ (submission.language or '').upper() or '—' }}</span>
+                            </div>
+                        </td>
+                        <td data-sort-value="{{ submission.time_ms or 0 }}">
+                            <div class="admin-meta-cell">
+                                <i class="fas fa-stopwatch text-warning"></i>
+                                <span class="meta-primary">{{ submission.time_ms or '—' }} ms</span>
+                            </div>
+                        </td>
+                        <td data-sort-value="{{ submission.created_display or '' }}">
+                            <div class="admin-meta-cell">
+                                <i class="fas fa-clock text-primary"></i>
+                                <span class="meta-primary">{{ submission.created_display or '—' }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" data-submission-id="{{ submission.id }}" title="View">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if pagination.total_pages > 1 %}
+        <nav aria-label="Submissions pagination" class="mt-3">
+            <ul class="pagination justify-content-center">
+                {% if pagination.current_page > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin_submissions', page=pagination.current_page-1, search=search or None) }}"><i class="fas fa-chevron-left"></i></a>
+                </li>
+                {% endif %}
+                {% set start_page = [1, pagination.current_page - 2]|max %}
+                {% set end_page = [pagination.total_pages + 1, pagination.current_page + 3]|min %}
+                {% for page_num in range(start_page, end_page) %}
+                <li class="page-item {{ 'active' if page_num == pagination.current_page else '' }}">
+                    <a class="page-link" href="{{ url_for('admin_submissions', page=page_num, search=search or None) }}">{{ page_num }}</a>
+                </li>
+                {% endfor %}
+                {% if pagination.current_page < pagination.total_pages %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin_submissions', page=pagination.current_page+1, search=search or None) }}"><i class="fas fa-chevron-right"></i></a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <p class="text-muted mb-0">No submissions found.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div id="sharedSubmissionModalContainer"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/table-sorter.js') }}"></script>
+<script src="{{ url_for('static', filename='js/submission-modal.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('admin-submissions-table')) {
+        new TableSorter('admin-submissions-table');
+    }
+    document.querySelectorAll('[data-submission-id]').forEach(button => {
+        button.addEventListener('click', () => {
+            const submissionId = button.getAttribute('data-submission-id');
+            SubmissionModal.show(submissionId);
+        });
+    });
+});
+</script>
+{% endblock %}

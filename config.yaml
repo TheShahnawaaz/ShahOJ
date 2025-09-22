@@ -32,6 +32,7 @@ oauth:
 security:
   secret_key: ${SECRET_KEY}
   session_timeout_days: 30
+  superusers: []  # Optional list of admin emails (also supports POCKETOJ_SUPERUSERS env var)
 
 features:
   multiuser_enabled: true

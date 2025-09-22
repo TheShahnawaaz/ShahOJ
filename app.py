@@ -3,7 +3,7 @@ Flask web application for PocketOJ extensible judge system - Multi-User Edition
 """
 
 from dotenv import load_dotenv
-from core.middleware import setup_auth_middleware, require_auth, require_problem_access
+from core.middleware import setup_auth_middleware, require_auth, require_problem_access, require_superuser
 from core.auth import AuthService
 from core.database import DatabaseManager
 from core.config import config
@@ -15,6 +15,7 @@ import sys
 import traceback
 import hashlib
 import json
+from datetime import datetime
 
 # Add current directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -212,7 +213,8 @@ def auth_status():
             'id': user['id'],
             'name': user['name'],
             'email': user['email'],
-            'picture_url': user['picture_url']
+            'picture_url': user['picture_url'],
+            'is_superuser': bool(user.get('is_superuser'))
         } if user else None
     })
 
@@ -299,13 +301,151 @@ def my_submissions_page():
         return f"Error loading submissions: {e}", 500
 
 
+@app.route('/admin')
+@require_superuser
+def admin_dashboard():
+    """Admin overview dashboard"""
+    stats = db_manager.get_admin_stats()
+    recent_problems = db_manager.list_all_problems(page=1, limit=5).get('items', [])
+    for prob in recent_problems:
+        prob['author_display'] = prob.get('author_name') or prob.get('author_email') or 'Unknown'
+        prob['author_picture'] = prob.get('author_picture') or ''
+    recent_submissions = db_manager.list_all_submissions(page=1, limit=5).get('items', [])
+    for submission in recent_submissions:
+        submission['user_picture'] = submission.get('user_picture') or ''
+        submission['verdict_display'] = (submission.get('verdict') or submission.get('status') or '—').upper()
+        submission['created_display'] = _format_timestamp(submission.get('created_at'))
+    recent_users = db_manager.list_all_users(page=1, limit=5).get('items', [])
+    for user in recent_users:
+        user['picture_url'] = user.get('picture_url') or ''
+        user['created_display'] = _format_timestamp(user.get('created_at'))
+    return render_template('pages/admin/dashboard.html',
+                           stats=stats,
+                           recent_problems=recent_problems,
+                           recent_submissions=recent_submissions,
+                           recent_users=recent_users)
+
+
+@app.route('/admin/problems')
+@require_superuser
+def admin_problems():
+    """Admin problem management view"""
+    page = max(1, int(request.args.get('page', 1)))
+    search = (request.args.get('search') or '').strip()
+    limit = 20
+    result = db_manager.list_all_problems(page=page, limit=limit, search=search or None)
+    problems = result['items']
+    for problem in problems:
+        problem['author_display'] = problem.get('author_name') or problem.get('author_email') or 'Unknown'
+        problem['author_picture'] = problem.get('author_picture') or ''
+        problem['updated_display'] = _format_timestamp(problem.get('updated_at'))
+        problem['created_display'] = _format_timestamp(problem.get('created_at'))
+        submission_count = problem.get('submission_count')
+        problem['submission_count'] = submission_count if submission_count is not None else 0
+
+    total_pages = max(1, (result['total'] + limit - 1) // limit)
+    pagination = {
+        'current_page': page,
+        'total_pages': total_pages,
+        'total': result['total'],
+        'has_next': result['has_next']
+    }
+
+    return render_template('pages/admin/problems.html',
+                           problems=problems,
+                           pagination=pagination,
+                           search=search,
+                           limit=limit)
+
+
+
+@app.route('/admin/users')
+@require_superuser
+def admin_users():
+    """Admin user management view"""
+    page = max(1, int(request.args.get('page', 1)))
+    search = (request.args.get('search') or '').strip()
+    limit = 20
+    result = db_manager.list_all_users(page=page, limit=limit, search=search or None)
+    users = result['items']
+    for user in users:
+        user['created_display'] = _format_timestamp(user.get('created_at'))
+        user['last_login_display'] = _format_timestamp(user.get('last_login'))
+
+    total_pages = max(1, (result['total'] + limit - 1) // limit)
+    pagination = {
+        'current_page': page,
+        'total_pages': total_pages,
+        'total': result['total'],
+        'has_next': result['has_next']
+    }
+
+    return render_template('pages/admin/users.html',
+                           users=users,
+                           pagination=pagination,
+                           search=search,
+                           limit=limit)
+
+
+
+@app.route('/admin/submissions')
+@require_superuser
+def admin_submissions():
+    """Admin submissions monitor view"""
+    page = max(1, int(request.args.get('page', 1)))
+    search = (request.args.get('search') or '').strip()
+    limit = 20
+    result = db_manager.list_all_submissions(page=page, limit=limit, search=search or None)
+    submissions = result['items']
+    for submission in submissions:
+        submission['created_display'] = _format_timestamp(submission.get('created_at'))
+        submission['verdict_display'] = (submission.get('verdict') or submission.get('status') or '—').upper()
+        submission['user_picture'] = submission.get('user_picture') or ''
+
+    total_pages = max(1, (result['total'] + limit - 1) // limit)
+    pagination = {
+        'current_page': page,
+        'total_pages': total_pages,
+        'total': result['total'],
+        'has_next': result['has_next']
+    }
+
+    return render_template('pages/admin/submissions.html',
+                           submissions=submissions,
+                           pagination=pagination,
+                           search=search,
+                           limit=limit)
+
+
+
+@app.route('/admin/system')
+@require_superuser
+def admin_system():
+    """Admin system health page"""
+    stats = db_manager.get_admin_stats()
+    db_ok = db_manager.health_check()
+    auth_ok = auth_service.health_check()
+    problems_dir = unified_problem_manager.problems_dir
+    files_ok = problems_dir.exists() and os.access(problems_dir, os.R_OK | os.W_OK)
+
+    return render_template('pages/admin/system.html',
+                           stats=stats,
+                           health={
+                               'database': db_ok,
+                               'auth': auth_ok,
+                               'files': files_ok
+                           },
+                           problems_dir=problems_dir)
+
+
 @app.route('/api/problems/<slug>/toggle-visibility', methods=['POST'])
 @require_auth
 @require_problem_access('edit')
 def toggle_problem_visibility_api(slug):
     """Toggle problem between public and private"""
     user = g.current_user
-    new_visibility = db_manager.toggle_problem_visibility(slug, user['id'])
+    is_superuser = bool(user.get('is_superuser'))
+    new_visibility = db_manager.toggle_problem_visibility(slug, user['id'], force=is_superuser)
 
     if new_visibility is not None:
         status = "public" if new_visibility else "private"
@@ -324,9 +464,10 @@ def toggle_problem_visibility_api(slug):
 def delete_problem_api(slug):
     """Delete a problem (only by author)"""
     user = g.current_user
+    is_superuser = bool(user.get('is_superuser'))
 
     # Delete from database
-    db_success = db_manager.delete_problem(slug, user['id'])
+    db_success = db_manager.delete_problem(slug, user['id'], force=is_superuser)
 
     if db_success:
         # Delete files
@@ -354,6 +495,18 @@ def _normalize_code_for_hash(code: str) -> str:
     code = code.replace('\r\n', '\n').replace('\r', '\n')
     lines = code.split('\n')
     return '\n'.join([line.rstrip() for line in lines])
+
+
+def _format_timestamp(value):
+    """Format stored timestamps for display"""
+    if not value:
+        return ''
+    if isinstance(value, datetime):
+        return value.strftime('%b %d, %Y · %H:%M')
+    try:
+        return datetime.fromisoformat(str(value).replace('Z', '+00:00')).strftime('%b %d, %Y · %H:%M')
+    except Exception:
+        return str(value)
 
 
 def _compute_source_hash(problem_slug: str, language: str, source_code: str) -> str:
@@ -488,11 +641,12 @@ def get_submission_api(submission_id):
         return jsonify({'success': False, 'error': 'Submission not found'}), 404
 
     user = g.current_user
-    # Permission: owner, or problem author
+    # Permission: owner, problem author, or superuser
     is_owner = sub['user_id'] == user['id']
     prob = db_manager.get_problem_by_slug(sub['problem_slug'])
     is_author = prob and prob.get('author_id') == user['id']
-    if not (is_owner or is_author):
+    is_superuser = bool(user.get('is_superuser'))
+    if not (is_owner or is_author or is_superuser):
         # Hide source_code
         sub = {k: v for k, v in sub.items() if k != 'source_code'}
     return jsonify({'success': True, 'submission': sub})
@@ -594,13 +748,15 @@ def problem_detail(slug):
         if not unified_problem:
             return "Problem not found", 404
 
+        is_author = bool(user and (user['id'] == problem_data.get('author_id')))
+        is_superuser = bool(user and user.get('is_superuser'))
         return render_template('pages/problem/detail.html',
                                problem=unified_problem,
                                problem_data=problem_data,
                                author=author,
                                current_user=user,
-                               is_author=(
-                                   user and user['id'] == problem_data.get('author_id'))
+                               is_author=is_author or is_superuser,
+                               is_superuser=is_superuser
                                )
     except Exception as e:
         return f"Error loading problem: {e}", 500
@@ -1350,8 +1506,9 @@ def save_problem_all_api(slug):
         # Update metadata in database
         if metadata_updates:
             user = g.current_user
+            actor_id = user['id'] if (user and not user.get('is_superuser')) else None
             success = unified_problem_manager.update_problem_metadata(
-                slug, metadata_updates, user['id'] if user else None
+                slug, metadata_updates, actor_id
             )
             if not success:
                 return jsonify({'success': False, 'error': 'Failed to update problem metadata'}), 500

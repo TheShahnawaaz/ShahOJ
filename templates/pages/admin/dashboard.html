@@ -1,0 +1,188 @@
+{% extends "layouts/base.html" %}
+{% from "layouts/components.html" import admin_nav %}
+
+{% block title %}Admin Dashboard - ShahOJ{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<style>
+    .admin-page { background: var(--primary-bg); }
+    .recent-list table td { vertical-align: middle; }
+    .recent-section h5 { font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 admin-page">
+    {{ admin_nav('overview') }}
+
+    <div class="admin-section">
+        <h3><i class="fas fa-chart-pie text-primary"></i> Overview</h3>
+        <div class="admin-stat-grid">
+            <div class="admin-stat-card">
+                <span class="stat-title"><i class="fas fa-users me-2 text-primary"></i>Total Users</span>
+                <span class="stat-value">{{ stats.total_users }}</span>
+            </div>
+            <div class="admin-stat-card">
+                <span class="stat-title"><i class="fas fa-book me-2 text-success"></i>Total Problems</span>
+                <span class="stat-value">{{ stats.total_problems }}</span>
+                <span class="admin-meta">{{ stats.public_problems }} public · {{ stats.private_problems }} private</span>
+            </div>
+            <div class="admin-stat-card">
+                <span class="stat-title"><i class="fas fa-inbox me-2 text-warning"></i>Total Submissions</span>
+                <span class="stat-value">{{ stats.total_submissions }}</span>
+                <span class="admin-meta">{{ stats.running_submissions }} running</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="admin-section recent-section">
+                <h3><i class="fas fa-layer-group text-info"></i> Recent Problems</h3>
+                {% if recent_problems %}
+                <div class="admin-table-wrapper recent-list">
+                    <table class="table table-hover" id="admin-recent-problems">
+                        <thead>
+                            <tr>
+                                <th class="sortable-header" data-column="title" data-type="text"><i class="fas fa-sort me-1"></i>Title</th>
+                                <th class="sortable-header" data-column="author" data-type="text"><i class="fas fa-sort me-1"></i>Author</th>
+                                <th class="sortable-header" data-column="visibility" data-type="text"><i class="fas fa-sort me-1"></i>Visibility</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for problem in recent_problems %}
+                            <tr>
+                                <td data-sort-value="{{ problem.title }}">
+                                    <a href="{{ url_for('problem_detail', slug=problem.slug) }}" class="admin-problem-link">
+                                        <span class="problem-title">{{ problem.title or problem.slug }}</span>
+                                        <span class="problem-slug">#{{ problem.slug }}</span>
+                                    </a>
+                                </td>
+                                <td data-sort-value="{{ problem.author_name or '' }}">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="{{ problem.author_picture or url_for('static', filename='images/ShahOJLogo.png') }}" alt="{{ problem.author_display }}" class="admin-avatar-xs">
+                                        <span>{{ problem.author_display }}</span>
+                                    </div>
+                                </td>
+                                <td data-sort-value="{{ 'Public' if problem.is_public else 'Private' }}">
+                                    {% if problem.is_public %}
+                                        <span class="badge bg-success">Public</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Private</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">No problems yet.</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="admin-section recent-section">
+                <h3><i class="fas fa-paper-plane text-primary"></i> Recent Submissions</h3>
+                {% if recent_submissions %}
+                <div class="admin-table-wrapper recent-list">
+                    <table class="table table-hover" id="admin-recent-submissions">
+                        <thead>
+                            <tr>
+                                <th class="sortable-header" data-column="verdict" data-type="text"><i class="fas fa-sort me-1"></i>Verdict</th>
+                                <th class="sortable-header" data-column="problem" data-type="text"><i class="fas fa-sort me-1"></i>Problem</th>
+                                <th class="sortable-header" data-column="user" data-type="text"><i class="fas fa-sort me-1"></i>User</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for submission in recent_submissions %}
+                            <tr>
+                                <td data-sort-value="{{ (submission.verdict or submission.status or '').upper() }}">
+                                    <span class="badge px-2 py-1
+                                        {% if submission.verdict == 'AC' %}bg-success
+                                        {% elif submission.verdict == 'WA' %}bg-danger
+                                        {% elif submission.verdict == 'TLE' %}bg-warning text-dark
+                                        {% elif submission.verdict == 'RTE' %}bg-warning
+                                        {% elif submission.verdict == 'CE' %}bg-secondary
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ (submission.verdict or submission.status or '—').upper() }}
+                                    </span>
+                                </td>
+                                <td data-sort-value="{{ submission.problem_slug }}">
+                                    <a href="{{ url_for('problem_detail', slug=submission.problem_slug) }}" class="admin-problem-link">
+                                        <span class="problem-title">{{ submission.problem_title or submission.problem_slug }}</span>
+                                        <span class="problem-slug">#{{ submission.problem_slug }}</span>
+                                    </a>
+                                </td>
+                                <td data-sort-value="{{ submission.user_email or '' }}">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="{{ submission.user_picture or url_for('static', filename='images/ShahOJLogo.png') }}" alt="{{ submission.user_name or 'User' }}" class="admin-avatar-xs">
+                                        <span>{{ submission.user_name or submission.user_email or '—' }}</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">No submissions yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-section">
+        <h3><i class="fas fa-user-friends text-success"></i> New Users</h3>
+        {% if recent_users %}
+        <div class="table-responsive admin-table-wrapper">
+            <table class="table table-hover" id="admin-recent-users">
+                <thead>
+                    <tr>
+                        <th class="sortable-header" data-column="name" data-type="text"><i class="fas fa-sort me-1"></i>Name</th>
+                        <th class="sortable-header" data-column="email" data-type="text"><i class="fas fa-sort me-1"></i>Email</th>
+                        <th class="sortable-header" data-column="problems" data-type="number"><i class="fas fa-sort me-1"></i>Problems</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in recent_users %}
+                    <tr>
+                        <td data-sort-value="{{ user.name }}">{{ user.name }}</td>
+                        <td data-sort-value="{{ user.email }}">
+                            <div class="d-flex align-items-center gap-2">
+                                <img src="{{ user.picture_url or url_for('static', filename='images/ShahOJLogo.png') }}" alt="{{ user.name }}" class="admin-avatar-xs">
+                                <div class="d-flex flex-column">
+                                    <span>{{ user.email }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td data-sort-value="{{ user.problem_count or 0 }}">{{ user.problem_count or 0 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No users yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/table-sorter.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('admin-recent-problems')) {
+        new TableSorter('admin-recent-problems');
+    }
+    if (document.getElementById('admin-recent-submissions')) {
+        new TableSorter('admin-recent-submissions');
+    }
+    if (document.getElementById('admin-recent-users')) {
+        new TableSorter('admin-recent-users');
+    }
+});
+</script>
+{% endblock %}

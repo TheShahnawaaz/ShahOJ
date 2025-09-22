@@ -249,10 +249,10 @@ class EnhancedProblemManager:
 
         return stats
 
-    def delete_problem(self, slug: str, author_id: str) -> bool:
-        """Delete a problem (only by author)"""
+    def delete_problem(self, slug: str, author_id: str, force: bool = False) -> bool:
+        """Delete a problem (author only unless force is True)"""
         # Delete from database first
-        db_success = self.db.delete_problem(slug, author_id)
+        db_success = self.db.delete_problem(slug, author_id, force=force)
 
         if db_success:
             # Delete file structure
@@ -267,9 +267,9 @@ class EnhancedProblemManager:
 
         return db_success
 
-    def toggle_problem_visibility(self, slug: str, author_id: str) -> Optional[bool]:
+    def toggle_problem_visibility(self, slug: str, author_id: str, force: bool = False) -> Optional[bool]:
         """Toggle problem visibility between public and private"""
-        return self.db.toggle_problem_visibility(slug, author_id)
+        return self.db.toggle_problem_visibility(slug, author_id, force=force)
 
     def get_public_problems(self, **kwargs) -> Dict:
         """Get public problems with enhanced metadata"""

@@ -47,6 +47,10 @@ class Config:
                 'debug': False,  # Default to False - enable explicitly for development
                 'secret_key': 'pocket-oj-default-secret-key-change-in-production'
             },
+            'security': {
+                'secret_key': 'pocket-oj-default-secret-key-change-in-production',
+                'superusers': []
+            },
             'compiler': {
                 'cpp': {
                     'command': 'g++ -std=c++17 -O2 {src} -o {out}',

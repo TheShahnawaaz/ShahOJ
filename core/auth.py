@@ -4,10 +4,11 @@ Handles Google OAuth integration and session management
 """
 
 import os
-from typing import Dict, Tuple, Optional
+from typing import Dict, Tuple, Optional, Set
 from authlib.integrations.flask_client import OAuth
 from flask import Flask
 
+from .config import config
 from .database import DatabaseManager
 
 
@@ -33,6 +34,27 @@ class AuthService:
             }
         )
 
+    def _load_superuser_emails(self) -> Set[str]:
+        """Load configured superuser emails from config and environment"""
+        configured = config.get('security.superusers', []) or []
+        emails = []
+        if isinstance(configured, str):
+            emails.extend(part.strip() for part in configured.split(',') if part.strip())
+        else:
+            emails.extend(str(item).strip() for item in configured if str(item).strip())
+
+        env_value = os.environ.get('POCKETOJ_SUPERUSERS', '')
+        if env_value:
+            emails.extend(part.strip() for part in env_value.split(',') if part.strip())
+
+        return {email.lower() for email in emails if email}
+
+    def _is_superuser(self, email: Optional[str]) -> bool:
+        """Check if the given email belongs to a configured superuser"""
+        if not email:
+            return False
+        return email.lower() in self._load_superuser_emails()
+
     def create_login_url(self, redirect_uri: str):
         """Generate Google OAuth login URL"""
         return self.google.authorize_redirect(redirect_uri)
@@ -49,8 +71,11 @@ class AuthService:
         if not user_info:
             raise ValueError("Failed to get user info from Google")
 
+        # Determine if this user should be treated as a superuser
+        is_superuser = self._is_superuser(user_info.get('email'))
+
         # Create or update user in database
-        user = self.db.create_or_update_user(user_info)
+        user = self.db.create_or_update_user(user_info, is_superuser=is_superuser)
 
         # Create long-lived session (30 days)
         session_token = self.db.create_session(user['id'], timeout_days=30)

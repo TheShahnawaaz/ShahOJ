@@ -40,6 +40,20 @@ def require_auth(f):
     return decorated_function
 
 
+def require_superuser(f):
+    """Decorator that allows access only to superusers"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        user = g.get('current_user')
+        if not user or not user.get('is_superuser'):
+            expects_json = request.is_json or request.path.startswith('/api/')
+            if expects_json:
+                return jsonify({'error': 'Superuser access required'}), 403
+            return redirect(url_for('dashboard'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 def require_problem_access(permission_type='view'):
     """Decorator to check problem permissions"""
     def decorator(f):
@@ -60,6 +74,11 @@ def require_problem_access(permission_type='view'):
 
             user = g.get('current_user')
             user_id = user['id'] if user else None
+            is_superuser = bool(user.get('is_superuser')) if user else False
+
+            if is_superuser:
+                g.current_problem = problem
+                return f(slug, *args, **kwargs)
 
             # Check permissions
             has_permission = False

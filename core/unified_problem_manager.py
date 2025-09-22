@@ -167,10 +167,10 @@ class UnifiedProblemManager:
         """Update problem metadata in database"""
         return self.db.update_problem_metadata(slug, metadata, author_id)
 
-    def delete_problem(self, slug: str, author_id: str = None) -> bool:
+    def delete_problem(self, slug: str, author_id: str = None, force: bool = False) -> bool:
         """Delete a problem (database + files)"""
         # Delete from database first
-        db_success = self.db.delete_problem(slug, author_id)
+        db_success = self.db.delete_problem(slug, author_id, force=force)
 
         if db_success:
             # Delete files

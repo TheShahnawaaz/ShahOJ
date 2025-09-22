@@ -32,11 +32,13 @@ class DatabaseManager:
                     email TEXT UNIQUE NOT NULL,
                     name TEXT NOT NULL,
                     picture_url TEXT,
+                    is_superuser BOOLEAN DEFAULT FALSE,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
                 
                 CREATE TABLE IF NOT EXISTS problems (
+
                     id TEXT PRIMARY KEY,
                     slug TEXT UNIQUE NOT NULL,
                     title TEXT NOT NULL,
@@ -126,6 +128,15 @@ class DatabaseManager:
             self._run_migrations()
             self._remove_description_column()
 
+    def _normalize_user_row(self, row: sqlite3.Row) -> Optional[Dict]:
+        """Convert SQLite row to dict with proper boolean types"""
+        if row is None:
+            return None
+        user = dict(row)
+        if 'is_superuser' in user:
+            user['is_superuser'] = bool(user['is_superuser'])
+        return user
+
     def _run_migrations(self):
         """Run database migrations for existing databases"""
         with sqlite3.connect(self.db_path) as conn:
@@ -162,6 +173,15 @@ class DatabaseManager:
                         pass  # Column added successfully
                     except Exception as e:
                         pass  # Column might already exist
+
+            # Ensure users table has is_superuser column
+            cursor.execute("PRAGMA table_info(users)")
+            user_columns = [row[1] for row in cursor.fetchall()]
+            if 'is_superuser' not in user_columns:
+                try:
+                    conn.execute("ALTER TABLE users ADD COLUMN is_superuser BOOLEAN DEFAULT FALSE")
+                except Exception:
+                    pass
 
     def _remove_description_column(self):
         """Remove description column from problems table if it exists"""
@@ -271,58 +291,61 @@ class DatabaseManager:
             else:
                 pass  # Description column not found, no migration needed
 
-    def create_or_update_user(self, google_user_info: Dict) -> Dict:
+    def create_or_update_user(self, google_user_info: Dict, is_superuser: bool = False) -> Dict:
         """Create new user or update existing user from Google OAuth info"""
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
 
-            # Check if user exists
+            # Determine current record, if any
             user = conn.execute(
                 "SELECT * FROM users WHERE google_id = ?",
                 (google_user_info['sub'],)
             ).fetchone()
 
+            is_superuser_int = 1 if is_superuser else 0
+
             if user:
-                # Update existing user
+                # Update existing user information and superuser flag
                 conn.execute("""
                     UPDATE users SET 
                         name = ?, 
                         picture_url = ?, 
-                        last_login = CURRENT_TIMESTAMP 
+                        last_login = CURRENT_TIMESTAMP,
+                        is_superuser = ?
                     WHERE google_id = ?
                 """, (
                     google_user_info['name'],
                     google_user_info.get('picture', ''),
+                    is_superuser_int,
                     google_user_info['sub']
                 ))
 
-                # Return updated user data
                 updated_user = conn.execute(
                     "SELECT * FROM users WHERE google_id = ?",
                     (google_user_info['sub'],)
                 ).fetchone()
-                return dict(updated_user)
-            else:
-                # Create new user
-                user_id = str(uuid.uuid4())
-                conn.execute("""
-                    INSERT INTO users (id, google_id, email, name, picture_url)
-                    VALUES (?, ?, ?, ?, ?)
-                """, (
-                    user_id,
-                    google_user_info['sub'],
-                    google_user_info['email'],
-                    google_user_info['name'],
-                    google_user_info.get('picture', '')
-                ))
+                return self._normalize_user_row(updated_user)
 
-                return {
-                    'id': user_id,
-                    'google_id': google_user_info['sub'],
-                    'email': google_user_info['email'],
-                    'name': google_user_info['name'],
-                    'picture_url': google_user_info.get('picture', '')
-                }
+            # Create new user
+            user_id = str(uuid.uuid4())
+            conn.execute("""
+                INSERT INTO users (id, google_id, email, name, picture_url, is_superuser)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (
+                user_id,
+                google_user_info['sub'],
+                google_user_info['email'],
+                google_user_info['name'],
+                google_user_info.get('picture', ''),
+                is_superuser_int
+            ))
+
+            new_user = conn.execute(
+                "SELECT * FROM users WHERE google_id = ?",
+                (google_user_info['sub'],)
+            ).fetchone()
+            return self._normalize_user_row(new_user)
+
 
     def create_session(self, user_id: str, timeout_days: int = 30) -> str:
         """Create a new session for user"""
@@ -374,7 +397,11 @@ class DatabaseManager:
                     WHERE id = ?
                 """, (result['session_id'],))
 
-                return dict(result)
+                user = self._normalize_user_row(result)
+                if user:
+                    user['session_id'] = result['session_id']
+                    user['expires_at'] = result['expires_at']
+                return user
 
         return None
 
@@ -392,7 +419,7 @@ class DatabaseManager:
             conn.row_factory = sqlite3.Row
             result = conn.execute(
                 "SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
-            return dict(result) if result else None
+            return self._normalize_user_row(result)
 
     def get_user_by_email(self, email: str) -> Optional[Dict]:
         """Get user by email"""
@@ -400,7 +427,7 @@ class DatabaseManager:
             conn.row_factory = sqlite3.Row
             result = conn.execute(
                 "SELECT * FROM users WHERE email = ?", (email,)).fetchone()
-            return dict(result) if result else None
+            return self._normalize_user_row(result)
 
     def insert_problem(self, problem_data: Dict):
         """Insert new problem into database with all metadata"""
@@ -714,44 +741,66 @@ class DatabaseManager:
             'has_next': (page * limit) < total
         }
 
-    def toggle_problem_visibility(self, slug: str, author_id: str) -> Optional[bool]:
+    def toggle_problem_visibility(self, slug: str, author_id: Optional[str], force: bool = False) -> Optional[bool]:
         """Toggle problem visibility, returns new visibility state"""
         with sqlite3.connect(self.db_path) as conn:
-            # Verify ownership and get current state
-            result = conn.execute("""
-                SELECT is_public FROM problems 
-                WHERE slug = ? AND author_id = ?
-            """, (slug, author_id)).fetchone()
+            if force or not author_id:
+                result = conn.execute("""
+                    SELECT is_public FROM problems 
+                    WHERE slug = ?
+                """, (slug,)).fetchone()
+            else:
+                result = conn.execute("""
+                    SELECT is_public FROM problems 
+                    WHERE slug = ? AND author_id = ?
+                """, (slug, author_id)).fetchone()
 
             if not result:
                 return None
 
-            # Toggle visibility
-            new_visibility = not result[0]
-            conn.execute("""
-                UPDATE problems 
-                SET is_public = ?, updated_at = CURRENT_TIMESTAMP 
-                WHERE slug = ? AND author_id = ?
-            """, (new_visibility, slug, author_id))
+            current_visibility = result[0] if not isinstance(result, dict) else result['is_public']
+            new_visibility = not current_visibility
+
+            if force or not author_id:
+                conn.execute("""
+                    UPDATE problems 
+                    SET is_public = ?, updated_at = CURRENT_TIMESTAMP 
+                    WHERE slug = ?
+                """, (new_visibility, slug))
+            else:
+                conn.execute("""
+                    UPDATE problems 
+                    SET is_public = ?, updated_at = CURRENT_TIMESTAMP 
+                    WHERE slug = ? AND author_id = ?
+                """, (new_visibility, slug, author_id))
 
             return new_visibility
 
-    def delete_problem(self, slug: str, author_id: str) -> bool:
-        """Delete problem (only by author)"""
+    def delete_problem(self, slug: str, author_id: Optional[str], force: bool = False) -> bool:
+        """Delete problem. Requires author ownership unless force is True"""
         with sqlite3.connect(self.db_path) as conn:
-            # Verify ownership
-            result = conn.execute("""
-                SELECT id FROM problems 
-                WHERE slug = ? AND author_id = ?
-            """, (slug, author_id)).fetchone()
+            if force or not author_id:
+                result = conn.execute("""
+                    SELECT id FROM problems 
+                    WHERE slug = ?
+                """, (slug,)).fetchone()
+            else:
+                result = conn.execute("""
+                    SELECT id FROM problems 
+                    WHERE slug = ? AND author_id = ?
+                """, (slug, author_id)).fetchone()
 
             if not result:
                 return False
 
-            # Delete from database
-            conn.execute(
-                "DELETE FROM problems WHERE slug = ? AND author_id = ?", (slug, author_id))
+            if force or not author_id:
+                conn.execute(
+                    "DELETE FROM problems WHERE slug = ?", (slug,))
+            else:
+                conn.execute(
+                    "DELETE FROM problems WHERE slug = ? AND author_id = ?", (slug, author_id))
             return True
+
 
     def increment_view_count(self, slug: str):
         """Increment view count for public problems"""
@@ -881,3 +930,165 @@ class DatabaseManager:
                 'page': page,
                 'has_next': (page * limit) < total
             }
+
+    def list_all_problems(self, page: int = 1, limit: int = 20, search: Optional[str] = None) -> Dict[str, Any]:
+        """List problems for admin view with author and submission counts"""
+        offset = max(0, (page - 1) * limit)
+        base_where = "WHERE 1=1"
+        params: List[Any] = []
+
+        if search:
+            like = f"%{search}%"
+            base_where += " AND (p.slug LIKE ? OR p.title LIKE ? OR p.tags LIKE ? OR p.difficulty LIKE ? OR IFNULL(u.name,'') LIKE ? OR IFNULL(u.email,'') LIKE ?)"
+            params.extend([like, like, like, like, like, like])
+
+        query = f"""
+            SELECT p.*,
+                   u.name AS author_name,
+                   u.email AS author_email,
+                   u.picture_url AS author_picture,
+                   COUNT(s.id) AS submission_count
+            FROM problems p
+            LEFT JOIN users u ON p.author_id = u.id
+            LEFT JOIN submissions s ON s.problem_slug = p.slug
+            {base_where}
+            GROUP BY p.id
+            ORDER BY p.updated_at DESC
+            LIMIT ? OFFSET ?
+        """
+
+        count_query = f"""
+            SELECT COUNT(*)
+            FROM problems p
+            LEFT JOIN users u ON p.author_id = u.id
+            {base_where}
+        """
+
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            items = conn.execute(query, params + [limit, offset]).fetchall()
+            total = conn.execute(count_query, params).fetchone()[0]
+
+        problems: List[Dict[str, Any]] = []
+        for row in items:
+            problem = dict(row)
+            tags = problem.get('tags')
+            if isinstance(tags, str):
+                try:
+                    problem['tags'] = json.loads(tags)
+                except Exception:
+                    problem['tags'] = []
+            problem['is_public'] = bool(problem.get('is_public'))
+            for date_field in ['created_at', 'updated_at']:
+                value = problem.get(date_field)
+                if value:
+                    try:
+                        problem[date_field] = datetime.fromisoformat(value.replace('Z', '+00:00'))
+                    except Exception:
+                        problem[date_field] = value
+            problems.append(problem)
+
+        return {
+            'items': problems,
+            'total': total,
+            'page': page,
+            'has_next': (page * limit) < total
+        }
+
+    def list_all_users(self, page: int = 1, limit: int = 20, search: Optional[str] = None) -> Dict[str, Any]:
+        """List all users for admin view with problem/submission counts"""
+        offset = max(0, (page - 1) * limit)
+        params: List[Any] = []
+        base_where = "WHERE 1=1"
+        if search:
+            like = f"%{search}%"
+            base_where += " AND (u.name LIKE ? OR u.email LIKE ?)"
+            params.extend([like, like])
+
+        query = f"""
+            SELECT u.*, 
+                   (SELECT COUNT(*) FROM problems p WHERE p.author_id = u.id) AS problem_count,
+                   (SELECT COUNT(*) FROM submissions s WHERE s.user_id = u.id) AS submission_count,
+                   IFNULL(u.picture_url, '') AS picture_url
+            FROM users u
+            {base_where}
+            ORDER BY u.created_at DESC
+            LIMIT ? OFFSET ?
+        """
+        count_query = f"SELECT COUNT(*) FROM users u {base_where}"
+
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            items = conn.execute(query, params + [limit, offset]).fetchall()
+            total = conn.execute(count_query, params).fetchone()[0]
+
+        users: List[Dict[str, Any]] = []
+        for row in items:
+            user = self._normalize_user_row(row)
+            users.append(user)
+
+        return {
+            'items': users,
+            'total': total,
+            'page': page,
+            'has_next': (page * limit) < total
+        }
+
+    def list_all_submissions(self, page: int = 1, limit: int = 20, search: Optional[str] = None) -> Dict[str, Any]:
+        """List submissions across all users for admin view"""
+        offset = max(0, (page - 1) * limit)
+        params: List[Any] = []
+        base_where = "WHERE 1=1"
+        if search:
+            like = f"%{search}%"
+            base_where += (" AND (s.problem_slug LIKE ? OR IFNULL(s.verdict,'') LIKE ? OR IFNULL(s.language,'') LIKE ? \n                           OR IFNULL(u.name,'') LIKE ? OR IFNULL(u.email,'') LIKE ? OR IFNULL(p.title,'') LIKE ?)")
+            params.extend([like, like, like, like, like, like])
+
+        query = f"""
+            SELECT s.*, u.name AS user_name, u.email AS user_email, u.picture_url AS user_picture, p.title AS problem_title
+            FROM submissions s
+            LEFT JOIN users u ON s.user_id = u.id
+            LEFT JOIN problems p ON s.problem_slug = p.slug
+            {base_where}
+            ORDER BY s.created_at DESC
+            LIMIT ? OFFSET ?
+        """
+        count_query = f"""
+            SELECT COUNT(*)
+            FROM submissions s
+            LEFT JOIN users u ON s.user_id = u.id
+            LEFT JOIN problems p ON s.problem_slug = p.slug
+            {base_where}
+        """
+
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            items = conn.execute(query, params + [limit, offset]).fetchall()
+            total = conn.execute(count_query, params).fetchone()[0]
+
+        submissions = [dict(row) for row in items]
+        return {
+            'items': submissions,
+            'total': total,
+            'page': page,
+            'has_next': (page * limit) < total
+        }
+
+    def get_admin_stats(self) -> Dict[str, Any]:
+        """Compute aggregate statistics for admin dashboard"""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            total_users = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+            total_problems = conn.execute("SELECT COUNT(*) FROM problems").fetchone()[0]
+            public_problems = conn.execute("SELECT COUNT(*) FROM problems WHERE is_public = 1").fetchone()[0]
+            private_problems = total_problems - public_problems
+            total_submissions = conn.execute("SELECT COUNT(*) FROM submissions").fetchone()[0]
+            running_submissions = conn.execute("SELECT COUNT(*) FROM submissions WHERE status = 'running'").fetchone()[0]
+        return {
+            'total_users': total_users,
+            'total_problems': total_problems,
+            'public_problems': public_problems,
+            'private_problems': private_problems,
+            'total_submissions': total_submissions,
+            'running_submissions': running_submissions
+        }

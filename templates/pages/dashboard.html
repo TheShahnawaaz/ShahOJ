@@ -4,6 +4,7 @@
 {% block title %}Dashboard - ShahOJ{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 <style>
     :root {
         --primary-color: #007bff;
@@ -767,16 +768,11 @@
                     {% for problem in problems %}
                     <tr style="cursor: pointer;" data-href="{{ url_for('problem_detail', slug=problem.slug) }}">
                         <!-- Problem Title -->
-                        <td data-sort-value="{{ problem.title }}">
-                            <div>
-                                <a href="{{ url_for('problem_detail', slug=problem.slug) }}" 
-                                   class="problem-title-link">
-                                    {{ problem.title }}
-                                </a>
-                                <div class="problem-slug">
-                                    <i class="fas fa-hashtag"></i> {{ problem.slug }}
-                                </div>
-                            </div>
+                        <td data-sort-value="{{ problem.title or problem.slug }}">
+                            <a href="{{ url_for('problem_detail', slug=problem.slug) }}" class="admin-problem-link">
+                                <span class="problem-title">{{ problem.title or problem.slug }}</span>
+                                <span class="problem-slug">#{{ problem.slug }}</span>
+                            </a>
                         </td>
                         
                         <!-- Difficulty -->
@@ -805,10 +801,9 @@
                         <td data-sort-value="{{ author_info[problem.author_id].name if author_info and author_info.get(problem.author_id) else 'Unknown' }}">
                             {% if author_info and author_info.get(problem.author_id) %}
                             {% set author = author_info[problem.author_id] %}
-                            <div class="author-info">
-                                <img src="{{ author.picture_url }}" alt="{{ author.name }}" 
-                                     class="author-avatar">
-                                <span class="author-name">{{ author.name }}</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <img src="{{ author.picture_url or url_for('static', filename='images/ShahOJLogo.png') }}" alt="{{ author.name }}" class="admin-avatar-sm">
+                                <span class="meta-primary">{{ author.name }}</span>
                             </div>
                             {% else %}
                             <span class="text-muted">Unknown</span>
@@ -817,24 +812,24 @@
                         
                         <!-- Published Date -->
                         <td data-sort-value="{{ problem.created_at.isoformat() if problem.created_at else '' }}">
-                            <div class="date-info">
-                                <i class="fas fa-calendar-alt"></i>
-                                <span>{{ problem.created_at.strftime('%b %d, %Y') if problem.created_at else 'Recently' }}</span>
+                            <div class="admin-meta-cell">
+                                <i class="fas fa-calendar-alt text-primary"></i>
+                                <span class="meta-primary">{{ problem.created_at.strftime('%b %d, %Y') if problem.created_at else 'Recently' }}</span>
                             </div>
                         </td>
                         
                         <!-- Views -->
                         <td data-sort-value="{{ problem.view_count or 0 }}">
-                            <div class="views-info">
-                                <i class="fas fa-eye"></i>
-                                <span>{{ problem.view_count or 0 }}</span>
+                            <div class="admin-meta-cell">
+                                <i class="fas fa-eye text-info"></i>
+                                <span class="meta-primary">{{ problem.view_count or 0 }}</span>
                             </div>
                         </td>
                         <!-- Submissions -->
                         <td data-sort-value="{{ problem.submission_count or 0 }}">
-                            <div class="views-info">
-                                <i class="fas fa-paper-plane"></i>
-                                <span>{{ problem.submission_count or 0 }}</span>
+                            <div class="admin-meta-cell">
+                                <i class="fas fa-paper-plane text-success"></i>
+                                <span class="meta-primary">{{ problem.submission_count or 0 }}</span>
                             </div>
                         </td>
                     </tr>

@@ -1,0 +1,141 @@
+{% extends "layouts/base.html" %}
+{% from "layouts/components.html" import admin_nav %}
+
+{% block title %}Admin · Problems - ShahOJ{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 admin-page">
+    {{ admin_nav('problems') }}
+
+    <div class="admin-section">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+            <h3 class="mb-0"><i class="fas fa-search text-primary"></i> Problem Directory</h3>
+            <div class="admin-search">
+                <form method="GET" class="d-flex align-items-center gap-2">
+                    <input type="text" class="form-control form-control-sm" name="search" value="{{ search }}" placeholder="Search slug, title, author, difficulty...">
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+                    {% if search %}
+                    <a href="{{ url_for('admin_problems') }}" class="btn btn-outline-secondary btn-sm">Clear</a>
+                    {% endif %}
+                </form>
+                {% if pagination.total > 0 %}
+                <small class="text-muted">Showing {{ problems|length }} of {{ pagination.total }}</small>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if problems %}
+        <div class="admin-table-wrapper">
+            <table class="table table-hover" id="admin-problems-table">
+                <thead>
+                    <tr>
+                        <th class="sortable-header" data-column="title" data-type="text"><i class="fas fa-sort me-1"></i>Title</th>
+                        <th class="sortable-header" data-column="slug" data-type="text"><i class="fas fa-sort me-1"></i>Slug</th>
+                        <th class="sortable-header" data-column="author" data-type="text"><i class="fas fa-sort me-1"></i>Author</th>
+                        <th class="sortable-header" data-column="visibility" data-type="text"><i class="fas fa-sort me-1"></i>Visibility</th>
+                        <th class="sortable-header" data-column="submissions" data-type="number"><i class="fas fa-sort me-1"></i>Submissions</th>
+                        <th class="sortable-header" data-column="updated" data-type="date"><i class="fas fa-sort me-1"></i>Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for problem in problems %}
+                    <tr>
+                        <td data-sort-value="{{ problem.title or problem.slug }}">
+                            <a href="{{ url_for('problem_detail', slug=problem.slug) }}" class="admin-problem-link">
+                                <span class="problem-title">{{ problem.title or problem.slug }}</span>
+                                <span class="problem-slug">#{{ problem.slug }}</span>
+                            </a>
+                        </td>
+                        <td data-sort-value="{{ problem.slug }}">{{ problem.slug }}</td>
+                        <td data-sort-value="{{ problem.author_display }}">
+                            <div class="d-flex align-items-center gap-2">
+                                <img src="{{ problem.author_picture or url_for('static', filename='images/ShahOJLogo.png') }}" alt="{{ problem.author_display }}" class="admin-avatar-sm">
+                                <div class="d-flex flex-column">
+                                    <span>{{ problem.author_display }}</span>
+                                    {% if problem.author_email %}<small class="text-muted">{{ problem.author_email }}</small>{% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td data-sort-value="{{ 'Public' if problem.is_public else 'Private' }}">
+                            {% if problem.is_public %}
+                                <span class="badge bg-success">Public</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Private</span>
+                            {% endif %}
+                        </td>
+                        <td data-sort-value="{{ problem.submission_count }}">
+                            <div class="admin-meta-cell">
+                                <i class="fas fa-paper-plane text-success"></i>
+                                <span class="meta-primary">{{ problem.submission_count }}</span>
+                            </div>
+                        </td>
+                        <td data-sort-value="{{ problem.updated_display }}">
+                            <div class="admin-meta-cell">
+                                <i class="fas fa-clock text-primary"></i>
+                                <span class="meta-primary">{{ problem.updated_display or '—' }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('problem_detail', slug=problem.slug) }}" class="btn btn-sm btn-outline-primary" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('edit_problem_page', slug=problem.slug) }}" class="btn btn-sm btn-outline-secondary" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{{ url_for('admin_submissions', search=problem.slug) }}" class="btn btn-sm btn-outline-success" title="View submissions">
+                                    <i class="fas fa-paper-plane"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if pagination.total_pages > 1 %}
+        <nav aria-label="Problems pagination" class="mt-3">
+            <ul class="pagination justify-content-center">
+                {% if pagination.current_page > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin_problems', page=pagination.current_page-1, search=search or None) }}"><i class="fas fa-chevron-left"></i></a>
+                </li>
+                {% endif %}
+                {% set start_page = [1, pagination.current_page - 2]|max %}
+                {% set end_page = [pagination.total_pages + 1, pagination.current_page + 3]|min %}
+                {% for page_num in range(start_page, end_page) %}
+                <li class="page-item {{ 'active' if page_num == pagination.current_page else '' }}">
+                    <a class="page-link" href="{{ url_for('admin_problems', page=page_num, search=search or None) }}">{{ page_num }}</a>
+                </li>
+                {% endfor %}
+                {% if pagination.current_page < pagination.total_pages %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin_problems', page=pagination.current_page+1, search=search or None) }}"><i class="fas fa-chevron-right"></i></a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <p class="text-muted mb-0">No problems found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/table-sorter.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('admin-problems-table')) {
+        new TableSorter('admin-problems-table');
+    }
+});
+</script>
+{% endblock %}

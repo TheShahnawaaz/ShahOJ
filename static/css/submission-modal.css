@@ -13,7 +13,7 @@
 
 #sharedSubmissionModal .modal-header,
 .submission-modal-header {
-    background: linear-gradient(135deg, var(--primary-color), #0056b3);
+    background: linear-gradient(135deg, var(--primary-color, #007bff), #0056b3);
     color: white;
     border-bottom: none;
     border-radius: 12px 12px 0 0;
@@ -22,7 +22,7 @@
 
 [data-theme="dark"] #sharedSubmissionModal .modal-header,
 [data-theme="dark"] .submission-modal-header {
-    background: linear-gradient(135deg, var(--btn-primary), #094766);
+    background: linear-gradient(135deg, var(--btn-primary, #0e639c), #094766);
 }
 
 #sharedSubmissionModal .modal-title,

@@ -254,6 +254,15 @@ float_abs_tol: 1e-6       # For floating-point problems
 spj_exec: "path/to/spj"    # For special judge
 ```
 
+### Superuser Accounts
+
+Superusers are site owners with full access to every problem (edit, delete, toggle visibility, manage tests, and view any submission). Configure them by either:
+
+- Adding email addresses under `security.superusers` in `config.yaml`
+- Setting the `POCKETOJ_SUPERUSERS` environment variable (comma-separated emails)
+
+On login, any matching Google account automatically gains superuser privileges.
+
 ## Checker Types
 
 - **diff**: Exact string matching (whitespace trimmed)

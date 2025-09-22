@@ -3,6 +3,7 @@
 {% block title %}My Submissions - ShahOJ{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/submission-modal.css') }}">
 <style>
     :root {
@@ -659,24 +660,28 @@
                             </span>
                         </td>
                         <td data-sort-value="{{ submission.created_at or '' }}">
-                            <span class="submission-time" data-timestamp="{{ submission.created_at or '' }}">
-                                {% if submission.created_at %}
-                                    {{ submission.created_at[:19] | replace('T', ' ') }}
-                                {% else %}
-                                    Recently
-                                {% endif %}
-                            </span>
+                            <div class="admin-meta-cell submission-time" data-timestamp="{{ submission.created_at or '' }}">
+                                <i class="fas fa-clock text-primary"></i>
+                                <span class="meta-primary">{% if submission.created_at %}{{ submission.created_at[:19] | replace('T', ' ') }}{% else %}Recently{% endif %}</span>
+                            </div>
                         </td>
                         <td data-sort-value="{{ submission.problem_slug }}">
-                            <a href="{{ url_for('problem_detail', slug=submission.problem_slug) }}" class="text-decoration-none">
-                                {{ submission.problem_slug }}
+                            <a href="{{ url_for('problem_detail', slug=submission.problem_slug) }}" class="admin-problem-link">
+                                <span class="problem-title">{{ submission.problem_title or submission.problem_slug }}</span>
+                                <span class="problem-slug">#{{ submission.problem_slug }}</span>
                             </a>
                         </td>
                         <td data-sort-value="{{ (submission.language or '').upper() }}">
-                            {{ (submission.language or '').upper() }}
+                            <div class="admin-meta-cell">
+                                <i class="fas fa-code text-secondary"></i>
+                                <span class="meta-primary">{{ (submission.language or '').upper() or '—' }}</span>
+                            </div>
                         </td>
                         <td data-sort-value="{{ submission.time_ms or 0 }}">
-                            {{ submission.time_ms or '—' }}
+                            <div class="admin-meta-cell">
+                                <i class="fas fa-stopwatch text-warning"></i>
+                                <span class="meta-primary">{{ submission.time_ms or '—' }} ms</span>
+                            </div>
                         </td>
                         <td>
                             <button class="btn btn-sm btn-outline-primary" data-id="{{ submission.id }}">
@@ -839,7 +844,8 @@ function formatTableTimestamps() {
         if (timestamp) {
             const formatted = formatTime(timestamp);
             if (formatted && formatted !== timestamp) {
-                span.textContent = formatted;
+                const target = span.querySelector('.meta-primary') || span;
+                target.textContent = formatted;
             }
         }
     });

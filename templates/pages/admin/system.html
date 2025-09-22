@@ -1,0 +1,82 @@
+{% extends "layouts/base.html" %}
+{% from "layouts/components.html" import admin_nav %}
+
+{% block title %}Admin · System Health - ShahOJ{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<style>
+    .health-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+    }
+    .health-card {
+        border-radius: var(--admin-border-radius);
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+        padding: 1.25rem;
+        box-shadow: var(--admin-card-shadow);
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .health-card .status-ok { color: #28a745; }
+    .health-card .status-fail { color: #dc3545; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 admin-page">
+    {{ admin_nav('system') }}
+
+    <div class="admin-section">
+        <h3><i class="fas fa-chart-line text-primary"></i> Platform Stats</h3>
+        <div class="admin-stat-grid">
+            <div class="admin-stat-card">
+                <span class="stat-title"><i class="fas fa-users me-2 text-primary"></i>Total Users</span>
+                <span class="stat-value">{{ stats.total_users }}</span>
+            </div>
+            <div class="admin-stat-card">
+                <span class="stat-title"><i class="fas fa-book me-2 text-success"></i>Total Problems</span>
+                <span class="stat-value">{{ stats.total_problems }}</span>
+            </div>
+            <div class="admin-stat-card">
+                <span class="stat-title"><i class="fas fa-unlock me-2 text-info"></i>Public Problems</span>
+                <span class="stat-value">{{ stats.public_problems }}</span>
+                <span class="admin-meta">{{ stats.private_problems }} private</span>
+            </div>
+            <div class="admin-stat-card">
+                <span class="stat-title"><i class="fas fa-paper-plane me-2 text-warning"></i>Total Submissions</span>
+                <span class="stat-value">{{ stats.total_submissions }}</span>
+                <span class="admin-meta">{{ stats.running_submissions }} running</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-section">
+        <h3><i class="fas fa-stethoscope text-success"></i> Service Checks</h3>
+        <div class="health-grid">
+            <div class="health-card">
+                <h5 class="mb-1"><i class="fas fa-database me-2"></i>Database</h5>
+                <span class="{{ 'status-ok' if health.database else 'status-fail' }}">
+                    {% if health.database %}Operational{% else %}Unavailable{% endif %}
+                </span>
+            </div>
+            <div class="health-card">
+                <h5 class="mb-1"><i class="fas fa-user-lock me-2"></i>Authentication</h5>
+                <span class="{{ 'status-ok' if health.auth else 'status-fail' }}">
+                    {% if health.auth %}Ready{% else %}Unavailable{% endif %}
+                </span>
+            </div>
+            <div class="health-card">
+                <h5 class="mb-1"><i class="fas fa-folder-open me-2"></i>Problem Files</h5>
+                <span class="{{ 'status-ok' if health.files else 'status-fail' }}">
+                    {% if health.files %}Accessible{% else %}Permission issue{% endif %}
+                </span>
+                <small class="text-muted">{{ problems_dir }}</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

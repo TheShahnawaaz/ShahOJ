@@ -193,3 +193,24 @@
     <small class="text-muted">Total Test Cases</small>
 </div>
 {% endmacro %}
+
+{# Admin navigation component #}
+{% macro admin_nav(active) %}
+<div class="admin-subnav nav nav-pills mb-4">
+    <a class="nav-link {{ 'active' if active == 'overview' else '' }}" href="{{ url_for('admin_dashboard') }}">
+        <i class="fas fa-home me-1"></i>Overview
+    </a>
+    <a class="nav-link {{ 'active' if active == 'problems' else '' }}" href="{{ url_for('admin_problems') }}">
+        <i class="fas fa-layer-group me-1"></i>Problems
+    </a>
+    <a class="nav-link {{ 'active' if active == 'users' else '' }}" href="{{ url_for('admin_users') }}">
+        <i class="fas fa-user-friends me-1"></i>Users
+    </a>
+    <a class="nav-link {{ 'active' if active == 'submissions' else '' }}" href="{{ url_for('admin_submissions') }}">
+        <i class="fas fa-paper-plane me-1"></i>Submissions
+    </a>
+    <a class="nav-link {{ 'active' if active == 'system' else '' }}" href="{{ url_for('admin_system') }}">
+        <i class="fas fa-heartbeat me-1"></i>System
+    </a>
+</div>
+{% endmacro %}
