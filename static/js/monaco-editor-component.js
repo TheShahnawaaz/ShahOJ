@@ -17,6 +17,7 @@ class MonacoEditorComponent {
             showMinimap: config.showMinimap !== false, // Default true
             readOnly: config.readOnly || false,
             fontSize: config.fontSize || 14,
+            disableAutoSave: !!config.disableAutoSave,
             ...config.monacoOptions // Allow custom Monaco options
         };
         
