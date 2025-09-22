@@ -592,7 +592,8 @@ function showAlert(type, message) {
     `;
     
     // Insert alert at top of page
-    const container = document.querySelector('.container-fluid');
+    const container = document.querySelectorAll('.container-fluid');
+    console.log(container);
     container.insertAdjacentHTML('afterbegin', alertHtml);
     
     // Auto-remove after 5 seconds
