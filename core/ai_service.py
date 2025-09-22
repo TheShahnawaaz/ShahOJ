@@ -286,57 +286,99 @@ if __name__ == '__main__':
 Generate ONLY the Python code without any explanation, markdown formatting, or code blocks. Return raw code that can be directly saved to a file.
 """
 
-    def _build_spj_prompt(self, problem_statement: str) -> str:
-        """Build prompt for special judge creation"""
-        return f"""
-Based on the following problem statement, generate a C++ Special Judge (SPJ) using testlib.h that follows ShahOJ standards.
 
-PROBLEM STATEMENT:
+    def _build_spj_prompt(self, problem_statement: str) -> str:
+        """Build prompt for special judge creation (compact but detailed)."""
+        return f"""
+Generate a single C++ Special Judge (SPJ) source file for ShahOJ using testlib.h.
+Your response MUST be ONLY raw C++ code (no markdown, no prose).
+
+PROBLEM:
 {problem_statement}
 
-REQUIREMENTS:
-1. Follow the standard SPJ interface using testlib.h:
-```cpp
+MANDATORY INTERFACE:
+- Use C++17 and:  #include "testlib.h"
+- Boilerplate:
+  using namespace std;
+  int main(int argc, char* argv[]) {{
+      registerTestlibCmd(argc, argv);
+      // read inf (and ans if needed), read ouf, validate, then quitf(...)
+      return 0;
+  }}
+
+ALLOWED APIS (STRICT):
+- Read from inf/ans/ouf: readInt, readLongLong, readDouble, readString, readToken, readChar, readLine
+- Use ouf.seekEof() to detect extra output at end
+- Use quitf(_ok, ...), quitf(_wa, ...), quitf(_pe, ...)
+- Do NOT use: ouf.isEof(), eof_exception, vtoa, undocumented APIs
+
+GENERAL RULES:
+- Parse the full input from inf; build any canonical model or expected reference as needed
+  (or read golden data from ans only if that makes sense for the problem).
+- Parse participant output from ouf:
+  * If fixed token counts: read exact counts with readInt/readToken loops.
+  * If variable per line (e.g., “one level per line”): use readLine() + stringstream.
+  * If non-integer where integer is expected ⇒ _pe.
+  * Enforce value bounds, counts, uniqueness, structure, and constraints.
+- Multiple valid answers:
+  * If order within groups is arbitrary → sort both sides before compare.
+  * If multiplicity matters → compare multisets.
+  * If any optimal solution is allowed → verify feasibility and optimality metric (not structure).
+- Floating-point: only if problem states tolerance; otherwise treat outputs as exact. If needed:
+  const double EPS = 1e-6;  // or as specified by the problem
+  if (fabs(a - b) > EPS) → _wa with a clear message.
+- After finishing expected reads, enforce:
+  if (!ouf.seekEof()) quitf(_wa, "Extra output detected.");
+- Messages: concise and precise (“level 2 mismatch: expected [...], got [...]”, “node 7 out of range [1..n]”, etc.)
+  Avoid dumping huge arrays—truncate long vectors in diagnostics.
+
+PERFORMANCE & ROBUSTNESS:
+- Respect input limits; avoid recursion where deep structures exist.
+- Use long long for values that may exceed 32-bit.
+- Do not print anything except via quitf.
+
+SUGGESTED SKELETON (customize for problem):
 #include "testlib.h"
+#include <bits/stdc++.h>
 using namespace std;
+
+static string vecToString(const vector<int>& a) {{
+    const size_t LIM = 50;
+    ostringstream oss; oss << "[";
+    for (size_t i = 0; i < a.size() && i < LIM; ++i) {{
+        if (i) oss << ", ";
+        oss << a[i];
+    }}
+    if (a.size() > LIM) oss << ", ... (total " << a.size() << ")";
+    oss << "]";
+    return oss.str();
+}}
 
 int main(int argc, char* argv[]) {{
     registerTestlibCmd(argc, argv);
-    
-    // Read input file (inf)
-    // Read participant output (ouf)  
-    // Read expected answer (ans) - optional
-    
-    // Validation logic
-    
-    if (/* answer is correct */) {{
-        quitf(_ok, "Correct answer");
-    }} else {{
-        quitf(_wa, "Wrong answer: reason");
+
+    // 1) Read input (inf) and build expected model
+    //    e.g., parse n, edges, compute BFS levels, shortest paths, etc.
+
+    // 2) Read participant output (ouf)
+    //    - Use readInt/readToken for fixed counts
+    //    - Or readLine() + stringstream for variable-per-line formats
+    //    - Validate tokens: bounds, duplicates, structure
+
+    // 3) Validate semantics
+    //    - Handle multiple valid answers via sorting/multisets/canonical checks
+    //    - For floating-point, compare with EPS only if required by the problem
+
+    // 4) Check for extra output
+    if (!ouf.seekEof()) {{
+        quitf(_wa, "Extra output detected.");
     }}
-    
-    return 0;
+
+    quitf(_ok, "Correct answer");
 }}
-```
 
-2. Use testlib.h functions for input/output:
-   - inf.readInt(), inf.readLong(), inf.readDouble(), inf.readString()
-   - ouf.readInt(), ouf.readLong(), ouf.readDouble(), ouf.readString()
-   - ouf.seekEof() to check for extra output
-   - quitf(_ok, message) for correct answers
-   - quitf(_wa, message) for wrong answers
-   - quitf(_pe, message) for presentation errors
-
-3. Read the problem input to understand constraints
-4. Read and validate participant output format
-5. Implement logic to check if the answer is correct
-6. Handle multiple valid answers if applicable
-7. Provide clear feedback messages
-8. Check for extra tokens or missing output
-9. Use appropriate data types for large numbers
-10. Include comments explaining the validation logic
-
-Generate ONLY the C++ code without any explanation, markdown formatting, or code blocks. Return raw code that can be directly saved to a file.
+OUTPUT NOW:
+Return ONLY the C++ code implementing the SPJ for this problem, following the rules above.
 """
 
     def _build_statement_polish_prompt(self, raw_statement: str) -> str:
