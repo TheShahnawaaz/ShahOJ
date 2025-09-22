@@ -10,6 +10,7 @@ from core.config import config
 from core.problem_manager import ProblemManager
 from core.unified_problem_manager import UnifiedProblemManager
 from core.time_utils import format_ist, to_ist_iso
+from core.jobs import run_auto_build_workflow
 from flask import Flask, render_template, jsonify, request, redirect, url_for, flash, send_from_directory, g
 import os
 import sys
@@ -1739,6 +1740,25 @@ def get_problem_statement_api(slug):
             'success': False,
             'error': f'Error loading statement: {str(e)}'
         }), 500
+
+
+@app.route('/api/problem/<slug>/ai-auto-build', methods=['POST'])
+@require_problem_access('edit')
+def ai_auto_build(slug):
+    """Run AI auto-build synchronously and return the summary."""
+    try:
+        problem = unified_problem_manager.get_problem(slug)
+        if not problem:
+            return jsonify({'success': False, 'error': 'Problem not found'}), 404
+
+        data = request.get_json() or {}
+        options = data.get('options') or {}
+
+        summary = run_auto_build_workflow(slug, options)
+        return jsonify({'success': True, 'summary': summary})
+    except Exception as exc:
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(exc)}), 500
 
 
 @app.route('/api/problem/<slug>/ai-generate', methods=['POST'])

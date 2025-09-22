@@ -188,6 +188,331 @@
         font-weight: 500;
     }
 
+    .auto-build-panel {
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        background: var(--card-bg);
+        box-shadow: var(--box-shadow);
+        margin-bottom: 1.5rem;
+        color: var(--text-primary);
+        transition: var(--transition);
+    }
+
+    .auto-build-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.85rem 1.1rem;
+        background: var(--secondary-bg);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .auto-build-status {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .auto-build-status strong {
+        font-size: 0.95rem;
+    }
+
+    .auto-build-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .auto-build-body {
+        padding: 1rem 1.1rem 1.25rem 1.1rem;
+    }
+
+    .auto-build-progress .progress {
+        height: 0.55rem;
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 999px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+
+    [data-theme="dark"] .auto-build-progress .progress {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .auto-build-progress .progress-bar {
+        background: linear-gradient(135deg, var(--btn-primary), #0a83d8);
+    }
+
+    .auto-build-steps {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+
+    .auto-build-step {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding-left: 0.6rem;
+        border-left: 3px solid var(--border-color);
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+
+    .auto-build-step.completed {
+        border-left-color: var(--success-color);
+        color: var(--success-color);
+    }
+
+    .auto-build-step.active {
+        border-left-color: var(--btn-primary);
+        color: var(--btn-primary);
+        font-weight: 600;
+    }
+
+    .auto-build-step.failed {
+        border-left-color: var(--danger-color);
+        color: var(--danger-color);
+        font-weight: 600;
+    }
+
+    .auto-build-step small {
+        color: inherit;
+        opacity: 0.8;
+        font-size: 0.8rem;
+    }
+
+    .auto-build-message {
+        margin-top: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .auto-build-summary {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        background: rgba(40, 167, 69, 0.08);
+        border: 1px solid rgba(40, 167, 69, 0.2);
+    }
+
+    .auto-build-summary.failed {
+        background: rgba(220, 53, 69, 0.08);
+        border-color: rgba(220, 53, 69, 0.25);
+    }
+
+    .auto-build-summary .alert-info {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: #ffffff;
+    }
+
+    [data-theme="dark"] .auto-build-summary .alert-info {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: #ffffff;
+    }
+
+    .auto-build-summary h6 {
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        position: sticky;
+        top: 0;
+        padding-bottom: 0.5rem;
+        background: inherit;
+    }
+
+    .auto-build-summary-details {
+        margin-left: 1.75rem;
+        margin-top: 0.35rem;
+        margin-bottom: 0.35rem;
+        padding-left: 0.75rem;
+        border-left: 2px solid rgba(0,0,0,0.1);
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        line-height: 1.45;
+    }
+
+    [data-theme="dark"] .auto-build-summary-details {
+        border-left-color: rgba(255,255,255,1);
+    }
+
+    .auto-build-summary-details strong {
+        color: var(--text-primary);
+    }
+
+    .auto-build-summary-detail-row {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 0.35rem;
+        flex-wrap: wrap;
+    }
+
+    .auto-build-summary-detail-label {
+        font-weight: 600;
+        min-width: 90px;
+    }
+
+    .auto-build-summary-detail-value {
+        flex: 1;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    #autoBuildConfigModal .auto-build-option-card {
+        position: relative;
+        display: block;
+        padding: 1.25rem 3.25rem 1.35rem 1.5rem;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: var(--bs-card-bg, rgba(32, 37, 48, 0.9));
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+        cursor: pointer;
+        height: 100%;
+        overflow: hidden;
+        min-height: 136px;
+    }
+
+    #autoBuildConfigModal .auto-build-option-card:hover,
+    #autoBuildConfigModal .auto-build-option-card:focus-within {
+        transform: translateY(-2px);
+        border-color: rgba(13, 110, 253, 0.55);
+        box-shadow: 0 16px 32px rgba(13, 110, 253, 0.15);
+    }
+
+    #autoBuildConfigModal .auto-build-option-card.selected {
+        border-color: rgba(13, 110, 253, 0.7);
+        background: linear-gradient(135deg, rgba(13, 110, 253, 0.14), rgba(13, 110, 253, 0.04));
+        box-shadow: 0 18px 40px rgba(13, 110, 253, 0.25);
+    }
+
+    #autoBuildConfigModal .auto-build-option-card input.auto-build-option-input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    #autoBuildConfigModal .auto-build-option-content h6 {
+        font-weight: 700;
+        font-size: 1.05rem;
+        margin-bottom: 0.4rem;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    #autoBuildConfigModal .auto-build-option-content p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.68);
+        line-height: 1.45;
+    }
+
+    #autoBuildConfigModal .auto-build-option-card.selected .auto-build-option-content p {
+        color: rgba(255, 255, 255, 0.82);
+    }
+
+    #autoBuildConfigModal .auto-build-option-indicator {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.35);
+        transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    }
+
+    #autoBuildConfigModal .auto-build-option-card:hover .auto-build-option-indicator {
+        background: rgba(13, 110, 253, 0.15);
+        color: rgba(13, 110, 253, 0.65);
+    }
+
+    #autoBuildConfigModal .auto-build-option-card.selected .auto-build-option-indicator {
+        background: rgba(13, 110, 253, 0.85);
+        color: #fff;
+        transform: scale(1.05);
+        box-shadow: 0 8px 18px rgba(13, 110, 253, 0.35);
+    }
+
+    #autoBuildConfigModal .auto-build-option-card.disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    #autoBuildConfigModal .auto-build-option-card.disabled:hover {
+        transform: none;
+        box-shadow: none;
+    }
+
+    [data-theme="light"] #autoBuildConfigModal .auto-build-option-card {
+        background: rgba(246, 248, 252, 0.96);
+        border-color: rgba(23, 43, 77, 0.1);
+    }
+
+    [data-theme="light"] #autoBuildConfigModal .auto-build-option-card.selected {
+        background: linear-gradient(135deg, rgba(13, 110, 253, 0.16), rgba(13, 110, 253, 0.05));
+        border-color: rgba(13, 110, 253, 0.55);
+    }
+
+    [data-theme="light"] #autoBuildConfigModal .auto-build-option-content p {
+        color: rgba(17, 24, 39, 0.68);
+    }
+
+    [data-theme="light"] #autoBuildConfigModal .auto-build-option-card.selected .auto-build-option-content p {
+        color: rgba(17, 24, 39, 0.84);
+    }
+
+    [data-theme="light"] #autoBuildConfigModal .auto-build-option-indicator {
+        background: rgba(17, 24, 39, 0.08);
+        color: rgba(17, 24, 39, 0.45);
+    }
+
+    [data-theme="light"] #autoBuildConfigModal .auto-build-option-card.selected .auto-build-option-indicator {
+        background: rgba(13, 110, 253, 0.9);
+        color: #fff;
+    }
+
+    #autoBuildTestOptions.auto-build-test-grid {
+        display: flex;
+        gap: 1rem;
+    }
+
+    #autoBuildTestOptions.auto-build-test-grid .col-auto {
+        flex: 1;
+    }
+
+    #autoBuildTestOptions.auto-build-test-grid .form-control {
+        width: 100%;
+    }
+
+    #autoBuildTestOptions .form-text {
+        color: var(--text-secondary);
+    }
+
+    [data-theme="dark"] #autoBuildTestOptions .form-text {
+        color: rgba(255, 255, 255, 0.65);
+    }
+
+    .auto-build-footer {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .auto-build-footer .btn {
+        min-width: 140px;
+    }
+
     /* Enhanced Editor Container */
     .editor-container { background: var(--card-bg); border-radius: var(--border-radius); box-shadow: var(--box-shadow); overflow: hidden; color: var(--text-primary); }
 
@@ -598,6 +923,7 @@
         'Edit Problem',
         problem.config.get('title') or problem.slug,
         [
+            {'text': 'AI Auto-Build', 'icon': 'fas fa-rocket', 'class': 'btn-primary btn-lg', 'id': 'autoBuildLaunchBtn'},
             {'text': 'Save All Changes', 'icon': 'fas fa-save', 'class': 'btn-light', 'id': 'saveAllBtn'},
             {'text': 'Discard Changes', 'icon': 'fas fa-undo', 'class': 'btn-light', 'onclick': 'location.reload()'},
             {'text': 'Back to Problem', 'icon': 'fas fa-arrow-left', 'class': 'btn-light', 'onclick': "location.href='" + url_for('problem_detail', slug=problem.slug) + "'"}
@@ -737,6 +1063,31 @@
 
         <!-- Enhanced File Editor -->
         <div class="col-lg-9 col-md-8">
+            <div class="file-content mb-3" id="auto-build-card" style="display: none;">
+                <div class="editor-container auto-build-card" id="autoBuildPanel">
+                    <div class="editor-header auto-build-header">
+                        <div class="auto-build-status">
+                            <strong>Auto-Build Status</strong>
+                            <span id="autoBuildStatusText" class="text-muted">Idle</span>
+                        </div>
+                        <div class="auto-build-actions">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="autoBuildReloadBtn" style="display: none;">
+                                <i class="fas fa-sync"></i> Reload Page
+                            </button>
+                        </div>
+                    </div>
+                    <div class="auto-build-body">
+                        <div class="auto-build-progress">
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" id="autoBuildProgressBar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                        <ul class="auto-build-steps" id="autoBuildStepList"></ul>
+                        <div class="auto-build-message" id="autoBuildMessage"></div>
+                        <div class="auto-build-summary" id="autoBuildSummary" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
             
             <!-- Configuration Editor -->
             <div class="file-content active" id="config-content">
@@ -745,7 +1096,6 @@
                         <h5 class="editor-title">
                             <i class="fas fa-cog text-primary"></i> Problem Configuration
                         </h5>
-
                     </div>
                     <div class="config-grid">
                         <!-- Basic Information -->
@@ -1061,6 +1411,109 @@
         <!-- Save status messages -->
     </div>
 
+    <!-- Auto-Build Configuration Modal -->
+    <div class="modal fade" id="autoBuildConfigModal" tabindex="-1" aria-labelledby="autoBuildConfigLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="autoBuildConfigLabel"><i class="fas fa-rocket"></i> AI Auto-Build</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="autoBuildConfigForm">
+                    <div class="modal-body">
+                        <p class="text-muted">Select which artifacts the AI should generate. You can fine-tune test counts and toggle optional components.</p>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="auto-build-option-card" data-option-card>
+                                    <input class="auto-build-option-input" type="checkbox" id="autoBuildStatementCheckbox" checked>
+                                    <div class="auto-build-option-content">
+                                        <h6><i class="fas fa-sparkles"></i> Polish problem statement</h6>
+                                        <p>Use AI to clean up and standardise your Markdown statement.</p>
+                                    </div>
+                                    <span class="auto-build-option-indicator"><i class="fas fa-check"></i></span>
+                                </label>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="auto-build-option-card" data-option-card>
+                                    <input class="auto-build-option-input" type="checkbox" id="autoBuildSolutionCheckbox" checked>
+                                    <div class="auto-build-option-content">
+                                        <h6><i class="fas fa-code"></i> Generate reference solution</h6>
+                                        <p>Create a Python solution stub tailored to your statement.</p>
+                                    </div>
+                                    <span class="auto-build-option-indicator"><i class="fas fa-check"></i></span>
+                                </label>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="auto-build-option-card" data-option-card>
+                                    <input class="auto-build-option-input" type="checkbox" id="autoBuildGeneratorCheckbox" checked>
+                                    <div class="auto-build-option-content">
+                                        <h6><i class="fas fa-random"></i> Generate test generator</h6>
+                                        <p>Produce a Python script that emits randomised testcases.</p>
+                                    </div>
+                                    <span class="auto-build-option-indicator"><i class="fas fa-check"></i></span>
+                                </label>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="auto-build-option-card" data-option-card>
+                                    <input class="auto-build-option-input" type="checkbox" id="autoBuildValidatorCheckbox">
+                                    <div class="auto-build-option-content">
+                                        <h6><i class="fas fa-shield-alt"></i> Generate input validator</h6>
+                                        <p>Ensure <code>Enable Validation</code> is switched on before running.</p>
+                                    </div>
+                                    <span class="auto-build-option-indicator"><i class="fas fa-check"></i></span>
+                                </label>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="auto-build-option-card" data-option-card>
+                                    <input class="auto-build-option-input" type="checkbox" id="autoBuildSpjCheckbox">
+                                    <div class="auto-build-option-content">
+                                        <h6><i class="fas fa-gavel"></i> Generate special judge (SPJ)</h6>
+                                        <p>Creates a C++ checker using <code>testlib</code>.</p>
+                                    </div>
+                                    <span class="auto-build-option-indicator"><i class="fas fa-check"></i></span>
+                                </label>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="auto-build-option-card" data-option-card>
+                                    <input class="auto-build-option-input" type="checkbox" id="autoBuildTestsCheckbox" checked>
+                                    <div class="auto-build-option-content">
+                                        <h6><i class="fas fa-vials"></i> Generate testcases</h6>
+                                        <p>Runs the generator to populate samples/system tests.</p>
+                                    </div>
+                                    <span class="auto-build-option-indicator"><i class="fas fa-check"></i></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="row g-3 align-items-end auto-build-test-grid" id="autoBuildTestOptions">
+                            <div class="col-auto">
+                                <label class="form-label" for="autoBuildSamplesInput">Sample tests</label>
+                                <input type="number" class="form-control" id="autoBuildSamplesInput" min="0" max="10" value="3">
+                                <div class="form-text">Number of sample cases to regenerate.</div>
+                            </div>
+                            <div class="col-auto">
+                                <label class="form-label" for="autoBuildSystemInput">System tests</label>
+                                <input type="number" class="form-control" id="autoBuildSystemInput" min="0" max="50" value="10">
+                                <div class="form-text">Number of system tests to produce.</div>
+                            </div>
+                        </div>
+
+                        <div id="autoBuildModalAlert" class="alert alert-warning mt-3" style="display: none;"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="autoBuildStartBtn">
+                            <i class="fas fa-rocket"></i> Start Auto-Build
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Hidden elements to store initial content safely -->
     <script type="application/json" id="initial-content-data">
     {
@@ -1093,6 +1546,14 @@ class ProblemEditor {
 
         this.validationCache = new Map();
         this.initialized = false;
+        this.autoBuildState = {
+            isRunning: false,
+            options: this.normalizeAutoBuildOptions({}),
+            currentSteps: null,
+            currentStepIndex: -1,
+            progressTimer: null
+        };
+        this.autoBuildElements = {};
         
         // Editor will be initialized via init() method call
     }
@@ -1114,6 +1575,7 @@ class ProblemEditor {
                 }
             });
             
+            this.cacheAutoBuildElements();
             this.setupEventListeners();
             this.loadFileContents();
             
@@ -1134,31 +1596,36 @@ class ProblemEditor {
             // 1. Statement Editor (Markdown)
             this.editors.statement = MonacoEditorPresets.createStatementEditor('statement-monaco-editor', {
                 height: 700,
-                defaultValue: this.getInitialContent('statement') // Load content directly
+                defaultValue: this.getInitialContent('statement'), // Load content directly
+                disableAutoSave: true
             });
             
             // 2. Solution Editor (Python)
             this.editors.solution = MonacoEditorPresets.createPythonSolutionEditor('solution-monaco-editor', {
                 height: 700,
-                defaultValue: this.getInitialContent('solution') // Load content directly
+                defaultValue: this.getInitialContent('solution'), // Load content directly
+                disableAutoSave: true
             });
             
             // 3. Generator Editor (Python)
             this.editors.generator = MonacoEditorPresets.createGeneratorEditor('generator-monaco-editor', {
                 height: 700,
-                defaultValue: this.getInitialContent('generator') // Load content directly
+                defaultValue: this.getInitialContent('generator'), // Load content directly
+                disableAutoSave: true
             });
             
             // 4. Validator Editor (Python)
             this.editors.validator = MonacoEditorPresets.createValidatorEditor('validator-monaco-editor', {
                 height: 700,
-                defaultValue: this.getInitialContent('validator') // Load content directly
+                defaultValue: this.getInitialContent('validator'), // Load content directly
+                disableAutoSave: true
             });
             
                         // 5. Checker Editor (C++)
             this.editors.checker = MonacoEditorPresets.createCheckerEditor('checker-monaco-editor', {
                 height: 700,
-                defaultValue: this.getInitialContent('checker') // Load content directly
+                defaultValue: this.getInitialContent('checker'), // Load content directly
+                disableAutoSave: true
             });
                     
             // Add change listeners to all editors
@@ -1275,6 +1742,30 @@ class ProblemEditor {
             });
         });
         
+        if (this.autoBuildElements.launchBtn) {
+            this.autoBuildElements.launchBtn.addEventListener('click', () => this.openAutoBuildModal());
+        }
+        this.autoBuildElements.reloadBtn?.addEventListener('click', () => window.location.reload());
+
+        if (this.autoBuildElements.modalForm) {
+            this.autoBuildElements.modalForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                this.handleAutoBuildModalSubmit();
+            });
+        }
+
+        this.autoBuildElements.modalTestsCheckbox?.addEventListener('change', (event) => {
+            this.toggleAutoBuildTestInputs(event.target.checked);
+            this.refreshAutoBuildCheckboxStyles();
+        });
+
+        ['modalStatementCheckbox','modalSolutionCheckbox','modalGeneratorCheckbox','modalValidatorCheckbox','modalSpjCheckbox']
+            .forEach(key => {
+                const input = this.autoBuildElements[key];
+                if (!input) return;
+                input.addEventListener('change', () => this.refreshAutoBuildCheckboxStyles());
+            });
+
         // Config field changes
     ['edit_title', 'edit_difficulty', 'edit_tags', 'edit_time_limit', 'edit_memory_limit', 'edit_checker_type'].forEach(fieldId => {
         const field = document.getElementById(fieldId);
@@ -1307,6 +1798,666 @@ class ProblemEditor {
             this.handleWindowResize();
         });
     }
+
+    cacheAutoBuildElements() {
+        const modalElement = document.getElementById('autoBuildConfigModal');
+        const bootstrapModal = (typeof bootstrap !== 'undefined' && modalElement)
+            ? new bootstrap.Modal(modalElement)
+            : null;
+        this.autoBuildElements = {
+            card: document.getElementById('auto-build-card'),
+            panel: document.getElementById('autoBuildPanel'),
+            statusText: document.getElementById('autoBuildStatusText'),
+            progressBar: document.getElementById('autoBuildProgressBar'),
+            stepList: document.getElementById('autoBuildStepList'),
+            message: document.getElementById('autoBuildMessage'),
+            summary: document.getElementById('autoBuildSummary'),
+            reloadBtn: document.getElementById('autoBuildReloadBtn'),
+            launchBtn: document.getElementById('autoBuildLaunchBtn'),
+            modal: bootstrapModal,
+            modalForm: document.getElementById('autoBuildConfigForm'),
+            modalSubmit: document.getElementById('autoBuildStartBtn'),
+            modalSampleInput: document.getElementById('autoBuildSamplesInput'),
+            modalSystemInput: document.getElementById('autoBuildSystemInput'),
+            modalStatementCheckbox: document.getElementById('autoBuildStatementCheckbox'),
+            modalSolutionCheckbox: document.getElementById('autoBuildSolutionCheckbox'),
+            modalGeneratorCheckbox: document.getElementById('autoBuildGeneratorCheckbox'),
+            modalValidatorCheckbox: document.getElementById('autoBuildValidatorCheckbox'),
+            modalSpjCheckbox: document.getElementById('autoBuildSpjCheckbox'),
+            modalTestsCheckbox: document.getElementById('autoBuildTestsCheckbox'),
+            modalAlert: document.getElementById('autoBuildModalAlert'),
+            modalTestOptions: document.getElementById('autoBuildTestOptions'),
+        };
+
+        this.resetAutoBuildUI();
+        if (this.autoBuildElements.card) {
+            this.autoBuildElements.card.dataset.visible = 'false';
+        }
+
+        this.refreshAutoBuildCheckboxStyles();
+    }
+
+    getAutoBuildStorageKey() {
+        return `pocketoj-auto-build-${this.getSlugFromUrl()}`;
+    }
+
+    getAutoBuildOptionsStorageKey() {
+        return `${this.getAutoBuildStorageKey()}-options`;
+    }
+
+    storeAutoBuildOptions(options) {
+        try {
+            localStorage.setItem(this.getAutoBuildOptionsStorageKey(), JSON.stringify(options));
+        } catch (error) {
+            console.warn('Failed to persist auto-build options:', error);
+        }
+    }
+
+    getStoredAutoBuildOptions() {
+        try {
+            const raw = localStorage.getItem(this.getAutoBuildOptionsStorageKey());
+            if (!raw) return null;
+            return JSON.parse(raw);
+        } catch (error) {
+            console.warn('Failed to parse stored auto-build options:', error);
+            return null;
+        }
+    }
+
+    clearAutoBuildOptions() {
+        try {
+            localStorage.removeItem(this.getAutoBuildOptionsStorageKey());
+        } catch (error) {
+            console.warn('Failed to clear stored auto-build options:', error);
+        }
+    }
+
+    openAutoBuildModal() {
+        if (this.autoBuildState.isRunning) {
+            this.showAutoBuildPanel();
+            return;
+        }
+
+        const { modal, modalAlert } = this.autoBuildElements;
+        if (!modal) return;
+
+        if (modalAlert) {
+            modalAlert.style.display = 'none';
+            modalAlert.textContent = '';
+        }
+
+        const storedOptions = this.getStoredAutoBuildOptions();
+        const options = this.normalizeAutoBuildOptions(storedOptions || this.autoBuildState.options || {});
+        this.applyAutoBuildOptionsToModal(options);
+        modal.show();
+    }
+
+    applyAutoBuildOptionsToModal(options) {
+        const {
+            modalStatementCheckbox,
+            modalSolutionCheckbox,
+            modalGeneratorCheckbox,
+            modalValidatorCheckbox,
+            modalSpjCheckbox,
+            modalTestsCheckbox,
+            modalSampleInput,
+            modalSystemInput
+        } = this.autoBuildElements;
+
+        if (modalStatementCheckbox) modalStatementCheckbox.checked = !!options.polish_statement;
+        if (modalSolutionCheckbox) modalSolutionCheckbox.checked = !!options.generate_solution;
+        if (modalGeneratorCheckbox) modalGeneratorCheckbox.checked = !!options.generate_generator;
+        if (modalValidatorCheckbox) modalValidatorCheckbox.checked = !!options.generate_validator;
+        if (modalSpjCheckbox) modalSpjCheckbox.checked = !!options.generate_spj;
+        if (modalTestsCheckbox) modalTestsCheckbox.checked = !!options.generate_tests;
+        if (modalSampleInput) modalSampleInput.value = options.sample_case_count ?? 3;
+        if (modalSystemInput) modalSystemInput.value = options.system_case_count ?? 10;
+
+        this.toggleAutoBuildTestInputs(!!options.generate_tests);
+        this.refreshAutoBuildCheckboxStyles();
+    }
+
+    collectAutoBuildOptionsFromModal() {
+        const {
+            modalStatementCheckbox,
+            modalSolutionCheckbox,
+            modalGeneratorCheckbox,
+            modalValidatorCheckbox,
+            modalSpjCheckbox,
+            modalTestsCheckbox,
+            modalSampleInput,
+            modalSystemInput
+        } = this.autoBuildElements;
+
+        const parseNumber = (input, fallback) => {
+            if (!input) return fallback;
+            const value = parseInt(input.value, 10);
+            if (Number.isNaN(value)) return fallback;
+            const min = input.hasAttribute('min') ? parseInt(input.getAttribute('min'), 10) : 0;
+            const maxAttr = input.getAttribute('max');
+            const max = maxAttr !== null ? parseInt(maxAttr, 10) : Number.POSITIVE_INFINITY;
+            return Math.max(min || 0, Math.min(max || Number.POSITIVE_INFINITY, value));
+        };
+
+        return this.normalizeAutoBuildOptions({
+            polish_statement: modalStatementCheckbox ? modalStatementCheckbox.checked : true,
+            generate_solution: modalSolutionCheckbox ? modalSolutionCheckbox.checked : true,
+            generate_generator: modalGeneratorCheckbox ? modalGeneratorCheckbox.checked : true,
+            generate_validator: modalValidatorCheckbox ? modalValidatorCheckbox.checked : false,
+            generate_spj: modalSpjCheckbox ? modalSpjCheckbox.checked : false,
+            generate_tests: modalTestsCheckbox ? modalTestsCheckbox.checked : true,
+            sample_case_count: parseNumber(modalSampleInput, 3),
+            system_case_count: parseNumber(modalSystemInput, 10)
+        });
+    }
+
+    toggleAutoBuildTestInputs(enabled) {
+        const { modalSampleInput, modalSystemInput, modalTestOptions } = this.autoBuildElements;
+        [modalSampleInput, modalSystemInput].forEach(input => {
+            if (!input) return;
+            input.disabled = !enabled;
+        });
+        if (modalTestOptions) {
+            modalTestOptions.style.display = enabled ? '' : 'none';
+        }
+    }
+
+    getProblemTimeLimit() {
+        const input = document.getElementById('edit_time_limit');
+        const value = input ? parseInt(input.value, 10) : NaN;
+        if (Number.isNaN(value)) {
+            return 1000;
+        }
+        return Math.max(100, value);
+    }
+
+    refreshAutoBuildCheckboxStyles() {
+        const checkboxKeys = [
+            'modalStatementCheckbox',
+            'modalSolutionCheckbox',
+            'modalGeneratorCheckbox',
+            'modalValidatorCheckbox',
+            'modalSpjCheckbox',
+            'modalTestsCheckbox'
+        ];
+
+        checkboxKeys.forEach(key => {
+            const input = this.autoBuildElements[key];
+            if (!input) return;
+            const card = input.closest('.auto-build-option-card');
+            if (!card) return;
+            card.classList.toggle('selected', input.checked);
+            card.classList.toggle('disabled', input.disabled);
+        });
+    }
+
+    showAutoBuildModalAlert(message, type = 'warning') {
+        const alertEl = this.autoBuildElements.modalAlert;
+        if (!alertEl) return;
+        alertEl.className = `alert alert-${type}`;
+        alertEl.innerHTML = message;
+        alertEl.style.display = 'block';
+    }
+
+    hideAutoBuildModalAlert() {
+        const alertEl = this.autoBuildElements.modalAlert;
+        if (!alertEl) return;
+        alertEl.style.display = 'none';
+        alertEl.textContent = '';
+    }
+
+    startAutoBuildProgressLoop() {
+        this.stopAutoBuildProgressLoop();
+        const steps = this.autoBuildState.currentSteps;
+        if (!steps || steps.length <= 1) {
+            return;
+        }
+
+        this.autoBuildState.progressTimer = setInterval(() => {
+            const currentSteps = this.autoBuildState.currentSteps;
+            if (!currentSteps || currentSteps.length === 0) {
+                this.stopAutoBuildProgressLoop();
+                return;
+            }
+
+            const currentIndex = Math.max(0, this.autoBuildState.currentStepIndex || 0);
+            if (currentIndex >= currentSteps.length - 1) {
+                this.stopAutoBuildProgressLoop();
+                return;
+            }
+
+            currentSteps[currentIndex].status = 'completed';
+            const nextIndex = currentIndex + 1;
+            currentSteps[nextIndex].status = 'active';
+            this.autoBuildState.currentStepIndex = nextIndex;
+
+            this.renderAutoBuildSteps(currentSteps);
+            this.updateAutoBuildStatus({ status: 'running', message: 'Processing with AI...' }, currentSteps);
+        }, 10000);
+    }
+
+    stopAutoBuildProgressLoop() {
+        if (this.autoBuildState.progressTimer) {
+            clearInterval(this.autoBuildState.progressTimer);
+            this.autoBuildState.progressTimer = null;
+        }
+    }
+
+    handleAutoBuildModalSubmit() {
+        const { modal } = this.autoBuildElements;
+        const options = this.collectAutoBuildOptionsFromModal();
+
+        const selectedFlags = [
+            options.polish_statement,
+            options.generate_solution,
+            options.generate_generator,
+            options.generate_validator,
+            options.generate_spj,
+            options.generate_tests
+        ];
+
+        if (!selectedFlags.some(Boolean)) {
+            if (document.body.classList.contains('modal-open')) {
+                this.showAutoBuildModalAlert('Select at least one artifact to generate.');
+            } else if (this.autoBuildElements.message) {
+                this.autoBuildElements.message.innerHTML = '<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> Choose at least one artifact to generate.</span>';
+            }
+            return;
+        }
+
+        this.hideAutoBuildModalAlert();
+
+        if (modal && typeof modal.hide === 'function') {
+            modal.hide();
+        }
+
+        this.startAutoBuild(options);
+    }
+
+    normalizeAutoBuildOptions(rawOptions = {}) {
+        const defaults = {
+            polish_statement: true,
+            generate_solution: true,
+            generate_generator: true,
+            generate_validator: false,
+            generate_spj: false,
+            generate_tests: true,
+            sample_case_count: 3,
+            system_case_count: 10,
+        };
+        const merged = Object.assign({}, defaults, rawOptions || {});
+        merged.polish_statement = !!merged.polish_statement;
+        merged.generate_solution = !!merged.generate_solution;
+        merged.generate_generator = !!merged.generate_generator;
+        merged.generate_validator = !!merged.generate_validator;
+        merged.generate_spj = !!merged.generate_spj;
+        merged.generate_tests = !!merged.generate_tests;
+        merged.sample_case_count = Math.max(0, parseInt(merged.sample_case_count, 10) || 0);
+        merged.system_case_count = Math.max(0, parseInt(merged.system_case_count, 10) || 0);
+        return merged;
+    }
+
+    buildAutoBuildStepNames(options) {
+        const steps = [];
+        if (options.polish_statement) steps.push('Polish statement');
+        if (options.generate_solution) steps.push('Generate reference solution');
+        if (options.generate_generator) steps.push('Generate test generator');
+        if (options.generate_validator) steps.push('Generate input validator');
+        if (options.generate_spj) steps.push('Generate special judge');
+        if (options.generate_tests) steps.push('Generate test cases');
+        return steps;
+    }
+
+    renderAutoBuildSteps(stepData) {
+        const list = this.autoBuildElements.stepList;
+        if (!list) return;
+
+        list.innerHTML = '';
+        stepData.forEach(step => {
+            const li = document.createElement('li');
+            li.className = `auto-build-step ${step.status}`;
+
+            const iconMap = {
+                completed: 'fas fa-check-circle',
+                active: 'fas fa-spinner fa-spin',
+                failed: 'fas fa-times-circle',
+                pending: 'fas fa-circle-notch text-muted'
+            };
+
+            const icon = iconMap[step.status] || iconMap.pending;
+            li.innerHTML = `
+                <i class="${icon}"></i>
+                <span>${this.escapeHtml(step.name)}</span>
+            `;
+
+            list.appendChild(li);
+        });
+    }
+
+    updateAutoBuildStatus(statusInfo, stepData) {
+        const statusText = this.autoBuildElements.statusText;
+        const messageEl = this.autoBuildElements.message;
+        const progressBar = this.autoBuildElements.progressBar;
+        if (!statusText || !progressBar) return;
+
+        const status = (statusInfo && statusInfo.status) ? statusInfo.status : 'pending';
+        const message = (statusInfo && statusInfo.message) ? statusInfo.message : '';
+
+        const statusMap = {
+            pending: 'Queued',
+            running: 'Running',
+            succeeded: 'Completed',
+            failed: 'Failed'
+        };
+
+        statusText.textContent = statusMap[status] || status;
+
+        if (messageEl) {
+            if (status === 'succeeded') {
+                messageEl.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> Auto-build completed successfully.</span>';
+            } else if (status === 'failed') {
+                const safe = this.escapeHtml(message || 'Auto-build failed.');
+                messageEl.innerHTML = `<span class="text-danger"><i class="fas fa-times-circle"></i> ${safe}</span>`;
+            } else if (message) {
+                messageEl.innerHTML = `<span class="text-muted"><i class="fas fa-cog fa-spin"></i> ${this.escapeHtml(message)}</span>`;
+            } else {
+                messageEl.innerHTML = '';
+            }
+        }
+
+        const totalSteps = stepData.length || 1;
+        const completedCount = stepData.filter(step => step.status === 'completed').length;
+        const percent = status === 'succeeded' ? 100 : Math.round((completedCount / totalSteps) * 100);
+        const clamped = Math.min(100, Math.max(0, percent));
+        progressBar.style.width = `${clamped}%`;
+        progressBar.setAttribute('aria-valuenow', `${clamped}`);
+
+        if (status === 'failed') {
+            progressBar.classList.add('bg-danger');
+        } else {
+            progressBar.classList.remove('bg-danger');
+        }
+    }
+
+    showAutoBuildPanel() {
+        const { panel, card } = this.autoBuildElements;
+        if (card) {
+            card.dataset.visible = 'true';
+            card.style.display = 'block';
+        }
+        if (panel) {
+            panel.style.display = 'block';
+        }
+    }
+
+    setAutoBuildButtonLoading(isLoading) {
+        const { launchBtn, modalSubmit } = this.autoBuildElements;
+        const setButtonState = (btn, label) => {
+            if (!btn) return;
+            btn.disabled = !!isLoading;
+            if (label) btn.innerHTML = label;
+        };
+
+        if (isLoading) {
+            setButtonState(launchBtn, '<i class="fas fa-spinner fa-spin"></i> Auto-Building...');
+            setButtonState(modalSubmit, '<i class="fas fa-spinner fa-spin"></i> Starting...');
+        } else {
+            setButtonState(launchBtn, '<i class="fas fa-rocket"></i> AI Auto-Build');
+            setButtonState(modalSubmit, '<i class="fas fa-rocket"></i> Start Auto-Build');
+        }
+    }
+
+    async startAutoBuild(providedOptions) {
+        if (this.autoBuildState.isRunning) {
+            this.showAutoBuildPanel();
+            return;
+        }
+
+        if (this.modifiedFiles.size > 0) {
+            const proceed = confirm('You have unsaved changes. Auto-build may overwrite files. Continue?');
+            if (!proceed) {
+                return;
+            }
+        }
+
+        this.hideAutoBuildModalAlert();
+
+        const options = this.normalizeAutoBuildOptions(providedOptions || this.autoBuildState.options || {});
+        options.solution_timeout_ms = this.getProblemTimeLimit();
+        const selectedFlags = [
+            options.polish_statement,
+            options.generate_solution,
+            options.generate_generator,
+            options.generate_validator,
+            options.generate_spj,
+            options.generate_tests
+        ];
+
+        if (!selectedFlags.some(Boolean)) {
+            const message = 'Select at least one artifact to generate.';
+            if (document.body.classList.contains('modal-open')) {
+                this.showAutoBuildModalAlert(message);
+            } else if (this.autoBuildElements.message) {
+                this.autoBuildElements.message.innerHTML = `<span class="text-warning"><i class=\"fas fa-exclamation-triangle\"></i> ${message}</span>`;
+            }
+            return;
+        }
+
+        if (options.generate_validator) {
+            const validatorToggle = document.getElementById('validatorEnabled');
+            if (validatorToggle && !validatorToggle.checked) {
+                validatorToggle.checked = true;
+                validatorToggle.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+
+        if (options.generate_spj) {
+            const checkerSelect = document.getElementById('edit_checker_type');
+            if (checkerSelect && checkerSelect.value !== 'spj') {
+                checkerSelect.value = 'spj';
+                this.markFileModified('config');
+            }
+        }
+
+        if (!options.generate_tests) {
+            options.sample_case_count = 0;
+            options.system_case_count = 0;
+        }
+
+        this.autoBuildState.options = options;
+        this.storeAutoBuildOptions(options);
+
+        this.autoBuildState.isRunning = true;
+        this.stopAutoBuildProgressLoop();
+        this.showAutoBuildPanel();
+        this.resetAutoBuildUI();
+        if (this.autoBuildElements.summary) {
+            this.autoBuildElements.summary.style.display = 'none';
+            this.autoBuildElements.summary.classList.remove('failed');
+            this.autoBuildElements.summary.innerHTML = '';
+        }
+        if (this.autoBuildElements.reloadBtn) {
+            this.autoBuildElements.reloadBtn.style.display = 'none';
+            this.autoBuildElements.reloadBtn.classList.remove('btn-success');
+            this.autoBuildElements.reloadBtn.classList.add('btn-outline-secondary');
+        }
+
+        const steps = this.buildAutoBuildStepNames(options).map((name, index) => ({
+            name,
+            status: index === 0 ? 'active' : 'pending',
+            details: null,
+        }));
+
+        this.autoBuildState.currentSteps = steps;
+        this.autoBuildState.currentStepIndex = steps.length ? 0 : -1;
+
+        this.renderAutoBuildSteps(steps);
+        this.updateAutoBuildStatus({ status: 'running', message: 'Preparing auto-build...' }, steps);
+        this.setAutoBuildButtonLoading(true);
+        this.startAutoBuildProgressLoop();
+
+        try {
+            const response = await fetch(`/api/problem/${this.getSlugFromUrl()}/ai-auto-build`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ options })
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || 'Auto-build request failed');
+            }
+
+            const summary = data.summary || {};
+            let stepResults = Array.isArray(summary.steps) ? summary.steps : null;
+            if (!stepResults) {
+                stepResults = steps.map(step => ({ ...step, status: 'completed' }));
+                summary.steps = stepResults;
+            }
+
+            this.renderAutoBuildSteps(stepResults);
+            this.updateAutoBuildStatus({ status: 'succeeded' }, stepResults);
+            this.renderAutoBuildSummary(summary);
+
+            if (this.autoBuildElements.reloadBtn) {
+                const reloadButton = this.autoBuildElements.reloadBtn;
+                reloadButton.style.display = 'inline-block';
+                reloadButton.classList.remove('btn-outline-secondary');
+                reloadButton.classList.add('btn-success');
+            }
+        } catch (error) {
+            console.error('Auto-build failed:', error);
+            const failureMessage = error && error.message ? error.message : 'Auto-build failed.';
+            steps.forEach(step => {
+                if (step.status === 'active') {
+                    step.status = 'failed';
+                }
+            });
+            this.renderAutoBuildSteps(steps);
+            this.updateAutoBuildStatus({ status: 'failed', message: failureMessage }, steps);
+            this.renderAutoBuildFailure({ message: failureMessage });
+        } finally {
+            this.stopAutoBuildProgressLoop();
+            this.autoBuildState.currentSteps = null;
+            this.autoBuildState.currentStepIndex = -1;
+            this.autoBuildState.isRunning = false;
+            this.setAutoBuildButtonLoading(false);
+        }
+    }
+
+    renderAutoBuildSummary(summary = {}) {
+        const summaryEl = this.autoBuildElements.summary;
+        if (!summaryEl) return;
+
+        summaryEl.classList.remove('failed');
+        summaryEl.style.display = 'block';
+
+        const steps = Array.isArray(summary.steps) ? summary.steps : [];
+        const tests = summary.tests || null;
+
+        let html = '<h6><i class="fas fa-clipboard-check"></i> Auto-Build Summary</h6>';
+        steps.forEach(step => {
+            const completed = step.status === 'completed';
+            const statusIcon = completed ? 'fas fa-check-circle text-success' : 'fas fa-exclamation-circle text-warning';
+            html += `<div class="mb-2"><i class="${statusIcon}"></i> <strong>${this.escapeHtml(step.name)}</strong>`;
+            if (step.details) {
+                html += `<div class="auto-build-summary-details">${this.formatAutoBuildSummaryDetails(step.details)}</div>`;
+            }
+            html += '</div>';
+        });
+
+        if (tests) {
+            html += `<div class="mb-2"><i class="fas fa-vials"></i> Tests generated — Samples: <strong>${this.escapeHtml(String(tests.samples ?? 0))}</strong>, System: <strong>${this.escapeHtml(String(tests.system ?? 0))}</strong></div>`;
+        }
+
+        html += '<div class="alert alert-info mb-0"><i class="fas fa-info-circle"></i> Reload the page to load generated files into the editors, then review and publish.</div>';
+
+        summaryEl.innerHTML = html;
+    }
+
+    renderAutoBuildFailure(detail = {}) {
+        const summaryEl = this.autoBuildElements.summary;
+        if (!summaryEl) return;
+
+        summaryEl.classList.add('failed');
+        summaryEl.style.display = 'block';
+        const message = detail && detail.message ? detail.message : 'Auto-build failed.';
+        summaryEl.innerHTML = `
+            <h6><i class="fas fa-exclamation-triangle"></i> Auto-Build Failed</h6>
+            <p class="mb-0">${this.escapeHtml(message)}</p>
+        `;
+    }
+
+    resetAutoBuildUI() {
+        this.stopAutoBuildProgressLoop();
+        const { statusText, progressBar, stepList, message, summary } = this.autoBuildElements;
+        this.autoBuildState.currentSteps = null;
+        this.autoBuildState.currentStepIndex = -1;
+        if (statusText) {
+            statusText.textContent = 'Ready';
+        }
+        if (progressBar) {
+            progressBar.style.width = '0%';
+            progressBar.setAttribute('aria-valuenow', '0');
+            progressBar.classList.remove('bg-danger');
+        }
+        if (stepList) {
+            stepList.innerHTML = '';
+        }
+        if (message) {
+            message.innerHTML = '<span class="text-muted"><i class="fas fa-info-circle"></i> Use AI Auto-Build to generate problem assets automatically.</span>';
+        }
+        if (summary) {
+            summary.style.display = 'none';
+            summary.classList.remove('failed');
+            summary.innerHTML = '';
+        }
+    }
+
+    escapeHtml(value) {
+        if (value === null || value === undefined) {
+            return '';
+        }
+        const div = document.createElement('div');
+        div.textContent = String(value);
+        return div.innerHTML;
+    }
+
+    formatAutoBuildSummaryDetails(details) {
+        if (!details) return '';
+
+        if (typeof details === 'string') {
+            return this.escapeHtml(details);
+        }
+
+        if (typeof details !== 'object') {
+            return this.escapeHtml(String(details));
+        }
+
+        const entries = Object.entries(details);
+        if (!entries.length) return '';
+
+        return entries.map(([key, value]) => {
+            const formattedKey = this.escapeHtml(key.replace(/_/g, ' '));
+            let formattedValue;
+            if (value === null || value === undefined) {
+                formattedValue = '';
+            } else if (typeof value === 'string') {
+                formattedValue = value.trim();
+            } else {
+                formattedValue = JSON.stringify(value);
+            }
+
+            formattedValue = this.escapeHtml(formattedValue);
+
+            return `
+                <div class="auto-build-summary-detail-row">
+                    <span class="auto-build-summary-detail-label">${formattedKey}:</span>
+                    <span class="auto-build-summary-detail-value">${formattedValue}</span>
+                </div>
+            `;
+        }).join('');
+    }
     
     handleWindowResize() {
         // Debounce resize events
@@ -1332,6 +2483,11 @@ class ProblemEditor {
         
         // Update content visibility
         document.querySelectorAll('.file-content').forEach(content => {
+            if (content.id === 'auto-build-card') {
+                const shouldShow = content.dataset.visible === 'true';
+                content.style.display = shouldShow ? 'block' : 'none';
+                return;
+            }
             content.style.display = content.id === fileName + '-content' ? 'block' : 'none';
         });
         
