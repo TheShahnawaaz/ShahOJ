@@ -307,15 +307,20 @@ def my_submissions_page():
 def admin_dashboard():
     """Admin overview dashboard"""
     stats = db_manager.get_admin_stats()
-    recent_problems = db_manager.list_all_problems(page=1, limit=5).get('items', [])
+    recent_problems = db_manager.list_all_problems(
+        page=1, limit=5).get('items', [])
     for prob in recent_problems:
-        prob['author_display'] = prob.get('author_name') or prob.get('author_email') or 'Unknown'
+        prob['author_display'] = prob.get(
+            'author_name') or prob.get('author_email') or 'Unknown'
         prob['author_picture'] = prob.get('author_picture') or ''
-    recent_submissions = db_manager.list_all_submissions(page=1, limit=5).get('items', [])
+    recent_submissions = db_manager.list_all_submissions(
+        page=1, limit=5).get('items', [])
     for submission in recent_submissions:
         submission['user_picture'] = submission.get('user_picture') or ''
-        submission['verdict_display'] = (submission.get('verdict') or submission.get('status') or '—').upper()
-        submission['created_display'] = _format_timestamp(submission.get('created_at'))
+        submission['verdict_display'] = (submission.get(
+            'verdict') or submission.get('status') or '—').upper()
+        submission['created_display'] = _format_timestamp(
+            submission.get('created_at'))
         submission['created_at_ist'] = to_ist_iso(submission.get('created_at'))
     recent_users = db_manager.list_all_users(page=1, limit=5).get('items', [])
     for user in recent_users:
@@ -336,15 +341,53 @@ def admin_problems():
     page = max(1, int(request.args.get('page', 1)))
     search = (request.args.get('search') or '').strip()
     limit = 20
-    result = db_manager.list_all_problems(page=page, limit=limit, search=search or None)
+    result = db_manager.list_all_problems(
+        page=page, limit=limit, search=search or None)
     problems = result['items']
     for problem in problems:
-        problem['author_display'] = problem.get('author_name') or problem.get('author_email') or 'Unknown'
+        problem['author_display'] = problem.get(
+            'author_name') or problem.get('author_email') or 'Unknown'
         problem['author_picture'] = problem.get('author_picture') or ''
-        problem['updated_display'] = _format_timestamp(problem.get('updated_at'))
-        problem['created_display'] = _format_timestamp(problem.get('created_at'))
+        problem['updated_display'] = _format_timestamp(
+            problem.get('updated_at'))
+        problem['created_display'] = _format_timestamp(
+            problem.get('created_at'))
         submission_count = problem.get('submission_count')
         problem['submission_count'] = submission_count if submission_count is not None else 0
+
+        # Get test case counts and sizes
+        unified_problem = unified_problem_manager.get_problem(problem['slug'])
+        if unified_problem:
+            from core.test_generator import TestGenerator
+            test_generator = TestGenerator(unified_problem)
+            test_stats = test_generator.get_test_case_statistics()
+
+            problem['test_stats'] = test_stats
+            problem['total_test_cases'] = test_stats.get('total_cases', 0)
+            problem['total_test_size_bytes'] = test_stats.get(
+                'total_size_bytes', 0)
+            problem['total_test_size_formatted'] = _format_file_size(
+                test_stats.get('total_size_bytes', 0))
+            problem['test_counts'] = {
+                'samples': test_stats.get('categories', {}).get('samples', {}).get('count', 0),
+                'system': test_stats.get('categories', {}).get('system', {}).get('count', 0)
+            }
+
+            # Format individual category sizes
+            categories = test_stats.get('categories', {})
+            problem['sample_size_formatted'] = _format_file_size(
+                categories.get('samples', {}).get('size_bytes', 0))
+            problem['system_size_formatted'] = _format_file_size(
+                categories.get('system', {}).get('size_bytes', 0))
+        else:
+            problem['test_stats'] = {'total_cases': 0,
+                                     'total_size_bytes': 0, 'categories': {}}
+            problem['total_test_cases'] = 0
+            problem['total_test_size_bytes'] = 0
+            problem['total_test_size_formatted'] = "0 B"
+            problem['test_counts'] = {'samples': 0, 'system': 0}
+            problem['sample_size_formatted'] = "0 B"
+            problem['system_size_formatted'] = "0 B"
 
     total_pages = max(1, (result['total'] + limit - 1) // limit)
     pagination = {
@@ -361,7 +404,6 @@ def admin_problems():
                            limit=limit)
 
 
-
 @app.route('/admin/users')
 @require_superuser
 def admin_users():
@@ -369,7 +411,8 @@ def admin_users():
     page = max(1, int(request.args.get('page', 1)))
     search = (request.args.get('search') or '').strip()
     limit = 20
-    result = db_manager.list_all_users(page=page, limit=limit, search=search or None)
+    result = db_manager.list_all_users(
+        page=page, limit=limit, search=search or None)
     users = result['items']
     for user in users:
         user['created_display'] = _format_timestamp(user.get('created_at'))
@@ -392,7 +435,6 @@ def admin_users():
                            limit=limit)
 
 
-
 @app.route('/admin/submissions')
 @require_superuser
 def admin_submissions():
@@ -400,11 +442,14 @@ def admin_submissions():
     page = max(1, int(request.args.get('page', 1)))
     search = (request.args.get('search') or '').strip()
     limit = 20
-    result = db_manager.list_all_submissions(page=page, limit=limit, search=search or None)
+    result = db_manager.list_all_submissions(
+        page=page, limit=limit, search=search or None)
     submissions = result['items']
     for submission in submissions:
-        submission['created_display'] = _format_timestamp(submission.get('created_at'))
-        submission['verdict_display'] = (submission.get('verdict') or submission.get('status') or '—').upper()
+        submission['created_display'] = _format_timestamp(
+            submission.get('created_at'))
+        submission['verdict_display'] = (submission.get(
+            'verdict') or submission.get('status') or '—').upper()
         submission['user_picture'] = submission.get('user_picture') or ''
         submission['created_at_ist'] = to_ist_iso(submission.get('created_at'))
 
@@ -421,7 +466,6 @@ def admin_submissions():
                            pagination=pagination,
                            search=search,
                            limit=limit)
-
 
 
 @app.route('/admin/system')
@@ -451,7 +495,8 @@ def toggle_problem_visibility_api(slug):
     """Toggle problem between public and private"""
     user = g.current_user
     is_superuser = bool(user.get('is_superuser'))
-    new_visibility = db_manager.toggle_problem_visibility(slug, user['id'], force=is_superuser)
+    new_visibility = db_manager.toggle_problem_visibility(
+        slug, user['id'], force=is_superuser)
 
     if new_visibility is not None:
         status = "public" if new_visibility else "private"
@@ -473,7 +518,8 @@ def delete_problem_api(slug):
     is_superuser = bool(user.get('is_superuser'))
 
     # Delete from database
-    db_success = db_manager.delete_problem(slug, user['id'], force=is_superuser)
+    db_success = db_manager.delete_problem(
+        slug, user['id'], force=is_superuser)
 
     if db_success:
         # Delete files
@@ -506,6 +552,19 @@ def _normalize_code_for_hash(code: str) -> str:
 def _format_timestamp(value):
     """Format stored timestamps for display"""
     return format_ist(value)
+
+
+def _format_file_size(size_bytes):
+    """Format file size in bytes to human readable format"""
+    if size_bytes == 0:
+        return "0 B"
+
+    import math
+    size_names = ["B", "KB", "MB", "GB"]
+    i = int(math.floor(math.log(size_bytes, 1024)))
+    p = math.pow(1024, i)
+    s = round(size_bytes / p, 1)
+    return f"{s} {size_names[i]}"
 
 
 def _compute_source_hash(problem_slug: str, language: str, source_code: str) -> str:
@@ -747,7 +806,8 @@ def problem_detail(slug):
         if not unified_problem:
             return "Problem not found", 404
 
-        is_author = bool(user and (user['id'] == problem_data.get('author_id')))
+        is_author = bool(
+            user and (user['id'] == problem_data.get('author_id')))
         is_superuser = bool(user and user.get('is_superuser'))
         return render_template('pages/problem/detail.html',
                                problem=unified_problem,
@@ -1552,7 +1612,8 @@ def save_problem_all_api(slug):
         # Update metadata in database
         if metadata_updates:
             user = g.current_user
-            actor_id = user['id'] if (user and not user.get('is_superuser')) else None
+            actor_id = user['id'] if (
+                user and not user.get('is_superuser')) else None
             success = unified_problem_manager.update_problem_metadata(
                 slug, metadata_updates, actor_id
             )

@@ -42,6 +42,39 @@
         color: #ffffff;
         border-color: var(--btn-primary);
     }
+
+    /* Test case count styling */
+    .test-count-breakdown {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        margin-top: 2px;
+        line-height: 1.2;
+    }
+
+    .admin-meta-cell .fa-vial {
+        margin-right: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .admin-meta-cell .fa-hdd {
+        font-size: 0.7rem;
+        opacity: 0.8;
+    }
+
+    .test-count-breakdown .badge {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.4rem;
+        margin-top: 1px;
+    }
+
+    /* Better spacing for test case column */
+    .admin-meta-cell .d-flex.flex-column > * {
+        margin-bottom: 1px;
+    }
+
+    .admin-meta-cell .d-flex.flex-column > *:last-child {
+        margin-bottom: 0;
+    }
 </style>
 {% endblock %}
 
@@ -76,6 +109,7 @@
                         <th class="sortable-header" data-column="author" data-type="text"><i class="fas fa-sort me-1"></i>Author</th>
                         <th class="sortable-header" data-column="tags" data-type="text"><i class="fas fa-sort me-1"></i>Tags</th>
                         <th class="sortable-header" data-column="visibility" data-type="text"><i class="fas fa-sort me-1"></i>Visibility</th>
+                        <th class="sortable-header" data-column="testcases" data-type="number"><i class="fas fa-sort me-1"></i>Test Cases</th>
                         <th class="sortable-header" data-column="submissions" data-type="number"><i class="fas fa-sort me-1"></i>Submissions</th>
                         <th class="sortable-header" data-column="updated" data-type="date"><i class="fas fa-sort me-1"></i>Updated</th>
                         <th>Actions</th>
@@ -115,6 +149,25 @@
                             {% else %}
                                 <span class="badge bg-warning text-dark">Private</span>
                             {% endif %}
+                        </td>
+                        <td data-sort-value="{{ problem.total_test_cases or 0 }}">
+                            <div class="admin-meta-cell">
+                                <i class="fas fa-vial text-info"></i>
+                                <div class="d-flex flex-column">
+                                    <span class="meta-primary">
+                                        <strong>{{ problem.total_test_cases or 0 }}</strong> tests
+                                    </span>
+                                    <small class="test-count-breakdown text-info">
+                                        <i class="fas fa-hdd me-1"></i>{{ problem.total_test_size_formatted or "0 B" }}
+                                    </small>
+                                    {% if problem.test_counts and (problem.test_counts.samples > 0 or problem.test_counts.system > 0) %}
+                                    <small class="test-count-breakdown" title="Samples: {{ problem.test_counts.samples or 0 }} ({{ problem.sample_size_formatted or '0 B' }}), System: {{ problem.test_counts.system or 0 }} ({{ problem.system_size_formatted or '0 B' }})">
+                                        <span class="badge badge-sm bg-light text-dark me-1">S:{{ problem.test_counts.samples or 0 }}</span>
+                                        <span class="badge badge-sm bg-secondary">Sys:{{ problem.test_counts.system or 0 }}</span>
+                                    </small>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </td>
                         <td data-sort-value="{{ problem.submission_count }}">
                             <div class="admin-meta-cell">
@@ -201,5 +254,6 @@ function searchByTag(tag) {
         searchForm.submit();
     }
 }
+
 </script>
 {% endblock %}
