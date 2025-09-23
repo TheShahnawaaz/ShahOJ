@@ -911,25 +911,35 @@
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/table-sorter.js') }}"></script>
 <script>
-// Auto-submit search form on input change
+// Handle search form submission
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('search');
     const difficultySelect = document.getElementById('difficulty');
+    const searchForm = document.querySelector('form');
     
-    let searchTimeout;
-    
+    // Submit search on Enter key press
     if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
                 this.form.submit();
-            }, 500);
+            }
         });
     }
     
+    // Auto-submit when difficulty filter changes (this is still useful)
     if (difficultySelect) {
         difficultySelect.addEventListener('change', function() {
             this.form.submit();
+        });
+    }
+    
+    // Ensure search button submits the form (default behavior, but being explicit)
+    const searchButton = document.querySelector('button[type="submit"]');
+    if (searchButton && searchForm) {
+        searchButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            searchForm.submit();
         });
     }
     
