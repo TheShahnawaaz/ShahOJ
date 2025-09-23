@@ -448,12 +448,29 @@
         margin-bottom: 0.2rem;
         display: inline-block;
         font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .tag-chip:hover {
+        background-color: #007bff;
+        color: #ffffff;
+        border-color: #007bff;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
     }
 
     [data-theme="dark"] .tag-chip {
         background-color: #343a40;
         color: #adb5bd;
         border: 1px solid #495057;
+    }
+
+    [data-theme="dark"] .tag-chip:hover {
+        background-color: var(--btn-primary);
+        color: #ffffff;
+        border-color: var(--btn-primary);
     }
 
     /* Simple Date Display */
@@ -658,7 +675,7 @@
                         <td data-sort-value="{{ problem.tags|join(', ') if problem.tags and problem.tags != '[]' else '' }}">
                             {% if problem.tags and problem.tags != '[]' %}
                                 {% for tag in problem.tags %}
-                                <span class="tag-chip">{{ tag }}</span>
+                                <span class="tag-chip" onclick="searchByTag('{{ tag }}'); event.stopPropagation();" title="Search problems with tag: {{ tag }}">{{ tag }}</span>
                                 {% endfor %}
                             {% else %}
                                 <span class="text-muted small">No tags</span>
@@ -893,6 +910,22 @@ function showMessage(message, type) {
             setTimeout(() => alertDiv.remove(), 150);
         }
     }, 5000);
+}
+
+// Function to search by tag
+function searchByTag(tag) {
+    const searchForm = document.querySelector('form[method="GET"]');
+    const searchInput = searchForm.querySelector('input[name="search"]');
+    
+    if (searchInput && searchForm) {
+        // Add visual feedback
+        searchInput.value = tag;
+        searchInput.style.backgroundColor = '#e3f2fd';
+        searchInput.style.borderColor = '#2196f3';
+        
+        // Submit the form
+        searchForm.submit();
+    }
 }
 </script>
 {% endblock %}

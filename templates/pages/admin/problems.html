@@ -5,6 +5,44 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<style>
+    /* Tag chips for admin table */
+    .tag-chip {
+        background-color: #f8f9fa;
+        color: #495057;
+        border: 1px solid #dee2e6;
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+        border-radius: 0.75rem;
+        margin-right: 0.3rem;
+        margin-bottom: 0.2rem;
+        display: inline-block;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .tag-chip:hover {
+        background-color: #007bff;
+        color: #ffffff;
+        border-color: #007bff;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+    }
+
+    [data-theme="dark"] .tag-chip {
+        background-color: #343a40;
+        color: #adb5bd;
+        border: 1px solid #495057;
+    }
+
+    [data-theme="dark"] .tag-chip:hover {
+        background-color: var(--btn-primary);
+        color: #ffffff;
+        border-color: var(--btn-primary);
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -36,6 +74,7 @@
                         <th class="sortable-header" data-column="title" data-type="text"><i class="fas fa-sort me-1"></i>Title</th>
                         <th class="sortable-header" data-column="slug" data-type="text"><i class="fas fa-sort me-1"></i>Slug</th>
                         <th class="sortable-header" data-column="author" data-type="text"><i class="fas fa-sort me-1"></i>Author</th>
+                        <th class="sortable-header" data-column="tags" data-type="text"><i class="fas fa-sort me-1"></i>Tags</th>
                         <th class="sortable-header" data-column="visibility" data-type="text"><i class="fas fa-sort me-1"></i>Visibility</th>
                         <th class="sortable-header" data-column="submissions" data-type="number"><i class="fas fa-sort me-1"></i>Submissions</th>
                         <th class="sortable-header" data-column="updated" data-type="date"><i class="fas fa-sort me-1"></i>Updated</th>
@@ -60,6 +99,15 @@
                                     {% if problem.author_email %}<small class="text-muted">{{ problem.author_email }}</small>{% endif %}
                                 </div>
                             </div>
+                        </td>
+                        <td data-sort-value="{{ problem.tags|join(', ') if problem.tags and problem.tags != '[]' else '' }}">
+                            {% if problem.tags and problem.tags != '[]' %}
+                                {% for tag in problem.tags %}
+                                <span class="tag-chip" onclick="searchByTag('{{ tag }}'); event.stopPropagation();" title="Search problems with tag: {{ tag }}">{{ tag }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-muted small">No tags</span>
+                            {% endif %}
                         </td>
                         <td data-sort-value="{{ 'Public' if problem.is_public else 'Private' }}">
                             {% if problem.is_public %}
@@ -137,5 +185,21 @@ document.addEventListener('DOMContentLoaded', function() {
         new TableSorter('admin-problems-table');
     }
 });
+
+// Function to search by tag
+function searchByTag(tag) {
+    const searchForm = document.querySelector('form[method="GET"]');
+    const searchInput = searchForm.querySelector('input[name="search"]');
+    
+    if (searchInput && searchForm) {
+        // Add visual feedback
+        searchInput.value = tag;
+        searchInput.style.backgroundColor = '#e3f2fd';
+        searchInput.style.borderColor = '#2196f3';
+        
+        // Submit the form
+        searchForm.submit();
+    }
+}
 </script>
 {% endblock %}
