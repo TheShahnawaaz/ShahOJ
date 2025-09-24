@@ -60,29 +60,30 @@ class AIService:
     # AI Generation Methods - Return full result object with explanation
     # These methods provide both generated code and AI explanations for enhanced user experience
 
-    def generate_solution_with_explanation(self, problem_statement: str) -> CodeGeneration:
+    def generate_solution_with_explanation(self, problem_statement: str, user_context: str = "") -> CodeGeneration:
         """Generate Python reference solution with explanation"""
-        prompt = self._build_solution_prompt(problem_statement)
+        prompt = self._build_solution_prompt(problem_statement, user_context)
         return self._call_openai_structured(prompt, CodeGeneration)
 
-    def generate_generator_with_explanation(self, problem_statement: str) -> CodeGeneration:
+    def generate_generator_with_explanation(self, problem_statement: str, user_context: str = "") -> CodeGeneration:
         """Generate Python test case generator with explanation"""
-        prompt = self._build_generator_prompt(problem_statement)
+        prompt = self._build_generator_prompt(problem_statement, user_context)
         return self._call_openai_structured(prompt, CodeGeneration)
 
-    def generate_validator_with_explanation(self, problem_statement: str) -> CodeGeneration:
+    def generate_validator_with_explanation(self, problem_statement: str, user_context: str = "") -> CodeGeneration:
         """Generate Python input validator with explanation"""
-        prompt = self._build_validator_prompt(problem_statement)
+        prompt = self._build_validator_prompt(problem_statement, user_context)
         return self._call_openai_structured(prompt, CodeGeneration)
 
-    def generate_special_judge_with_explanation(self, problem_statement: str) -> CodeGeneration:
+    def generate_special_judge_with_explanation(self, problem_statement: str, user_context: str = "") -> CodeGeneration:
         """Generate C++ special judge with explanation"""
-        prompt = self._build_spj_prompt(problem_statement)
+        prompt = self._build_spj_prompt(problem_statement, user_context)
         return self._call_openai_structured(prompt, CodeGeneration)
 
-    def polish_statement_with_explanation(self, raw_statement: str) -> CodeGeneration:
+    def polish_statement_with_explanation(self, raw_statement: str, user_context: str = "") -> CodeGeneration:
         """Polish and enhance a problem statement with explanation"""
-        prompt = self._build_statement_polish_prompt(raw_statement)
+        prompt = self._build_statement_polish_prompt(
+            raw_statement, user_context)
         return self._call_openai_structured(prompt, CodeGeneration)
 
     def _call_openai_structured(self, prompt: str, response_model: BaseModel) -> Any:
@@ -137,13 +138,22 @@ FOR STATEMENT GENERATION:
 
 CRITICAL: Return ONLY the requested content in the 'code' field. Use proper mathematical notation throughout."""
 
-    def _build_solution_prompt(self, problem_statement: str) -> str:
+    def _build_solution_prompt(self, problem_statement: str, user_context: str = "") -> str:
         """Build prompt for solution generation"""
+        context_section = ""
+        if user_context:
+            context_section = f"""
+
+ADDITIONAL CONTEXT FROM USER:
+{user_context}
+Please incorporate this context into your solution generation.
+"""
+
         return f"""
 Based on the following problem statement, generate a Python reference solution that follows ShahOJ standards.
 
 PROBLEM STATEMENT:
-{problem_statement}
+{problem_statement}{context_section}
 
 REQUIREMENTS:
 1. Use Python 3 with standard competitive programming practices
@@ -177,15 +187,24 @@ if __name__ == '__main__':
 Provide the complete Python code in the 'code' field. Optionally include a brief explanation in the 'explanation' field.
 """
 
-    def _build_generator_prompt(self, problem_statement: str) -> str:
+    def _build_generator_prompt(self, problem_statement: str, user_context: str = "") -> str:
         """Build prompt for generator creation"""
+        context_section = ""
+        if user_context:
+            context_section = f"""
+
+ADDITIONAL CONTEXT FROM USER:
+{user_context}
+Please incorporate this context into your generator.
+"""
+
         return f"""
 Based on the following problem statement, generate a Python test case generator that follows ShahOJ standards.
 
 Note: When referencing mathematical variables in comments, use proper notation like aᵢ, n, m instead of A_i, N, M.
 
 PROBLEM STATEMENT:
-{problem_statement}
+{problem_statement}{context_section}
 
 REQUIREMENTS:
 1. Follow the standard generator interface:
@@ -235,13 +254,22 @@ if __name__ == '__main__':
 Generate ONLY the Python code without any explanation, markdown formatting, or code blocks. Return raw code that can be directly saved to a file.
 """
 
-    def _build_validator_prompt(self, problem_statement: str) -> str:
+    def _build_validator_prompt(self, problem_statement: str, user_context: str = "") -> str:
         """Build prompt for validator creation"""
+        context_section = ""
+        if user_context:
+            context_section = f"""
+
+ADDITIONAL CONTEXT FROM USER:
+{user_context}
+Please incorporate this context into your validator.
+"""
+
         return f"""
 Based on the following problem statement, generate a Python input validator that follows ShahOJ standards.
 
 PROBLEM STATEMENT:
-{problem_statement}
+{problem_statement}{context_section}
 
 REQUIREMENTS:
 1. Follow the standard validator interface:
@@ -286,15 +314,23 @@ if __name__ == '__main__':
 Generate ONLY the Python code without any explanation, markdown formatting, or code blocks. Return raw code that can be directly saved to a file.
 """
 
-
-    def _build_spj_prompt(self, problem_statement: str) -> str:
+    def _build_spj_prompt(self, problem_statement: str, user_context: str = "") -> str:
         """Build prompt for special judge creation (compact but detailed)."""
+        context_section = ""
+        if user_context:
+            context_section = f"""
+
+ADDITIONAL CONTEXT FROM USER:
+{user_context}
+Please incorporate this context into your special judge.
+"""
+
         return f"""
 Generate a single C++ Special Judge (SPJ) source file for ShahOJ using testlib.h.
 Your response MUST be ONLY raw C++ code (no markdown, no prose).
 
 PROBLEM:
-{problem_statement}
+{problem_statement}{context_section}
 
 MANDATORY INTERFACE:
 - Use C++17 and:  #include "testlib.h"
@@ -381,13 +417,22 @@ OUTPUT NOW:
 Return ONLY the C++ code implementing the SPJ for this problem, following the rules above.
 """
 
-    def _build_statement_polish_prompt(self, raw_statement: str) -> str:
+    def _build_statement_polish_prompt(self, raw_statement: str, user_context: str = "") -> str:
         """Build prompt for statement polishing"""
+        context_section = ""
+        if user_context:
+            context_section = f"""
+
+ADDITIONAL CONTEXT FROM USER:
+{user_context}
+Please incorporate this context into your statement polishing.
+"""
+
         return f"""
 Transform the following rough problem statement into a complete, professional competitive programming problem statement in markdown format.
 
 RAW STATEMENT:
-{raw_statement}
+{raw_statement}{context_section}
 
 Create a complete markdown document with the following structure:
 

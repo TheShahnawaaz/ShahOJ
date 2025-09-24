@@ -1341,6 +1341,51 @@
         </div>
     </div>
 
+    <!-- AI Context Input Modal -->
+    <div class="modal fade" id="aiContextModal" tabindex="-1" aria-labelledby="aiContextModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="aiContextModalLabel">
+                        <i class="fas fa-brain"></i> AI Generation Context
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3" id="aiContextDescription">
+                        Provide additional context to guide the AI generation. This helps the AI understand your specific requirements and constraints.
+                    </p>
+                    <div class="mb-3">
+                        <label for="aiContextInput" class="form-label">
+                            <i class="fas fa-comment-alt"></i> Additional Context for AI
+                            <span class="text-muted">(Optional)</span>
+                        </label>
+                        <textarea 
+                            class="form-control" 
+                            id="aiContextInput" 
+                            rows="4" 
+                            placeholder="Provide any additional context, requirements, or preferences for the AI generation...&#10;&#10;Examples:&#10;• Use a specific algorithm approach&#10;• Include detailed comments&#10;• Focus on edge cases&#10;• Use certain coding style"></textarea>
+                        <div class="form-text">
+                            This context will be used to guide the AI generation. Leave empty for default behavior.
+                        </div>
+                    </div>
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note:</strong> Your context will be saved for this problem and used for all AI generations.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" id="continueWithAI">
+                        <i class="fas fa-magic"></i> Continue with AI
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- AI Generation Modal -->
     <div class="modal fade" id="aiGenerationModal" tabindex="-1">
         <div class="modal-dialog modal-xl">
@@ -1422,6 +1467,27 @@
                 <form id="autoBuildConfigForm">
                     <div class="modal-body">
                         <p class="text-muted">Select which artifacts the AI should generate. You can fine-tune test counts and toggle optional components.</p>
+
+                        <!-- AI Context Input Section -->
+                        <div class="mb-4">
+                            <div class="card border-primary" style="border-left: 4px solid var(--btn-primary) !important;">
+                                <div class="card-body py-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-brain text-primary me-2"></i>
+                                        <h6 class="mb-0">AI Context (Optional)</h6>
+                                    </div>
+                                    <textarea 
+                                        class="form-control" 
+                                        id="autoBuildContextInput" 
+                                        rows="3" 
+                                        placeholder="Provide additional context to guide AI generation across all artifacts...&#10;&#10;Examples:&#10;• Use specific algorithms or data structures&#10;• Include detailed comments and explanations&#10;• Focus on particular constraints or edge cases&#10;• Prefer certain coding styles or patterns"></textarea>
+                                    <div class="form-text mt-2">
+                                        <i class="fas fa-info-circle"></i>
+                                        This context will be used for generating all selected artifacts and saved for future AI operations on this problem.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -1878,12 +1944,24 @@ class ProblemEditor {
             return;
         }
 
+        // Show Auto-Build config modal directly (context is now integrated)
+        this.performAutoBuildAfterContext();
+    }
+
+    performAutoBuildAfterContext() {
         const { modal, modalAlert } = this.autoBuildElements;
         if (!modal) return;
 
         if (modalAlert) {
             modalAlert.style.display = 'none';
             modalAlert.textContent = '';
+        }
+
+        // Load saved context into the Auto-Build modal's context input
+        const savedContext = this.loadSavedContext();
+        const autoBuildContextInput = document.getElementById('autoBuildContextInput');
+        if (autoBuildContextInput) {
+            autoBuildContextInput.value = savedContext;
         }
 
         const storedOptions = this.getStoredAutoBuildOptions();
@@ -2045,6 +2123,13 @@ class ProblemEditor {
 
     handleAutoBuildModalSubmit() {
         const { modal } = this.autoBuildElements;
+        
+        // Extract and save context from the integrated input field
+        const autoBuildContextInput = document.getElementById('autoBuildContextInput');
+        const context = autoBuildContextInput ? autoBuildContextInput.value.trim() : '';
+        this.saveContext(context);
+        this.currentAIContext = context;
+        
         const options = this.collectAutoBuildOptionsFromModal();
 
         const selectedFlags = [
@@ -2300,7 +2385,10 @@ class ProblemEditor {
             const response = await fetch(`/api/problem/${this.getSlugFromUrl()}/ai-auto-build`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ options })
+                body: JSON.stringify({ 
+                    options,
+                    context: this.currentAIContext || ''
+                })
             });
 
             const data = await response.json();
@@ -2879,6 +2967,79 @@ class ProblemEditor {
         }
     }
 
+    // AI Context Management
+    getContextStorageKey() {
+        return `pocketoj_ai_context_${this.getSlugFromUrl()}`;
+    }
+
+    loadSavedContext() {
+        try {
+            const saved = localStorage.getItem(this.getContextStorageKey());
+            return saved || '';
+        } catch (error) {
+            console.warn('Failed to load saved context:', error);
+            return '';
+        }
+    }
+
+    saveContext(context) {
+        try {
+            localStorage.setItem(this.getContextStorageKey(), context);
+        } catch (error) {
+            console.warn('Failed to save context:', error);
+        }
+    }
+
+    showContextModal(actionType, fileType = null) {
+        // Store the action type and file type for later use
+        this.pendingAIAction = actionType;
+        this.pendingAIFileType = fileType;
+
+        // Update modal title and description based on action type
+        const modalTitle = document.getElementById('aiContextModalLabel');
+        const modalDescription = document.getElementById('aiContextDescription');
+        
+        if (actionType === 'autoBuild') {
+            modalTitle.innerHTML = '<i class="fas fa-rocket"></i> AI Auto-Build Context';
+            modalDescription.textContent = 'Provide additional context to guide the AI Auto-Build process. This context will be used for generating all selected artifacts (statement polish, solution, generator, validator, tests, etc.).';
+        } else if (actionType === 'polish') {
+            modalTitle.innerHTML = '<i class="fas fa-brain"></i> AI Statement Polish Context';  
+            modalDescription.textContent = 'Provide additional context to guide the AI statement polishing. This helps the AI understand your specific requirements and style preferences.';
+        } else {
+            modalTitle.innerHTML = '<i class="fas fa-brain"></i> AI Generation Context';
+            modalDescription.textContent = 'Provide additional context to guide the AI code generation. This helps the AI understand your specific requirements and constraints.';
+        }
+
+        // Load saved context
+        const savedContext = this.loadSavedContext();
+        document.getElementById('aiContextInput').value = savedContext;
+
+        // Show context modal
+        const contextModal = new bootstrap.Modal(document.getElementById('aiContextModal'));
+        contextModal.show();
+    }
+
+    async continueWithAIAfterContext() {
+        // Save the context
+        const context = document.getElementById('aiContextInput').value.trim();
+        this.saveContext(context);
+        this.currentAIContext = context;
+
+        // Hide context modal
+        const contextModal = bootstrap.Modal.getInstance(document.getElementById('aiContextModal'));
+        contextModal.hide();
+
+        // Continue with the pending AI action
+        if (this.pendingAIAction === 'generate') {
+            this.currentAIOperationType = 'generate';
+            await this.performAIGeneration(this.pendingAIFileType);
+        } else if (this.pendingAIAction === 'polish') {
+            this.currentAIOperationType = 'polish';
+            await this.performAIStatementPolish();
+        }
+        // Note: Auto-Build no longer uses separate context modal
+    }
+
     // AI Generation Methods
     async initializeAI() {
         // Check AI availability
@@ -2936,6 +3097,17 @@ class ProblemEditor {
         document.getElementById('regenerateAiCodeBtn').addEventListener('click', () => {
             this.regenerateAICode();
         });
+
+        // Setup context modal button listener
+        document.getElementById('continueWithAI').addEventListener('click', () => {
+            this.continueWithAIAfterContext();
+        });
+
+        // Setup AI generation modal close listener to clear operation type
+        document.getElementById('aiGenerationModal').addEventListener('hidden.bs.modal', () => {
+            // Only clear operation type when modal is actually closed (not during regeneration)
+            this.currentAIOperationType = null;
+        });
     }
 
     async handleAIGeneration(fileType) {
@@ -2944,10 +3116,15 @@ class ProblemEditor {
             return;
         }
 
+        // Show context modal first
+        this.showContextModal('generate', fileType);
+    }
+
+    async performAIGeneration(fileType) {
         // Store current file type for regeneration
         this.currentAIFileType = fileType;
 
-        // Show modal
+        // Show generation modal
         const modal = new bootstrap.Modal(document.getElementById('aiGenerationModal'));
         document.getElementById('aiModalFileType').textContent = this.getFileTypeDisplayName(fileType);
         
@@ -2955,7 +3132,7 @@ class ProblemEditor {
         this.resetAIModal();
         modal.show();
 
-        // Start generation
+        // Start generation with context
         await this.generateAICode(fileType);
     }
 
@@ -2986,7 +3163,8 @@ class ProblemEditor {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    file_type: fileType
+                    file_type: fileType,
+                    context: this.currentAIContext || ''
                 })
             });
 
@@ -3083,20 +3261,42 @@ class ProblemEditor {
     }
 
     async regenerateAICode() {
-        // Handle statement re-polishing
-        if (this.currentRawStatement) {
+        // Determine what type of regeneration this is based on current operation type
+        if (this.currentAIOperationType === 'polish' && this.currentRawStatement) {
+            // Regenerate statement polish with same context
             this.resetAIModal();
             await this.polishStatement(this.currentRawStatement);
             return;
         }
 
-        // Handle regular code regeneration
-        if (!this.currentAIFileType) {
+        if (this.currentAIOperationType === 'generate' && this.currentAIFileType) {
+            // Regenerate code with same context
+            this.resetAIModal();
+            await this.generateAICode(this.currentAIFileType);
             return;
         }
 
-        this.resetAIModal();
-        await this.generateAICode(this.currentAIFileType);
+        // Fallback - try to determine from existing state
+        const modalTitle = document.getElementById('aiModalFileType').textContent;
+        
+        if (modalTitle === 'Statement Polish' && this.currentRawStatement) {
+            this.currentAIOperationType = 'polish';
+            this.resetAIModal();
+            await this.polishStatement(this.currentRawStatement);
+            return;
+        }
+
+        if (this.currentAIFileType) {
+            this.currentAIOperationType = 'generate';
+            this.resetAIModal();
+            await this.generateAICode(this.currentAIFileType);
+            return;
+        }
+
+        // No regeneration context available
+        console.warn('No regeneration context available');
+        const modal = bootstrap.Modal.getInstance(document.getElementById('aiGenerationModal'));
+        if (modal) modal.hide();
     }
 
     resetAIModal() {
@@ -3122,6 +3322,7 @@ class ProblemEditor {
         this.currentAICode = null;
         this.currentPolishedStatement = null;
         this.currentAIExplanation = null;
+        // Note: Keep currentAIOperationType for regeneration, only clear on modal close
     }
 
     updateExplanationDisplay(explanation) {
@@ -3215,6 +3416,11 @@ class ProblemEditor {
         // Store for regeneration
         this.currentRawStatement = currentStatement;
 
+        // Show context modal first
+        this.showContextModal('polish');
+    }
+
+    async performAIStatementPolish() {
         // Show modal
         const modal = new bootstrap.Modal(document.getElementById('aiGenerationModal'));
         document.getElementById('aiModalFileType').textContent = 'Statement Polish';
@@ -3223,8 +3429,8 @@ class ProblemEditor {
         this.resetAIModal();
         modal.show();
 
-        // Start polishing
-        await this.polishStatement(currentStatement);
+        // Start polishing with context
+        await this.polishStatement(this.currentRawStatement);
     }
 
     async polishStatement(rawStatement) {
@@ -3254,7 +3460,8 @@ class ProblemEditor {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    raw_statement: rawStatement
+                    raw_statement: rawStatement,
+                    context: this.currentAIContext || ''
                 })
             });
 

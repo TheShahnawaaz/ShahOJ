@@ -1814,8 +1814,9 @@ def ai_auto_build(slug):
 
         data = request.get_json() or {}
         options = data.get('options') or {}
+        user_context = data.get('context', '').strip()
 
-        summary = run_auto_build_workflow(slug, options)
+        summary = run_auto_build_workflow(slug, options, user_context)
         return jsonify({'success': True, 'summary': summary})
     except Exception as exc:
         traceback.print_exc()
@@ -1832,6 +1833,7 @@ def ai_generate_file_api(slug):
 
         data = request.get_json()
         file_type = data.get('file_type', '').strip()
+        user_context = data.get('context', '').strip()
 
         if file_type not in ['solution', 'generator', 'validator', 'spj']:
             return jsonify({
@@ -1870,16 +1872,16 @@ def ai_generate_file_api(slug):
         try:
             if file_type == 'solution':
                 result = ai_service.generate_solution_with_explanation(
-                    problem_statement)
+                    problem_statement, user_context)
             elif file_type == 'generator':
                 result = ai_service.generate_generator_with_explanation(
-                    problem_statement)
+                    problem_statement, user_context)
             elif file_type == 'validator':
                 result = ai_service.generate_validator_with_explanation(
-                    problem_statement)
+                    problem_statement, user_context)
             elif file_type == 'spj':
                 result = ai_service.generate_special_judge_with_explanation(
-                    problem_statement)
+                    problem_statement, user_context)
 
             return jsonify({
                 'success': True,
@@ -1914,6 +1916,7 @@ def ai_polish_statement_api(slug):
 
         data = request.get_json()
         raw_statement = data.get('raw_statement', '').strip()
+        user_context = data.get('context', '').strip()
 
         if not raw_statement:
             return jsonify({
@@ -1934,7 +1937,7 @@ def ai_polish_statement_api(slug):
         # Polish the statement
         try:
             result = ai_service.polish_statement_with_explanation(
-                raw_statement)
+                raw_statement, user_context)
             return jsonify({
                 'success': True,
                 'polished_statement': result.code,

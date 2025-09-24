@@ -14,6 +14,7 @@ from core.config import config
 def run_auto_build_workflow(
     slug: str,
     raw_options: Optional[Dict[str, Any]] = None,
+    user_context: str = "",
     *,
     progress_callback: Optional[Callable[[int, int, str], None]] = None,
 ) -> Dict[str, Any]:
@@ -44,7 +45,8 @@ def run_auto_build_workflow(
 
     ai_service = get_ai_service()
     if not ai_service:
-        raise RuntimeError('AI service not configured (missing OPENAI_API_KEY)')
+        raise RuntimeError(
+            'AI service not configured (missing OPENAI_API_KEY)')
 
     planned_steps: list[str] = []
     if options['polish_statement']:
@@ -90,12 +92,14 @@ def run_auto_build_workflow(
         try:
             details = func() or {}
         except Exception as exc:
-            summary_steps.append({'name': name, 'status': 'failed', 'error': str(exc)})
+            summary_steps.append(
+                {'name': name, 'status': 'failed', 'error': str(exc)})
             summary['status'] = 'failed'
             summary['error'] = str(exc)
             raise
         else:
-            summary_steps.append({'name': name, 'status': 'completed', 'details': details})
+            summary_steps.append(
+                {'name': name, 'status': 'completed', 'details': details})
 
     statement_path = problem_dir / 'statement.md'
     if not statement_path.exists():
@@ -107,7 +111,8 @@ def run_auto_build_workflow(
     if options['polish_statement']:
 
         def step_polish() -> Dict[str, Any]:
-            result = ai_service.polish_statement_with_explanation(original_statement)
+            result = ai_service.polish_statement_with_explanation(
+                original_statement, user_context)
             polished = result.code.strip() + '\n'
             file_manager.save_file('statement.md', polished)
             return {
@@ -121,7 +126,8 @@ def run_auto_build_workflow(
     if options['generate_solution']:
 
         def step_generate_solution() -> Dict[str, Any]:
-            result = ai_service.generate_solution_with_explanation(original_statement)
+            result = ai_service.generate_solution_with_explanation(
+                original_statement, user_context)
             solution_code = clean_code(result.code)
             file_manager.save_file('solution.py', solution_code)
             return {
@@ -134,7 +140,8 @@ def run_auto_build_workflow(
     if options['generate_generator']:
 
         def step_generate_generator() -> Dict[str, Any]:
-            result = ai_service.generate_generator_with_explanation(original_statement)
+            result = ai_service.generate_generator_with_explanation(
+                original_statement, user_context)
             generator_code = clean_code(result.code)
             file_manager.save_file('generator.py', generator_code)
             return {
@@ -147,7 +154,8 @@ def run_auto_build_workflow(
     if options['generate_validator']:
 
         def step_generate_validator() -> Dict[str, Any]:
-            result = ai_service.generate_validator_with_explanation(original_statement)
+            result = ai_service.generate_validator_with_explanation(
+                original_statement, user_context)
             validator_code = clean_code(result.code)
             file_manager.save_file('validator.py', validator_code)
             return {
@@ -160,7 +168,8 @@ def run_auto_build_workflow(
     if options['generate_spj']:
 
         def step_generate_spj() -> Dict[str, Any]:
-            result = ai_service.generate_special_judge_with_explanation(original_statement)
+            result = ai_service.generate_special_judge_with_explanation(
+                original_statement, user_context)
             spj_code = clean_code(result.code)
             file_manager.save_file('checker/spj.cpp', spj_code)
             return {
