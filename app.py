@@ -1183,7 +1183,7 @@ def test_solution_api(slug):
         data = request.get_json()
         cpp_code = data.get('code', '').strip()
         test_categories = data.get(
-            'categories', ['samples', 'pretests', 'system'])
+            'categories', ['samples', 'system'])
 
         if not cpp_code:
             return jsonify({'success': False, 'error': 'C++ code is required'}), 400

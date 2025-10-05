@@ -270,34 +270,64 @@ exec /usr/bin/time -l {executable_path} 2>&1
                             stderr=subprocess.PIPE
                         )
 
-                        # Monitor memory usage
+                        # Monitor memory usage with explicit timeout check
                         max_memory_mb = 0
+                        start_time_monitor = time.time()
+                        timeout_seconds = self.time_limit_ms / 1000.0
+
                         try:
                             ps_process = psutil.Process(process.pid)
                             while process.poll() is None:
+                                # ✅ CHECK TIMEOUT INSIDE THE LOOP TO PREVENT INFINITE HANG
+                                elapsed = time.time() - start_time_monitor
+                                if elapsed > timeout_seconds:
+                                    process.kill()
+                                    try:
+                                        # Wait for cleanup
+                                        process.wait(timeout=1.0)
+                                    except subprocess.TimeoutExpired:
+                                        pass  # Process already killed
+                                    # Raise TimeoutExpired to be caught by outer handler
+                                    raise subprocess.TimeoutExpired(
+                                        cmd=str(executable_path),
+                                        timeout=timeout_seconds
+                                    )
+
                                 try:
                                     memory_info = ps_process.memory_info()
                                     current_memory_mb = memory_info.rss / \
                                         (1024 * 1024)  # Convert to MB
                                     max_memory_mb = max(
                                         max_memory_mb, current_memory_mb)
+
+                                    # ✅ CHECK MEMORY LIMIT
+                                    if current_memory_mb > self.memory_limit_mb:
+                                        process.kill()
+                                        try:
+                                            process.wait(timeout=1.0)
+                                        except subprocess.TimeoutExpired:
+                                            pass
+                                        return SolutionResult(
+                                            test_num, 'MLE', elapsed * 1000,
+                                            memory_kb=int(
+                                                current_memory_mb * 1024),
+                                            details=f"Memory limit exceeded: {current_memory_mb:.1f}MB > {self.memory_limit_mb}MB",
+                                            input_content=input_content,
+                                            expected_output=expected_output,
+                                            actual_output=""
+                                        )
+
                                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                                     break
-                                time.sleep(0.01)  # Check every 10ms
-                        except ImportError:
-                            pass
 
-                        # Wait for process to complete with timeout
-                        try:
-                            process.wait(timeout=self.time_limit_ms / 1000.0)
-                            # Convert MB to KB
+                                time.sleep(0.01)  # Check every 10ms
+
+                            # Process finished normally
                             memory_kb = int(max_memory_mb * 1024)
-                        except subprocess.TimeoutExpired:
-                            process.kill()
-                            return SolutionResult(test_num, 'TLE', self.time_limit_ms,
-                                                  input_content=input_content,
-                                                  expected_output=expected_output,
-                                                  actual_output="")
+
+                        except psutil.NoSuchProcess:
+                            # Process ended before we could monitor it
+                            memory_kb = 0
 
                         result = process
 
