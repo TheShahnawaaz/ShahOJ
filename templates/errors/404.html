@@ -1,0 +1,99 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Page Not Found - PocketOJ{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <!-- Error Illustration -->
+            <div class="error-illustration mb-4">
+                <div class="error-code">404</div>
+                <div class="error-icon">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <h1 class="h2 mb-3">Page Not Found</h1>
+            <p class="lead text-muted mb-4">
+                Sorry, we couldn't find the page you're looking for. It might have been moved, deleted, or the URL might be incorrect.
+            </p>
+
+            <!-- Action Buttons -->
+            <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center mb-5">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                    <i class="fas fa-home me-2"></i>Go to Dashboard
+                </a>
+                <button onclick="history.back()" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Go Back
+                </button>
+                {% if current_user %}
+                <a href="{{ url_for('my_problems') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-code me-2"></i>My Problems
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Helpful Links -->
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">What can you do?</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-search text-primary me-2"></i>
+                                <small>Search for problems</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-plus text-success me-2"></i>
+                                <small>Create new problems</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-play text-info me-2"></i>
+                                <small>Try the playground</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-code {
+    font-size: 8rem;
+    font-weight: 900;
+    color: var(--text-muted);
+    opacity: 0.3;
+    line-height: 1;
+    font-family: 'Exo 2', sans-serif;
+}
+
+.error-illustration {
+    position: relative;
+}
+
+.error-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+[data-theme="dark"] .bg-light {
+    background-color: var(--secondary-bg) !important;
+}
+
+[data-theme="dark"] .card {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+</style>
+{% endblock %}
+

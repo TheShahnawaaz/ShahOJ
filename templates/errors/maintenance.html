@@ -1,0 +1,150 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Maintenance Mode - PocketOJ{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <!-- Maintenance Illustration -->
+            <div class="maintenance-illustration mb-4">
+                <div class="maintenance-icon">
+                    <i class="fas fa-tools fa-4x text-warning mb-3"></i>
+                </div>
+            </div>
+
+            <!-- Maintenance Message -->
+            <h1 class="h2 mb-3">We'll Be Right Back!</h1>
+            <p class="lead text-muted mb-4">
+                PocketOJ is currently undergoing scheduled maintenance to improve your experience. 
+                We'll be back online shortly.
+            </p>
+
+            <!-- Estimated Time -->
+            <div class="alert alert-info mb-4">
+                <h6><i class="fas fa-clock me-2"></i>Estimated Downtime:</h6>
+                <p class="mb-0">
+                    {% if maintenance_duration %}
+                        {{ maintenance_duration }}
+                    {% else %}
+                        We expect to be back within 30 minutes
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- What's Being Updated -->
+            <div class="card border-0 bg-light mb-4">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">What we're working on:</h6>
+                    <div class="row g-3 text-start">
+                        <div class="col-md-4">
+                            <div class="d-flex">
+                                <i class="fas fa-rocket text-primary me-3 mt-1"></i>
+                                <div>
+                                    <strong>Performance</strong>
+                                    <br><small class="text-muted">Optimizing system performance and response times</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex">
+                                <i class="fas fa-shield-alt text-success me-3 mt-1"></i>
+                                <div>
+                                    <strong>Security</strong>
+                                    <br><small class="text-muted">Implementing the latest security updates</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex">
+                                <i class="fas fa-plus text-info me-3 mt-1"></i>
+                                <div>
+                                    <strong>Features</strong>
+                                    <br><small class="text-muted">Adding new features and improvements</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Auto Refresh -->
+            <div class="mb-4">
+                <button onclick="location.reload()" class="btn btn-primary me-2">
+                    <i class="fas fa-sync-alt me-2"></i>Check Again
+                </button>
+                <span class="text-muted">
+                    <small>This page will automatically refresh in <span id="countdown">60</span> seconds</small>
+                </span>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="mt-4">
+                <p class="text-muted">
+                    <small>
+                        If you have urgent questions, please contact us at: 
+                        <a href="mailto:support@pocketoj.com" class="text-decoration-none">support@pocketoj.com</a>
+                    </small>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.maintenance-illustration {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.maintenance-icon {
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+[data-theme="dark"] .bg-light {
+    background-color: var(--secondary-bg) !important;
+}
+
+[data-theme="dark"] .card {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .alert-info {
+    background-color: rgba(23, 162, 184, 0.1) !important;
+    border-color: rgba(23, 162, 184, 0.2) !important;
+    color: var(--text-primary) !important;
+}
+</style>
+
+<script>
+// Auto refresh countdown
+let countdown = 60;
+const countdownElement = document.getElementById('countdown');
+
+function updateCountdown() {
+    countdown--;
+    countdownElement.textContent = countdown;
+    
+    if (countdown <= 0) {
+        location.reload();
+    }
+}
+
+// Update every second
+setInterval(updateCountdown, 1000);
+</script>
+{% endblock %}
+

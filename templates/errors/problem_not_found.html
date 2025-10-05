@@ -1,0 +1,160 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Problem Not Found - PocketOJ{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <!-- Error Illustration -->
+            <div class="error-illustration mb-4">
+                <div class="error-icon-large">
+                    <i class="fas fa-code fa-4x text-muted mb-3" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <h1 class="h2 mb-3">Problem Not Found</h1>
+            <p class="lead text-muted mb-4">
+                {% if problem_slug %}
+                    The problem "<strong>{{ problem_slug }}</strong>" doesn't exist or has been removed.
+                {% else %}
+                    The requested problem doesn't exist or has been removed.
+                {% endif %}
+            </p>
+
+            <!-- Possible Reasons -->
+            <div class="alert alert-info mb-4">
+                <h6><i class="fas fa-info-circle me-2"></i>Possible reasons:</h6>
+                <ul class="list-unstyled mb-0 text-start">
+                    <li><i class="fas fa-check-circle text-muted me-2"></i>The problem was deleted by its author</li>
+                    <li><i class="fas fa-check-circle text-muted me-2"></i>The problem slug (URL) is incorrect</li>
+                    <li><i class="fas fa-check-circle text-muted me-2"></i>The problem is private and you don't have access</li>
+                    <li><i class="fas fa-check-circle text-muted me-2"></i>The problem has been moved or renamed</li>
+                </ul>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center mb-5">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                    <i class="fas fa-search me-2"></i>Browse Problems
+                </a>
+                {% if current_user %}
+                <a href="{{ url_for('create_problem_form') }}" class="btn btn-success">
+                    <i class="fas fa-plus me-2"></i>Create Problem
+                </a>
+                <a href="{{ url_for('my_problems') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-code me-2"></i>My Problems
+                </a>
+                {% endif %}
+                <button onclick="history.back()" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Go Back
+                </button>
+            </div>
+
+            <!-- Search Alternative -->
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">Looking for something specific?</h6>
+                    
+                    <!-- Quick Search -->
+                    <form action="{{ url_for('dashboard') }}" method="GET" class="mb-3">
+                        <div class="input-group">
+                            <input type="text" 
+                                   name="search" 
+                                   class="form-control" 
+                                   placeholder="Search for problems..."
+                                   value="{{ request.args.get('search', '') }}">
+                            <button class="btn btn-outline-primary" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Popular Categories -->
+                    <div class="row g-2">
+                        <div class="col-6 col-md-3">
+                            <a href="{{ url_for('dashboard', difficulty='Easy') }}" class="btn btn-sm btn-outline-success w-100">
+                                <i class="fas fa-leaf me-1"></i>Easy
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <a href="{{ url_for('dashboard', difficulty='Medium') }}" class="btn btn-sm btn-outline-warning w-100">
+                                <i class="fas fa-chart-line me-1"></i>Medium
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <a href="{{ url_for('dashboard', difficulty='Hard') }}" class="btn btn-sm btn-outline-danger w-100">
+                                <i class="fas fa-fire me-1"></i>Hard
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <a href="{{ url_for('playground') }}" class="btn btn-sm btn-outline-info w-100">
+                                <i class="fas fa-play me-1"></i>Playground
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Problem Creation CTA for authenticated users -->
+            {% if current_user %}
+            <div class="mt-4 p-3 border rounded bg-gradient" style="background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(40, 167, 69, 0.05));">
+                <h6 class="text-success mb-2">
+                    <i class="fas fa-lightbulb me-2"></i>Create Your Own Problem
+                </h6>
+                <p class="text-muted mb-3 small">
+                    Can't find what you're looking for? Create a custom problem with our AI-powered tools!
+                </p>
+                <a href="{{ url_for('create_problem_form') }}" class="btn btn-success btn-sm">
+                    <i class="fas fa-magic me-2"></i>Start Creating
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.error-illustration {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+[data-theme="dark"] .bg-light {
+    background-color: var(--secondary-bg) !important;
+}
+
+[data-theme="dark"] .card {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .alert-info {
+    background-color: rgba(23, 162, 184, 0.1) !important;
+    border-color: rgba(23, 162, 184, 0.2) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .bg-gradient {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.15), rgba(40, 167, 69, 0.08)) !important;
+}
+
+.input-group .form-control {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .input-group .form-control {
+    background-color: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .input-group .form-control::placeholder {
+    color: var(--text-muted) !important;
+}
+</style>
+{% endblock %}
+

@@ -1,0 +1,150 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Access Denied - PocketOJ{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <!-- Error Illustration -->
+            <div class="error-illustration mb-4">
+                <div class="error-code">403</div>
+                <div class="error-icon">
+                    <i class="fas fa-lock fa-3x text-warning mb-3"></i>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <h1 class="h2 mb-3">Access Denied</h1>
+            <p class="lead text-muted mb-4">
+                {% if error_message %}
+                    {{ error_message }}
+                {% else %}
+                    You don't have permission to access this resource. This could be because the content is private or requires special privileges.
+                {% endif %}
+            </p>
+
+            <!-- Specific Messages Based on Context -->
+            {% if request.endpoint == 'admin_dashboard' or request.path.startswith('/admin') %}
+            <div class="alert alert-warning mb-4">
+                <i class="fas fa-shield-alt me-2"></i>
+                <strong>Admin Access Required:</strong> This section is restricted to system administrators.
+            </div>
+            {% elif 'problem' in request.endpoint or 'problem' in request.path %}
+            <div class="alert alert-info mb-4">
+                <i class="fas fa-code me-2"></i>
+                <strong>Problem Access:</strong> This problem may be private or you may not be the owner.
+            </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center mb-5">
+                {% if not current_user %}
+                <a href="{{ url_for('auth_login') }}" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                </a>
+                {% endif %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-home me-2"></i>Go to Dashboard
+                </a>
+                <button onclick="history.back()" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Go Back
+                </button>
+            </div>
+
+            <!-- Help Information -->
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">Need access?</h6>
+                    <div class="row g-3 text-start">
+                        {% if not current_user %}
+                        <div class="col-md-6">
+                            <div class="d-flex">
+                                <i class="fas fa-user-plus text-primary me-3 mt-1"></i>
+                                <div>
+                                    <strong>Sign In</strong>
+                                    <br><small class="text-muted">Use your Google account to sign in and access more features.</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="col-md-6">
+                            <div class="d-flex">
+                                <i class="fas fa-envelope text-info me-3 mt-1"></i>
+                                <div>
+                                    <strong>Contact Admin</strong>
+                                    <br><small class="text-muted">If you believe you should have access, contact the system administrator.</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% if current_user %}
+                        <div class="col-md-6">
+                            <div class="d-flex">
+                                <i class="fas fa-plus text-success me-3 mt-1"></i>
+                                <div>
+                                    <strong>Create Your Own</strong>
+                                    <br><small class="text-muted">Create your own problems that you can access and manage.</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex">
+                                <i class="fas fa-globe text-warning me-3 mt-1"></i>
+                                <div>
+                                    <strong>Public Problems</strong>
+                                    <br><small class="text-muted">Browse and solve publicly available problems.</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-code {
+    font-size: 8rem;
+    font-weight: 900;
+    color: var(--text-muted);
+    opacity: 0.3;
+    line-height: 1;
+    font-family: 'Exo 2', sans-serif;
+}
+
+.error-illustration {
+    position: relative;
+}
+
+.error-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+[data-theme="dark"] .bg-light {
+    background-color: var(--secondary-bg) !important;
+}
+
+[data-theme="dark"] .card {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .alert-warning {
+    background-color: rgba(255, 193, 7, 0.1) !important;
+    border-color: rgba(255, 193, 7, 0.2) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .alert-info {
+    background-color: rgba(23, 162, 184, 0.1) !important;
+    border-color: rgba(23, 162, 184, 0.2) !important;
+    color: var(--text-primary) !important;
+}
+</style>
+{% endblock %}
+

@@ -3,7 +3,7 @@ Middleware for PocketOJ authentication and authorization
 """
 
 from functools import wraps
-from flask import request, g, jsonify, redirect, url_for
+from flask import request, g, jsonify, redirect, url_for, render_template, abort
 from typing import Optional, Dict
 
 
@@ -35,7 +35,8 @@ def require_auth(f):
             if request.is_json:
                 return jsonify({'error': 'Authentication required'}), 401
             else:
-                return redirect(url_for('auth_login'))
+                # Use our custom unauthorized page instead of redirect
+                abort(401)
         return f(*args, **kwargs)
     return decorated_function
 
@@ -49,7 +50,8 @@ def require_superuser(f):
             expects_json = request.is_json or request.path.startswith('/api/')
             if expects_json:
                 return jsonify({'error': 'Superuser access required'}), 403
-            return redirect(url_for('dashboard'))
+            # Use proper 403 error page instead of redirect
+            abort(403)
         return f(*args, **kwargs)
     return decorated_function
 
@@ -70,7 +72,9 @@ def require_problem_access(permission_type='view'):
                 if request.is_json:
                     return jsonify({'error': 'Problem not found'}), 404
                 else:
-                    return "Problem not found", 404
+                    # Use our custom problem not found page
+                    return render_template('errors/problem_not_found.html',
+                                           problem_slug=slug), 404
 
             user = g.get('current_user')
             user_id = user['id'] if user else None
@@ -103,7 +107,22 @@ def require_problem_access(permission_type='view'):
                 if request.is_json:
                     return jsonify({'error': 'Access denied'}), 403
                 else:
-                    return "Access denied", 403
+                    # Determine specific error message based on context
+                    if not user:
+                        # Not authenticated - show sign in page
+                        return render_template('errors/unauthorized.html'), 401
+                    else:
+                        # Authenticated but no permission - show access denied
+                        error_message = None
+                        if permission_type == 'edit':
+                            error_message = "You can only edit problems that you created."
+                        elif permission_type == 'delete':
+                            error_message = "You can only delete problems that you created."
+                        elif permission_type == 'view' and not problem['is_public']:
+                            error_message = "This problem is private and you don't have access to view it."
+
+                        return render_template('errors/403.html',
+                                               error_message=error_message), 403
 
             # Store problem in g for use in route handler
             g.current_problem = problem

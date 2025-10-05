@@ -1,0 +1,135 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Server Error - PocketOJ{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <!-- Error Illustration -->
+            <div class="error-illustration mb-4">
+                <div class="error-code">500</div>
+                <div class="error-icon">
+                    <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <h1 class="h2 mb-3">Internal Server Error</h1>
+            <p class="lead text-muted mb-4">
+                Oops! Something went wrong on our end. Our team has been notified and we're working to fix this issue.
+            </p>
+
+            <!-- Error Details (for development) -->
+            {% if config.DEBUG and error_details %}
+            <div class="alert alert-danger text-start mb-4">
+                <h6><i class="fas fa-bug me-2"></i>Error Details (Debug Mode):</h6>
+                <pre class="mb-0"><code>{{ error_details }}</code></pre>
+            </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center mb-5">
+                <button onclick="location.reload()" class="btn btn-primary">
+                    <i class="fas fa-redo me-2"></i>Try Again
+                </button>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-home me-2"></i>Go to Dashboard
+                </a>
+                <button onclick="history.back()" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Go Back
+                </button>
+            </div>
+
+            <!-- Help Information -->
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">What happened?</h6>
+                    <div class="row g-3 text-start">
+                        <div class="col-md-4">
+                            <div class="d-flex">
+                                <i class="fas fa-server text-danger me-3 mt-1"></i>
+                                <div>
+                                    <strong>Server Issue</strong>
+                                    <br><small class="text-muted">An unexpected error occurred while processing your request.</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex">
+                                <i class="fas fa-tools text-warning me-3 mt-1"></i>
+                                <div>
+                                    <strong>We're On It</strong>
+                                    <br><small class="text-muted">Our team has been automatically notified and is working on a fix.</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex">
+                                <i class="fas fa-clock text-info me-3 mt-1"></i>
+                                <div>
+                                    <strong>Try Again</strong>
+                                    <br><small class="text-muted">The issue might be temporary. Please try refreshing the page.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="mt-4">
+                <p class="text-muted">
+                    <small>
+                        If the problem persists, please contact support with error code: 
+                        <code>{{ request.url }}</code> at {{ moment().format('YYYY-MM-DD HH:mm:ss') }}
+                    </small>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-code {
+    font-size: 8rem;
+    font-weight: 900;
+    color: var(--text-muted);
+    opacity: 0.3;
+    line-height: 1;
+    font-family: 'Exo 2', sans-serif;
+}
+
+.error-illustration {
+    position: relative;
+}
+
+.error-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+[data-theme="dark"] .bg-light {
+    background-color: var(--secondary-bg) !important;
+}
+
+[data-theme="dark"] .card {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .alert-danger {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+    border-color: rgba(220, 53, 69, 0.2) !important;
+    color: var(--text-primary) !important;
+}
+
+pre code {
+    font-size: 0.85rem;
+    color: inherit;
+}
+</style>
+{% endblock %}
+

@@ -1,0 +1,159 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Sign In Required - PocketOJ{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <!-- Error Illustration -->
+            <div class="error-illustration mb-4">
+                <div class="error-icon-large">
+                    <i class="fas fa-user-lock fa-4x text-primary mb-3" style="opacity: 0.7;"></i>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <h1 class="h2 mb-3">Sign In Required</h1>
+            <p class="lead text-muted mb-4">
+                You need to sign in to access this feature. PocketOJ uses Google authentication for secure and easy access.
+            </p>
+
+            <!-- Benefits of Signing In -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-plus-circle fa-2x text-success mb-3"></i>
+                            <h6 class="card-title">Create Problems</h6>
+                            <p class="card-text small text-muted">Design and share your own competitive programming problems</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-line fa-2x text-info mb-3"></i>
+                            <h6 class="card-title">Track Progress</h6>
+                            <p class="card-text small text-muted">Monitor your submissions and problem-solving progress</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-code fa-2x text-warning mb-3"></i>
+                            <h6 class="card-title">Submit Solutions</h6>
+                            <p class="card-text small text-muted">Test your code against comprehensive test cases</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sign In Button -->
+            <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center mb-4">
+                <a href="{{ url_for('auth_login') }}" class="btn btn-primary btn-lg">
+                    <i class="fab fa-google me-2"></i>Sign In with Google
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-eye me-2"></i>Browse Public Problems
+                </a>
+            </div>
+
+            <!-- Security Notice -->
+            <div class="alert alert-light border mb-4">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-shield-alt text-success me-3"></i>
+                    <div class="text-start">
+                        <strong>Secure & Privacy-Focused</strong>
+                        <br><small class="text-muted">We only access your basic Google profile information (name, email, picture). No access to your Google data.</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- What you can do without signing in -->
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">Available without signing in:</h6>
+                    <div class="row g-3 text-start">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-globe text-primary me-3"></i>
+                                <div>
+                                    <strong>View Public Problems</strong>
+                                    <br><small class="text-muted">Browse and read problem statements</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-play text-success me-3"></i>
+                                <div>
+                                    <strong>Code Playground</strong>
+                                    <br><small class="text-muted">Test your code with custom inputs</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{{ url_for('playground') }}" class="btn btn-sm btn-outline-primary me-2">
+                            <i class="fas fa-play me-1"></i>Try Playground
+                        </a>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-home me-1"></i>View Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back Navigation -->
+            <div class="mt-4">
+                <button onclick="history.back()" class="btn btn-link text-muted">
+                    <i class="fas fa-arrow-left me-1"></i>Go back to previous page
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-illustration {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+[data-theme="dark"] .bg-light {
+    background-color: var(--secondary-bg) !important;
+}
+
+[data-theme="dark"] .card {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .alert-light {
+    background-color: var(--secondary-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+
+[data-theme="dark"] .card:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+}
+
+.btn-lg {
+    padding: 12px 30px;
+    font-weight: 500;
+}
+</style>
+{% endblock %}
+

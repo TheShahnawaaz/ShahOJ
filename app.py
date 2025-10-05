@@ -2016,6 +2016,138 @@ def health_check():
         }), 503
 
 
+# ============================================================================
+# ERROR HANDLERS
+# ============================================================================
+
+@app.errorhandler(404)
+def page_not_found(error):
+    """Handle 404 errors with custom page"""
+    if request.path.startswith('/api/'):
+        return jsonify({
+            'success': False,
+            'error': 'Endpoint not found',
+            'status_code': 404
+        }), 404
+
+    return render_template('errors/404.html'), 404
+
+
+@app.errorhandler(403)
+def access_denied(error):
+    """Handle 403 errors with custom page"""
+    if request.path.startswith('/api/'):
+        return jsonify({
+            'success': False,
+            'error': 'Access denied',
+            'status_code': 403
+        }), 403
+
+    # Check if this is an authentication issue
+    user = g.get('current_user')
+    if not user:
+        return render_template('errors/unauthorized.html'), 403
+
+    # Otherwise show access denied page
+    error_message = getattr(error, 'description', None)
+    return render_template('errors/403.html', error_message=error_message), 403
+
+
+@app.errorhandler(500)
+def internal_server_error(error):
+    """Handle 500 errors with custom page"""
+    if request.path.startswith('/api/'):
+        return jsonify({
+            'success': False,
+            'error': 'Internal server error',
+            'status_code': 500
+        }), 500
+
+    # Get error details for development
+    error_details = None
+    if app.config.get('DEBUG'):
+        error_details = str(error)
+
+    return render_template('errors/500.html',
+                           error_details=error_details,
+                           config=app.config), 500
+
+
+@app.errorhandler(401)
+def unauthorized(error):
+    """Handle 401 errors (authentication required)"""
+    if request.path.startswith('/api/'):
+        return jsonify({
+            'success': False,
+            'error': 'Authentication required',
+            'status_code': 401
+        }), 401
+
+    return render_template('errors/unauthorized.html'), 401
+
+
+def render_problem_not_found(problem_slug=None):
+    """Render problem not found page"""
+    return render_template('errors/problem_not_found.html',
+                           problem_slug=problem_slug), 404
+
+
+# ============================================================================
+# ERROR TESTING ROUTES (Remove in production)
+# ============================================================================
+
+@app.route('/test-errors')
+def test_error_pages():
+    """Test page for error scenarios - REMOVE IN PRODUCTION"""
+    if not app.config.get('DEBUG'):
+        abort(404)
+
+    return '''
+    <h2>Error Page Testing</h2>
+    <p>Click links to test error pages:</p>
+    <ul>
+        <li><a href="/test-404">Test 404 (Page Not Found)</a></li>
+        <li><a href="/test-500">Test 500 (Server Error)</a></li>
+        <li><a href="/test-403">Test 403 (Access Denied)</a></li>
+        <li><a href="/test-401">Test 401 (Unauthorized)</a></li>
+        <li><a href="/problem/nonexistent-problem">Test Problem Not Found</a></li>
+        <li><a href="/admin">Test Admin Access (if not superuser)</a></li>
+    </ul>
+    '''
+
+
+@app.route('/test-404')
+def test_404():
+    """Test 404 error page"""
+    if not app.config.get('DEBUG'):
+        abort(404)
+    abort(404)
+
+
+@app.route('/test-500')
+def test_500():
+    """Test 500 error page"""
+    if not app.config.get('DEBUG'):
+        abort(404)
+    raise Exception("This is a test server error")
+
+
+@app.route('/test-403')
+def test_403():
+    """Test 403 error page"""
+    if not app.config.get('DEBUG'):
+        abort(404)
+    abort(403)
+
+
+@app.route('/test-401')
+def test_401():
+    """Test 401 error page"""
+    if not app.config.get('DEBUG'):
+        abort(404)
+    abort(401)
+
+
 if __name__ == '__main__':
     # Create config file if it doesn't exist
     if not os.path.exists('config.yaml'):
