@@ -690,6 +690,130 @@ def submit_solution_api(slug):
         return jsonify({'success': False, 'error': f'Submission error: {str(e)}'}), 500
 
 
+@app.route('/api/problem/<slug>/submit-with-details', methods=['POST'])
+@require_auth
+@require_problem_access('view')
+def submit_solution_with_details_api(slug):
+    """
+    Enhanced submit endpoint that creates submission AND returns full test details.
+    This combines the behavior of submit + test-solution.
+    Used by the new Submit button that shows all test results immediately.
+    """
+    try:
+        user = g.current_user
+        data = request.get_json() or {}
+        language = (data.get('language') or 'cpp').strip().lower()
+        source_code = (data.get('code') or '').rstrip()
+
+        # Validate
+        if not source_code:
+            return jsonify({'success': False, 'error': 'Source code is required'}), 400
+        if language != 'cpp':
+            return jsonify({'success': False, 'error': 'Only C++ submissions are supported for now'}), 400
+        # Guard: limit size (100KB)
+        if len(source_code.encode('utf-8')) > 100 * 1024:
+            return jsonify({'success': False, 'error': 'Source too large (max 100KB)'}), 400
+
+        # Dedupe by hash for this user/problem/language
+        source_hash = _compute_source_hash(slug, language, source_code)
+        existing = db_manager.find_duplicate_submission(
+            user['id'], slug, language, source_hash)
+        if existing:
+            return jsonify({'success': False, 'error': 'Duplicate submission: same code already submitted', 'submission_id': existing}), 409
+
+        # Create submission (status running)
+        try:
+            submission_id = db_manager.create_submission(
+                user_id=user['id'],
+                problem_slug=slug,
+                language=language,
+                source_code=source_code,
+                source_hash=source_hash,
+                status='running'
+            )
+        except Exception as e:
+            # Handle rare race on unique index
+            return jsonify({'success': False, 'error': 'Duplicate submission or DB error'}), 409
+
+        # Judge synchronously
+        problem = unified_problem_manager.get_problem(slug)
+        if not problem:
+            db_manager.update_submission(submission_id, {'status': 'failed'})
+            return jsonify({'success': False, 'error': 'Problem not found'}), 404
+
+        from core.solution_tester import SolutionTester
+        tester = SolutionTester(problem)
+        results = tester.test_solution(source_code, ['samples', 'system'])
+
+        # Map results
+        compilation = results.get('compilation', {})
+        compile_time_ms = int(compilation.get('time_ms') or 0)
+        compile_output = compilation.get('errors') or ''
+        statistics = results.get('statistics', {})
+        total_time_ms = int(statistics.get('total_time_ms') or 0)
+        overall_verdict = results.get('overall_verdict') or 'JE'
+
+        # Create a compact summary for database storage
+        compact_summary = {
+            'overall_verdict': results.get('overall_verdict'),
+            'compilation': results.get('compilation', {}),
+            'statistics': results.get('statistics', {}),
+            'categories': results.get('categories', {}),
+            'test_results_summary': {}
+        }
+
+        # Add metadata for ALL tests (much smaller than full content)
+        test_results = results.get('test_results', {})
+        for category, tests in test_results.items():
+            compact_summary['test_results_summary'][category] = []
+            for test in tests:
+                # Store only essential metadata, no input/output content
+                test_metadata = {
+                    'test_num': test.get('test_num'),
+                    'verdict': test.get('verdict'),
+                    'time_ms': test.get('time_ms'),
+                    'memory_kb': test.get('memory_kb', 0)
+                }
+                # Only add details for non-AC tests to save space
+                if test.get('verdict') != 'AC' and test.get('details'):
+                    test_metadata['details'] = test.get('details', '')[:200]
+
+                compact_summary['test_results_summary'][category].append(
+                    test_metadata)
+
+        summary_json = json.dumps(compact_summary)
+
+        # Update submission in database with compact summary
+        db_manager.update_submission(submission_id, {
+            'status': 'completed',
+            'verdict': overall_verdict,
+            'compile_time_ms': compile_time_ms,
+            'time_ms': total_time_ms,
+            'compile_output': compile_output[:100*1024],
+            'result_summary_json': summary_json
+        })
+
+        # Return submission info AND full test results for immediate display
+        return jsonify({
+            'success': True,
+            'submission_id': submission_id,
+            'verdict': overall_verdict,
+            'statistics': statistics,
+            'detailed_results': results  # Full results for one-time display
+        })
+
+    except Exception as e:
+        # On unexpected error, attempt to mark submission failed if created
+        try:
+            if 'submission_id' in locals():
+                db_manager.update_submission(
+                    submission_id, {'status': 'failed'})
+        except Exception:
+            pass
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': f'Submission error: {str(e)}'}), 500
+
+
 @app.route('/api/submissions/<submission_id>')
 @require_auth
 def get_submission_api(submission_id):

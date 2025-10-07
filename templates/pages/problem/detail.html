@@ -251,11 +251,15 @@
         flex: 0 0 50%;
         min-width: 300px;
         max-width: 80%;
+        position: relative;
+        overflow: visible;
     }
     
     .resizable-panel-right {
         flex: 1;
         min-width: 300px;
+        position: relative;
+        overflow: visible;
     }
     
     .resize-divider {
@@ -1636,6 +1640,68 @@
             min-width: auto;
         }
     }
+
+    /* Floating Scroll Down Button - Scoped to Solution Editor Section */
+    .floating-scroll-btn {
+        position: absolute;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+        cursor: pointer;
+        z-index: 100;
+        transition: opacity 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .floating-scroll-btn.show {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .floating-scroll-btn:hover {
+        background: linear-gradient(135deg, #0056b3, #004085);
+        box-shadow: 0 3px 12px rgba(0, 123, 255, 0.3);
+    }
+
+    .floating-scroll-btn:active {
+        box-shadow: 0 1px 6px rgba(0, 123, 255, 0.2);
+    }
+
+    /* Dark mode for floating button - matches card headers */
+    [data-theme="dark"] .floating-scroll-btn {
+        background: linear-gradient(135deg, var(--btn-primary), #094766);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    [data-theme="dark"] .floating-scroll-btn:hover {
+        background: linear-gradient(135deg, var(--btn-primary), #0a5878);
+        border-color: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Responsive for mobile */
+    @media (max-width: 768px) {
+        .floating-scroll-btn {
+            bottom: 1rem;
+            right: 1rem;
+            width: 44px;
+            height: 44px;
+            font-size: 1rem;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -1658,6 +1724,11 @@
         <div class="resizable-container" id="resizableContainer">
             <!-- Left Panel: Problem Statement -->
             <div class="resizable-panel resizable-panel-left">
+                <!-- Floating Scroll Down Button for Problem Statement -->
+                <button id="floatingScrollBtnLeft" class="floating-scroll-btn" style="display: none;" title="Scroll to see more">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                
                 {% call enhanced_card("Problem Statement", "fas fa-file-alt", []) %}
                     <div id="problemStatement">
                         <div class="text-center py-4">
@@ -1673,6 +1744,11 @@
 
             <!-- Right Panel: Solution Editor -->
             <div class="resizable-panel resizable-panel-right">
+                <!-- Floating Scroll Down Button (scoped to this section) -->
+                <button id="floatingScrollBtn" class="floating-scroll-btn" style="display: none;" title="Scroll to see results below">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                
             {% call enhanced_card("Solution Editor", "fas fa-code", [
                 {'text': 'Clear', 'icon': 'fas fa-trash', 'class': 'btn-outline-secondary btn-sm', 'id': 'clearCodeBtn'},
                 {'text': 'Template', 'icon': 'fas fa-file-code', 'class': 'btn-outline-info btn-sm', 'id': 'loadTemplateBtn'}
@@ -1685,19 +1761,20 @@
                 <!-- Test Solution Controls -->
                 <div class="mt-3 pt-3 border-top">
                     {% if current_user %}
-                        <div class="d-flex gap-3 flex-wrap">
-                            <button class="btn btn-run-all btn-enhanced" id="runTestsBtn">
-                                <i class="fas fa-play me-2"></i>Run All Tests
-                            </button>
-                            <button class="btn btn-run-samples btn-enhanced" id="runSampleBtn">
-                                <i class="fas fa-vial me-2"></i>Run Samples
-                            </button>
-                            <button class="btn btn-run-custom btn-enhanced" id="runCustomBtn">
-                                <i class="fas fa-keyboard me-2"></i>Run Custom Input
-                            </button>
-                            <button class="btn btn-run-submit btn-enhanced" id="submitCodeBtn">
-                                <i class="fas fa-paper-plane me-2"></i>Submit
-                            </button>
+                        <div class="d-flex gap-3 flex-wrap justify-content-between">
+                            <div class="d-flex gap-3 flex-wrap">
+                                <button class="btn btn-run-samples btn-enhanced" id="runSampleBtn">
+                                    <i class="fas fa-vial me-2"></i>Run Samples
+                                </button>
+                                <button class="btn btn-run-submit btn-enhanced" id="submitCodeBtn">
+                                    <i class="fas fa-paper-plane me-2"></i>Submit
+                                </button>
+                            </div>
+                            <div>
+                                <button class="btn btn-run-custom btn-enhanced" id="runCustomBtn">
+                                    <i class="fas fa-keyboard me-2"></i>Run Custom Input
+                                </button>
+                            </div>
                         </div>
                     {% else %}
                         <div class="text-muted">
@@ -1849,6 +1926,13 @@ function loadProblemStatement() {
                     <h4>{{ problem.config.get('title', problem.slug) }}</h4>
                 `;
             }
+            
+            // Update floating scroll button visibility for left panel
+            setTimeout(() => {
+                if (window.floatingScrollButtonLeft) {
+                    window.floatingScrollButtonLeft.updateButtonVisibility();
+                }
+            }, 200);
         })
         .catch(error => {
             console.error('Statement loading error:', error);
@@ -1962,9 +2046,83 @@ class SolutionTester {
             this.cppEditor = MonacoEditorPresets.createCppSolutionEditor('cpp-solution-editor');
             solutionEditor = this.cppEditor; // Set global reference
             
+            // Enable scroll propagation from Monaco to parent container
+            setTimeout(() => {
+                this.enableScrollPropagation();
+            }, 300);
+            
         } catch (error) {
             console.error('Failed to initialize Solution Tester:', error);
         }
+    }
+    
+    enableScrollPropagation() {
+        // Enable scroll propagation from Monaco editor to parent when at boundaries
+        if (!this.cppEditor) {
+            console.log('❌ Editor not ready for scroll propagation');
+            return;
+        }
+        
+        const editorContainer = document.getElementById('cpp-solution-editor');
+        const scrollableParent = document.querySelector('.resizable-panel-right .card-body');
+        
+        if (!editorContainer || !scrollableParent) {
+            console.log('❌ Container or parent not found');
+            return;
+        }
+        
+        console.log('🔧 Setting up Monaco scroll propagation...');
+        
+        // Store editor reference for closure
+        const editor = this.cppEditor;
+        
+        // Wheel event handler for scroll propagation
+        const wheelHandler = (e) => {
+            try {
+                // Get current scroll position in editor
+                const scrollTop = editor.getScrollTop();
+                const scrollHeight = editor.getScrollHeight();
+                const visibleHeight = editorContainer.offsetHeight;
+                
+                const atTop = scrollTop === 0;
+                const atBottom = scrollTop + visibleHeight >= scrollHeight - 1;
+                const scrollDown = e.deltaY > 0;
+                const scrollUp = e.deltaY < 0;
+                
+                // Propagate scroll to parent when at boundaries
+                if ((atBottom && scrollDown) || (atTop && scrollUp)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    scrollableParent.scrollBy({
+                        top: e.deltaY,
+                        behavior: 'auto'
+                    });
+                    console.log('🎯 Boundary detected - propagating scroll to parent');
+                }
+            } catch (error) {
+                console.error('Scroll propagation error:', error);
+            }
+        };
+        
+        // Attach to editor container and Monaco internal elements
+        editorContainer.addEventListener('wheel', wheelHandler, { 
+            passive: false, 
+            capture: true 
+        });
+        
+        // Also attach to Monaco's internal scrollable element after delay
+        setTimeout(() => {
+            const monacoScrollable = editorContainer.querySelector('.monaco-scrollable-element');
+            if (monacoScrollable) {
+                monacoScrollable.addEventListener('wheel', wheelHandler, { 
+                    passive: false, 
+                    capture: true 
+                });
+                console.log('✅ Scroll propagation enabled on Monaco internal elements');
+            }
+        }, 500);
+        
+        console.log('✅ Scroll propagation setup complete');
     }
     
     setupEventListeners() {
@@ -2013,27 +2171,6 @@ signed main()
             }
         });
         
-        // Run all tests
-        document.getElementById('runTestsBtn')?.addEventListener('click', () => {
-            // Check if user is authenticated
-            const isAuthenticated = {{ 'true' if current_user else 'false' }};
-            if (!isAuthenticated) {
-                alert('Please sign in to run tests on problems.');
-                return;
-            }
-            
-            const code = this.getCode();
-            
-            if (!code.trim()) {
-                alert('Please enter C++ code to test');
-                return;
-            }
-            
-            // Run both samples and system tests
-            const categories = ['samples', 'system'];
-            this.runAllTests(code, categories);
-        });
-
         // Run samples only
         document.getElementById('runSampleBtn')?.addEventListener('click', () => {
             // Check if user is authenticated
@@ -2074,7 +2211,7 @@ signed main()
             this.runCustomInput();
         });
 
-        // Submit code
+        // Submit code - Enhanced to show full test results
         document.getElementById('submitCodeBtn')?.addEventListener('click', async () => {
             const isAuthenticated = {{ 'true' if current_user else 'false' }};
             if (!isAuthenticated) {
@@ -2087,27 +2224,58 @@ signed main()
             btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
             try {
                 const code = this.getCode();
-                if (!code.trim()) { alert('Please enter C++ code to submit'); return; }
-                const res = await fetch(`/api/problem/{{ problem.slug }}/submit`, {
+                if (!code.trim()) { 
+                    alert('Please enter C++ code to submit'); 
+                    return; 
+                }
+                
+                // Use new endpoint that returns detailed results
+                const res = await fetch(`/api/problem/{{ problem.slug }}/submit-with-details`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ language: 'cpp', code })
                 });
                 const data = await res.json();
+                
                 if (res.status === 409) {
+                    // Duplicate submission
                     if (this.cppEditor && this.cppEditor.showAutoSaveNotification) {
                         this.cppEditor.showAutoSaveNotification('Duplicate submission: same code already submitted', 'info');
                     } else {
                         alert('Duplicate submission: same code already submitted.');
                     }
                 } else if (data.success) {
-                    if (this.cppEditor && this.cppEditor.showAutoSaveNotification) {
-                        this.cppEditor.showAutoSaveNotification(`Submitted. Verdict: ${data.verdict}`, 'success');
-                    } else {
-                        alert(`Submitted. Verdict: ${data.verdict}`);
+                    // Display full test results if available
+                    if (data.detailed_results) {
+                        displayTestResults(data.detailed_results);
+                        
+                        // Scroll to results section
+                        setTimeout(() => {
+                            document.getElementById('testResults')?.scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'start' 
+                            });
+                        }, 100);
                     }
+                    
+                    // Show enhanced notification
+                    const passRate = data.statistics?.pass_rate || 0;
+                    const totalTests = data.statistics?.total_tests || 0;
+                    const passed = data.statistics?.passed || 0;
+                    const verdictEmoji = data.verdict === 'AC' ? '✅' : '❌';
+                    const submissionIdShort = data.submission_id ? data.submission_id.slice(0, 8) : 'unknown';
+                    const message = `${verdictEmoji} Submission #${submissionIdShort}... - ${data.verdict} (${passed}/${totalTests} tests passed, ${passRate}%)`;
+                    
+                    if (this.cppEditor && this.cppEditor.showAutoSaveNotification) {
+                        this.cppEditor.showAutoSaveNotification(message, data.verdict === 'AC' ? 'success' : 'info');
+                    } else {
+                        alert(message);
+                    }
+                    
+                    // Refresh submissions list
                     loadRecentSubmissions();
                 } else {
+                    // Error
                     if (this.cppEditor && this.cppEditor.showAutoSaveNotification) {
                         this.cppEditor.showAutoSaveNotification(data.error || 'Submission failed', 'info');
                     } else {
@@ -2115,6 +2283,7 @@ signed main()
                     }
                 }
             } catch (e) {
+                console.error('Submission error:', e);
                 if (this.cppEditor && this.cppEditor.showAutoSaveNotification) {
                     this.cppEditor.showAutoSaveNotification('Network error while submitting', 'info');
                 } else {
@@ -2132,10 +2301,8 @@ signed main()
     }
     
     runAllTests(code, categories) {
-        // Disable run button
-        const runBtn = categories.includes('system') ? 
-            document.getElementById('runTestsBtn') : 
-            document.getElementById('runSampleBtn');
+        // Disable run button (only samples button exists now)
+        const runBtn = document.getElementById('runSampleBtn');
         const originalText = runBtn.innerHTML;
         runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
         runBtn.disabled = true;
@@ -2398,6 +2565,13 @@ function displayTestResults(results) {
     
     // Scroll to results
     testResultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    
+    // Update floating scroll button visibility
+    setTimeout(() => {
+        if (window.floatingScrollButton) {
+            window.floatingScrollButton.updateButtonVisibility();
+        }
+    }, 100);
 }
 
 
@@ -3024,6 +3198,13 @@ async function loadRecentSubmissions() {
         
         content.innerHTML = html;
         
+        // Update floating scroll button visibility
+        setTimeout(() => {
+            if (window.floatingScrollButton) {
+                window.floatingScrollButton.updateButtonVisibility();
+            }
+        }, 100);
+        
     } catch (e) {
         const section = document.getElementById('recentSubmissions');
         if (section) section.style.display = 'none';
@@ -3087,6 +3268,196 @@ function viewAllSubmissionsForProblem() {
     const problemSlug = '{{ problem.slug }}';
     window.location.href = `/my-submissions?search=${encodeURIComponent(problemSlug)}`;
 }
+
+// Floating Scroll Button Handler
+class FloatingScrollButton {
+    constructor() {
+        this.button = document.getElementById('floatingScrollBtn');
+        this.rightPanel = document.querySelector('.resizable-panel-right .card-body');
+        
+        if (!this.button || !this.rightPanel) {
+            console.log('Floating scroll button not initialized - elements missing');
+            return;
+        }
+        
+        this.init();
+    }
+    
+    init() {
+        // Show/hide button based on scroll position
+        this.rightPanel.addEventListener('scroll', () => {
+            this.updateButtonVisibility();
+        });
+        
+        // Click handler - scroll to next section (test results or submissions)
+        this.button.addEventListener('click', () => {
+            this.scrollToNextSection();
+        });
+        
+        // Initial check
+        setTimeout(() => {
+            this.updateButtonVisibility();
+        }, 500);
+        
+        console.log('✅ Floating scroll button initialized');
+    }
+    
+    updateButtonVisibility() {
+        const scrollTop = this.rightPanel.scrollTop;
+        const scrollHeight = this.rightPanel.scrollHeight;
+        const clientHeight = this.rightPanel.clientHeight;
+        
+        // Calculate how much room is left to scroll
+        const scrollRemaining = scrollHeight - (scrollTop + clientHeight);
+        
+        // Always show button if there's scrollable content or user is scrolled down
+        if (scrollHeight > clientHeight + 50) {
+            this.button.style.display = 'flex';
+            this.button.classList.add('show');
+            
+            // Change icon based on position
+            const icon = this.button.querySelector('i');
+            if (scrollRemaining < 100) {
+                // At or near bottom - show up arrow
+                icon.className = 'fas fa-chevron-up';
+                this.button.title = 'Scroll to top';
+            } else {
+                // Not at bottom - show down arrow
+                icon.className = 'fas fa-chevron-down';
+                this.button.title = 'Scroll to bottom';
+            }
+        } else {
+            // No scrollable content - hide button
+            this.button.classList.remove('show');
+            setTimeout(() => {
+                if (!this.button.classList.contains('show')) {
+                    this.button.style.display = 'none';
+                }
+            }, 300);
+        }
+    }
+    
+    scrollToNextSection() {
+        const scrollTop = this.rightPanel.scrollTop;
+        const scrollHeight = this.rightPanel.scrollHeight;
+        const clientHeight = this.rightPanel.clientHeight;
+        const scrollRemaining = scrollHeight - (scrollTop + clientHeight);
+        
+        if (scrollRemaining < 100) {
+            // At bottom - scroll to top
+            this.rightPanel.scrollTo({ 
+                top: 0, 
+                behavior: 'smooth' 
+            });
+        } else {
+            // Not at bottom - scroll to bottom
+            const targetScroll = scrollHeight - clientHeight;
+            this.rightPanel.scrollTo({ 
+                top: targetScroll, 
+                behavior: 'smooth' 
+            });
+        }
+    }
+}
+
+// Floating Scroll Button for Problem Statement (Left Panel)
+class FloatingScrollButtonLeft {
+    constructor() {
+        this.button = document.getElementById('floatingScrollBtnLeft');
+        this.leftPanel = document.querySelector('.resizable-panel-left .card-body');
+        
+        if (!this.button || !this.leftPanel) {
+            console.log('Floating scroll button (left) not initialized - elements missing');
+            return;
+        }
+        
+        this.init();
+    }
+    
+    init() {
+        // Show/hide button based on scroll position
+        this.leftPanel.addEventListener('scroll', () => {
+            this.updateButtonVisibility();
+        });
+        
+        // Click handler - scroll to bottom
+        this.button.addEventListener('click', () => {
+            this.scrollToBottom();
+        });
+        
+        // Initial check
+        setTimeout(() => {
+            this.updateButtonVisibility();
+        }, 500);
+        
+        console.log('✅ Floating scroll button (left) initialized');
+    }
+    
+    updateButtonVisibility() {
+        const scrollTop = this.leftPanel.scrollTop;
+        const scrollHeight = this.leftPanel.scrollHeight;
+        const clientHeight = this.leftPanel.clientHeight;
+        
+        // Calculate how much room is left to scroll
+        const scrollRemaining = scrollHeight - (scrollTop + clientHeight);
+        
+        // Always show button if there's scrollable content
+        if (scrollHeight > clientHeight + 50) {
+            this.button.style.display = 'flex';
+            this.button.classList.add('show');
+            
+            // Change icon based on position
+            const icon = this.button.querySelector('i');
+            if (scrollRemaining < 100) {
+                // At or near bottom - show up arrow
+                icon.className = 'fas fa-chevron-up';
+                this.button.title = 'Scroll to top';
+            } else {
+                // Not at bottom - show down arrow
+                icon.className = 'fas fa-chevron-down';
+                this.button.title = 'Scroll to bottom';
+            }
+        } else {
+            // No scrollable content - hide button
+            this.button.classList.remove('show');
+            setTimeout(() => {
+                if (!this.button.classList.contains('show')) {
+                    this.button.style.display = 'none';
+                }
+            }, 300);
+        }
+    }
+    
+    scrollToBottom() {
+        const scrollTop = this.leftPanel.scrollTop;
+        const scrollHeight = this.leftPanel.scrollHeight;
+        const clientHeight = this.leftPanel.clientHeight;
+        const scrollRemaining = scrollHeight - (scrollTop + clientHeight);
+        
+        if (scrollRemaining < 100) {
+            // At bottom - scroll to top
+            this.leftPanel.scrollTo({ 
+                top: 0, 
+                behavior: 'smooth' 
+            });
+        } else {
+            // Not at bottom - scroll to bottom
+            const targetScroll = scrollHeight - clientHeight;
+            this.leftPanel.scrollTo({ 
+                top: targetScroll, 
+                behavior: 'smooth' 
+            });
+        }
+    }
+}
+
+// Initialize floating scroll buttons for both panels
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        window.floatingScrollButtonLeft = new FloatingScrollButtonLeft();
+        window.floatingScrollButton = new FloatingScrollButton();
+    }, 1000);
+});
 
 // Use shared submission modal component
 </script>
