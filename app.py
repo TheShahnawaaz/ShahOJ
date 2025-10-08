@@ -11,12 +11,13 @@ from core.problem_manager import ProblemManager
 from core.unified_problem_manager import UnifiedProblemManager
 from core.time_utils import format_ist, to_ist_iso
 from core.jobs import run_auto_build_workflow
-from flask import Flask, render_template, jsonify, request, redirect, url_for, flash, send_from_directory, g
+from flask import Flask, render_template, jsonify, request, redirect, url_for, flash, send_from_directory, g, Response
 import os
 import sys
 import traceback
 import hashlib
 import json
+from openai import OpenAI
 
 # Add current directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -2117,6 +2118,59 @@ def ai_status_api():
             'ai_available': False,
             'error': str(e)
         })
+
+
+@app.route('/api/generate', methods=['POST'])
+def generate_answer():
+    """Generate AI responses using OpenAI API with streaming support"""
+    try:
+        # Get the request data from the client
+        data = request.json
+        prompt = data.get('prompt')
+        selected_model = data.get('model')
+        base_url = data.get('base_url')
+        api_key = data.get('api_key')
+
+        if not prompt or not selected_model:
+            return jsonify({"error": "Prompt and model are required."}), 400
+
+
+        client = OpenAI(api_key=api_key, base_url=base_url)
+        
+        # Request the response from OpenAI API
+        response = client.chat.completions.create(
+            model=selected_model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Solve DSA coding problems provided in images with precise and professional-quality code in the requested language. Adhere to any specified function format from the problem image and include the time complexity of the solution.\n\n**Guidelines:**\n- Analyze the problem statement and understand the requirements.\n- Craft the solution code using optimal practices in the requested programming language.\n- Ensure each solution adheres to the specified function format.\n- Briefly explain the code to provide a basic understanding.\n- Clearly state the time complexity of the solution.\n\n# Steps\n\n1. **Analyze the Problem:**\n   - Identify the core problem and constraints from the image.\n   - Determine the required programming language and function format.\n\n2. **Craft the Solution:**\n   - Write clean, professional code that adheres to optimal practices.\n   - Ensure the format follows the specified structure in the problem image.\n   \n3. **Explain & Analyze:**\n   - Provide a brief explanation of how the code works.\n   - State the time complexity of the solution.\n\n# Output Format\nOutput should be in the following format:\n1. Code written in the requested programming language.\n2. Basic explanation of the code.\n3. Time complexity of the solution.\n\n# Notes\n- Ensure that the output is concise and avoids redundancy.\n- Validate that the given code passes the problem's specified time complexity."
+                        }
+                    ]
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            stream=True
+        )
+
+        # Stream the response to the client
+        def stream_response():
+            for chunk in response:
+                if chunk.choices[0].delta.content is not None:
+                    content = chunk.choices[0].delta.content
+                    print(content, end='', flush=True)
+                    # Yield each chunk of content
+                    yield content
+
+        return Response(stream_response(), content_type='text/plain')
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route('/robots.txt')
