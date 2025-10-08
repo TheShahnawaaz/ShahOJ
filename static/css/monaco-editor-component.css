@@ -13,7 +13,6 @@
 
 /* Monaco Editor Container */
 .monaco-editor-container {
-    height: 600px;
     min-height: 300px;
     max-height: 1200px;
     border: none;

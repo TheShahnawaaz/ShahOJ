@@ -2134,9 +2134,8 @@ def generate_answer():
         if not prompt or not selected_model:
             return jsonify({"error": "Prompt and model are required."}), 400
 
-
         client = OpenAI(api_key=api_key, base_url=base_url)
-        
+
         # Request the response from OpenAI API
         response = client.chat.completions.create(
             model=selected_model,

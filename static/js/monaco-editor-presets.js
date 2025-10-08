@@ -41,7 +41,7 @@ signed main()
             language: 'cpp',
             theme: 'vs-light',
             defaultValue: defaultTemplate,
-            height: 600,
+            height: 400,
             resizable: true,
             showMinimap: true,
             ...options
