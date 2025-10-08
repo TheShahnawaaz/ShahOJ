@@ -14,6 +14,9 @@ sys.path.insert(0, str(project_root))
 os.environ.setdefault('FLASK_ENV', 'production')
 os.environ.setdefault('POCKETOJ_CONFIG', 'config.prod.yaml')
 
+# This is the WSGI application that PythonAnywhere will use
+application = app
 
 if __name__ == "__main__":
-    app.run()
+    # Enable threading for multiple concurrent users (fallback for local testing)
+    app.run(threaded=True, processes=1)

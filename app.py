@@ -31,6 +31,9 @@ app = Flask(__name__)
 app.secret_key = config.get('security.secret_key', os.environ.get(
     'SECRET_KEY', os.urandom(24).hex()))
 
+# Explicitly enable threading for production
+app.config['THREADED'] = True
+
 # Configure OAuth
 app.config['GOOGLE_CLIENT_ID'] = os.environ.get('GOOGLE_CLIENT_ID')
 app.config['GOOGLE_CLIENT_SECRET'] = os.environ.get('GOOGLE_CLIENT_SECRET')
@@ -2353,6 +2356,29 @@ def test_401():
     if not app.config.get('DEBUG'):
         abort(404)
     abort(401)
+
+
+@app.route('/api/debug-threading')
+def debug_threading():
+    """Test endpoint to verify multi-threading capability"""
+    import threading
+    import time
+
+    thread_id = threading.get_ident()
+    start_time = time.time()
+
+    # Simulate 15-second work (like code compilation)
+    time.sleep(15)
+
+    end_time = time.time()
+
+    return jsonify({
+        'thread_id': thread_id,
+        'start_time': start_time,
+        'end_time': end_time,
+        'duration': end_time - start_time,
+        'message': 'Threading test completed'
+    })
 
 
 if __name__ == '__main__':
