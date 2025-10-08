@@ -312,14 +312,12 @@
         min-width: 300px;
         max-width: 80%;
         position: relative;
-        overflow: visible;
     }
     
     .resizable-panel-right {
         flex: 1;
         min-width: 300px;
         position: relative;
-        overflow: visible;
     }
     
     .resize-divider {
@@ -1701,11 +1699,11 @@
         }
     }
 
-    /* Floating Scroll Down Button - Scoped to Solution Editor Section */
+    /* Floating Scroll Down Button - Fixed to viewport but constrained to section */
     .floating-scroll-btn {
-        position: absolute;
-        bottom: 1.5rem;
-        right: 1.5rem;
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
         width: 50px;
         height: 50px;
         border-radius: 50%;
@@ -1715,13 +1713,19 @@
         box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
         cursor: pointer;
         z-index: 100;
-        transition: opacity 0.3s ease;
+        transition: opacity 0.3s ease, transform 0.1s ease;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.1rem;
         opacity: 0;
         pointer-events: none;
+    }
+    
+    /* Position left button differently from right button */
+    #floatingScrollBtnLeft {
+        right: auto;
+        /* Left position will be set dynamically by JavaScript based on panel width */
     }
 
     .floating-scroll-btn.show {
@@ -1784,7 +1788,7 @@
         <div class="resizable-container" id="resizableContainer">
             <!-- Left Panel: Problem Statement -->
             <div class="resizable-panel resizable-panel-left">
-                <!-- Floating Scroll Down Button for Problem Statement -->
+                <!-- Floating Scroll Button - Fixed to viewport but constrained to section -->
                 <button id="floatingScrollBtnLeft" class="floating-scroll-btn" style="display: none;" title="Scroll to see more">
                     <i class="fas fa-chevron-down"></i>
                 </button>
@@ -1812,7 +1816,7 @@
 
             <!-- Right Panel: Solution Editor -->
             <div class="resizable-panel resizable-panel-right">
-                <!-- Floating Scroll Down Button (scoped to this section) -->
+                <!-- Floating Scroll Button - Fixed to viewport but constrained to section -->
                 <button id="floatingScrollBtn" class="floating-scroll-btn" style="display: none;" title="Scroll to see results below">
                     <i class="fas fa-chevron-down"></i>
                 </button>
@@ -2929,6 +2933,11 @@ class ResizablePanels {
         
         this.leftPanel.style.flexBasis = `${leftPercentage}%`;
         
+        // Update left button position during drag (smooth repositioning)
+        if (window.floatingScrollButtonLeft) {
+            window.floatingScrollButtonLeft.updateButtonVisibility();
+        }
+        
         e.preventDefault();
     }
     
@@ -2971,6 +2980,14 @@ class ResizablePanels {
         
         // Trigger Monaco editor resize if it exists
         this.triggerEditorResize();
+        
+        // Update floating button positions after resize
+        if (window.floatingScrollButtonLeft) {
+            window.floatingScrollButtonLeft.updateButtonVisibility();
+        }
+        if (window.floatingScrollButton) {
+            window.floatingScrollButton.updateButtonVisibility();
+        }
     }
     
     preventSelection(e) {
@@ -3356,6 +3373,11 @@ class FloatingScrollButton {
             this.updateButtonVisibility();
         });
         
+        // Update on window scroll (for section visibility check)
+        window.addEventListener('scroll', () => {
+            this.updateButtonVisibility();
+        }, { passive: true });
+        
         // Click handler - scroll to next section (test results or submissions)
         this.button.addEventListener('click', () => {
             this.scrollToNextSection();
@@ -3377,10 +3399,29 @@ class FloatingScrollButton {
         // Calculate how much room is left to scroll
         const scrollRemaining = scrollHeight - (scrollTop + clientHeight);
         
-        // Always show button if there's scrollable content or user is scrolled down
-        if (scrollHeight > clientHeight + 50) {
+        // Check if section is in viewport (constrain button to section)
+        const panel = document.querySelector('.resizable-panel-right');
+        const panelRect = panel.getBoundingClientRect();
+        const inViewport = panelRect.top < window.innerHeight && panelRect.bottom > 0;
+        
+        // Show button only if: has scrollable content AND section is in viewport
+        if (scrollHeight > clientHeight + 50 && inViewport) {
             this.button.style.display = 'flex';
             this.button.classList.add('show');
+            
+            // Constrain button to stay within section bounds
+            const sectionBottom = panelRect.bottom;
+            const buttonNaturalBottom = window.innerHeight - 32; // bottom: 2rem from viewport
+            
+            // If section bottom is above where button would naturally be
+            if (sectionBottom < buttonNaturalBottom) {
+                // Calculate offset to keep button inside section (with padding)
+                const offset = buttonNaturalBottom - sectionBottom + 16;
+                this.button.style.transform = `translateY(-${offset}px)`;
+            } else {
+                // Section extends below button position, use natural position
+                this.button.style.transform = 'translateY(0)';
+            }
             
             // Change icon based on position
             const icon = this.button.querySelector('i');
@@ -3394,7 +3435,7 @@ class FloatingScrollButton {
                 this.button.title = 'Scroll to bottom';
             }
         } else {
-            // No scrollable content - hide button
+            // No scrollable content or section out of viewport - hide button
             this.button.classList.remove('show');
             setTimeout(() => {
                 if (!this.button.classList.contains('show')) {
@@ -3447,6 +3488,11 @@ class FloatingScrollButtonLeft {
             this.updateButtonVisibility();
         });
         
+        // Update on window scroll (for section visibility check)
+        window.addEventListener('scroll', () => {
+            this.updateButtonVisibility();
+        }, { passive: true });
+        
         // Click handler - scroll to bottom
         this.button.addEventListener('click', () => {
             this.scrollToBottom();
@@ -3468,10 +3514,33 @@ class FloatingScrollButtonLeft {
         // Calculate how much room is left to scroll
         const scrollRemaining = scrollHeight - (scrollTop + clientHeight);
         
-        // Always show button if there's scrollable content
-        if (scrollHeight > clientHeight + 50) {
+        // Check if section is in viewport (constrain button to section)
+        const panel = document.querySelector('.resizable-panel-left');
+        const panelRect = panel.getBoundingClientRect();
+        const inViewport = panelRect.top < window.innerHeight && panelRect.bottom > 0;
+        
+        // Show button only if: has scrollable content AND section is in viewport
+        if (scrollHeight > clientHeight + 50 && inViewport) {
             this.button.style.display = 'flex';
             this.button.classList.add('show');
+            
+            // Dynamically position button based on left panel width (adjusts with resizer)
+            const leftPanelWidth = panel.offsetWidth;
+            this.button.style.left = `${leftPanelWidth - 66}px`; // 66px = margin + half button
+            
+            // Constrain button to stay within section bounds
+            const sectionBottom = panelRect.bottom;
+            const buttonNaturalBottom = window.innerHeight - 32; // bottom: 2rem from viewport
+            
+            // If section bottom is above where button would naturally be
+            if (sectionBottom < buttonNaturalBottom) {
+                // Calculate offset to keep button inside section (with padding)
+                const offset = buttonNaturalBottom - sectionBottom + 16;
+                this.button.style.transform = `translateY(-${offset}px)`;
+            } else {
+                // Section extends below button position, use natural position
+                this.button.style.transform = 'translateY(0)';
+            }
             
             // Change icon based on position
             const icon = this.button.querySelector('i');
@@ -3485,7 +3554,7 @@ class FloatingScrollButtonLeft {
                 this.button.title = 'Scroll to bottom';
             }
         } else {
-            // No scrollable content - hide button
+            // No scrollable content or section out of viewport - hide button
             this.button.classList.remove('show');
             setTimeout(() => {
                 if (!this.button.classList.contains('show')) {
