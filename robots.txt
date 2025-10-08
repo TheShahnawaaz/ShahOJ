@@ -1,0 +1,30 @@
+# robots.txt for ShahOJ
+# Allow search engines to index public content
+
+User-agent: *
+
+# Allow public pages
+Allow: /
+Allow: /problem/*
+Allow: /static/*
+Allow: /playground
+
+# Disallow private/authenticated areas
+Disallow: /api/*
+Disallow: /admin/*
+Disallow: /my-problems
+Disallow: /my-submissions
+Disallow: /auth/*
+Disallow: /create-problem
+Disallow: /*/edit
+Disallow: /*/tests
+
+# Allow Google to index images
+User-agent: Googlebot-Image
+Allow: /static/images/*
+
+# Sitemap location
+Sitemap: https://theshahnawaz.pythonanywhere.com/sitemap.xml
+
+# Crawl delay (optional, adjust as needed)
+Crawl-delay: 1

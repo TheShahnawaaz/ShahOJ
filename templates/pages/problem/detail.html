@@ -1,7 +1,67 @@
 {% extends "layouts/base.html" %}
 {% from "layouts/components.html" import enhanced_breadcrumb, problem_detail_header, enhanced_card, file_status_indicator, test_case_summary %}
 
-{% block title %}{{ problem.config.get('title', problem.slug) }} - ShahOJ{% endblock %}
+{% block title %}{{ problem.config.get('title', problem.slug) }} - {{ problem.config.get('difficulty', 'Medium') }} | ShahOJ{% endblock %}
+
+{% block description %}Solve {{ problem.config.get('title', problem.slug) }}, a {{ problem.config.get('difficulty', 'Medium') }} level competitive programming problem on ShahOJ. Practice algorithms and data structures with instant feedback.{% if problem.config.get('tags') %} Tags: {{ problem.config.get('tags')|join(', ') }}.{% endif %}{% endblock %}
+
+{% block keywords %}{{ problem.config.get('title', problem.slug) }}, ShahOJ, competitive programming, {{ problem.config.get('difficulty', 'Medium') }} problem, algorithm practice, coding challenge, shahnawaz{% if problem.config.get('tags') %}, {{ problem.config.get('tags')|join(', ') }}{% endif %}{% endblock %}
+
+{% block og_type %}article{% endblock %}
+{% block og_title %}{{ problem.config.get('title', problem.slug) }} - {{ problem.config.get('difficulty', 'Medium') }} Problem | ShahOJ{% endblock %}
+{% block og_description %}Solve this {{ problem.config.get('difficulty', 'Medium') }} level competitive programming challenge on ShahOJ.{% if problem.config.get('tags') %} Topics: {{ problem.config.get('tags')|join(', ') }}.{% endif %}{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "{{ problem.config.get('title', problem.slug) }}",
+  "description": "A {{ problem.config.get('difficulty', 'Medium') }} level competitive programming problem",
+  "author": {
+    "@type": "Person",
+    "name": "{{ author.name if author else 'Anonymous' }}"{% if author and author.picture_url %},
+    "image": "{{ author.picture_url }}"{% endif %}
+  },
+  "datePublished": "{{ problem_data.created_at_iso if problem_data.created_at_iso else '' }}",
+  "dateModified": "{{ problem_data.updated_at_iso if problem_data.updated_at_iso else '' }}",
+  "keywords": "{{ problem.config.get('tags')|join(', ') if problem.config.get('tags') else 'algorithms, data structures' }}",
+  "articleSection": "Competitive Programming",
+  "inLanguage": "en",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ request.url }}"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "ShahOJ",
+    "url": "https://theshahnawaz.pythonanywhere.com/",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://theshahnawaz.pythonanywhere.com/static/images/ShahOJLogo.png"
+    }
+  }
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [{
+    "@type": "ListItem",
+    "position": 1,
+    "name": "Home",
+    "item": "{{ url_for('dashboard', _external=True) }}"
+  }, {
+    "@type": "ListItem",
+    "position": 2,
+    "name": "{{ problem.config.get('title', problem.slug) }}",
+    "item": "{{ request.url }}"
+  }]
+}
+</script>
+{% endblock %}
 
 {% block extra_css %}
 <!-- Monaco Editor Component CSS -->
@@ -1730,6 +1790,14 @@
                 </button>
                 
                 {% call enhanced_card("Problem Statement", "fas fa-file-alt", []) %}
+                    {% if statement_content %}
+                        <!-- Hidden raw markdown for SEO (search engines can read this) -->
+                        <div id="statement-content-seo" style="display: none;" aria-hidden="true">
+                            {{ statement_content|safe }}
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Visible formatted content (JavaScript will render here) -->
                     <div id="problemStatement">
                         <div class="text-center py-4">
                             <i class="fas fa-spinner fa-spin text-primary"></i>
@@ -1893,10 +1961,11 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function loadProblemStatement() {
+    const statementDiv = document.getElementById('problemStatement');
+    
     fetch(`/api/problem/{{ problem.slug }}/statement`)
         .then(response => response.json())
         .then(data => {
-            const statementDiv = document.getElementById('problemStatement');
             if (data.success) {
                 // Use LaTeX-aware markdown conversion
                 const htmlContent = convertMarkdownWithLatex(data.statement);
@@ -1915,7 +1984,6 @@ function loadProblemStatement() {
                         output: 'html',
                         strict: false
                     });
-                    
                 }
             } else {
                 statementDiv.innerHTML = `
@@ -1936,7 +2004,6 @@ function loadProblemStatement() {
         })
         .catch(error => {
             console.error('Statement loading error:', error);
-            const statementDiv = document.getElementById('problemStatement');
             statementDiv.innerHTML = `
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle"></i>

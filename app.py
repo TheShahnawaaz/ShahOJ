@@ -930,6 +930,17 @@ def problem_detail(slug):
         if not unified_problem:
             return "Problem not found", 404
 
+        # Load problem statement for SEO (server-side rendering)
+        statement_content = ""
+        statement_file = unified_problem.problem_dir / 'statement.md'
+        if statement_file.exists():
+            try:
+                with open(statement_file, 'r', encoding='utf-8') as f:
+                    statement_content = f.read()
+            except Exception as e:
+                print(f"Error loading statement: {e}")
+                statement_content = ""
+
         is_author = bool(
             user and (user['id'] == problem_data.get('author_id')))
         is_superuser = bool(user and user.get('is_superuser'))
@@ -939,7 +950,8 @@ def problem_detail(slug):
                                author=author,
                                current_user=user,
                                is_author=is_author or is_superuser,
-                               is_superuser=is_superuser
+                               is_superuser=is_superuser,
+                               statement_content=statement_content  # Pass statement for SEO
                                )
     except Exception as e:
         return f"Error loading problem: {e}", 500
@@ -2102,6 +2114,77 @@ def ai_status_api():
             'ai_available': False,
             'error': str(e)
         })
+
+
+@app.route('/robots.txt')
+def robots_txt():
+    """Serve robots.txt for search engine crawlers"""
+    return send_from_directory(
+        os.path.dirname(os.path.abspath(__file__)),
+        'robots.txt',
+        mimetype='text/plain'
+    )
+
+
+@app.route('/sitemap.xml')
+def sitemap_xml():
+    """Generate dynamic XML sitemap for search engines"""
+    try:
+        from datetime import datetime
+
+        # Get all public problems
+        public_problems = db_manager.get_public_problems(page=1, limit=10000)[
+            'problems']
+
+        # Build sitemap
+        sitemap_entries = []
+
+        # Homepage - highest priority, changes frequently
+        sitemap_entries.append({
+            'loc': url_for('dashboard', _external=True),
+            'lastmod': datetime.utcnow().strftime('%Y-%m-%d'),
+            'changefreq': 'daily',
+            'priority': '1.0'
+        })
+
+        # Playground
+        sitemap_entries.append({
+            'loc': url_for('playground', _external=True),
+            'lastmod': datetime.utcnow().strftime('%Y-%m-%d'),
+            'changefreq': 'weekly',
+            'priority': '0.7'
+        })
+
+        # Public problems - medium priority
+        for problem in public_problems:
+            sitemap_entries.append({
+                'loc': url_for('problem_detail', slug=problem['slug'], _external=True),
+                'lastmod': problem.get('updated_at_iso', datetime.utcnow().strftime('%Y-%m-%d')),
+                'changefreq': 'weekly',
+                'priority': '0.8'
+            })
+
+        # Generate XML
+        xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
+        xml_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+
+        for entry in sitemap_entries:
+            xml_content += '  <url>\n'
+            xml_content += f'    <loc>{entry["loc"]}</loc>\n'
+            xml_content += f'    <lastmod>{entry["lastmod"]}</lastmod>\n'
+            xml_content += f'    <changefreq>{entry["changefreq"]}</changefreq>\n'
+            xml_content += f'    <priority>{entry["priority"]}</priority>\n'
+            xml_content += '  </url>\n'
+
+        xml_content += '</urlset>'
+
+        from flask import Response
+        return Response(xml_content, mimetype='application/xml')
+
+    except Exception as e:
+        print(f"Error generating sitemap: {e}")
+        return Response('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>',
+                        mimetype='application/xml')
 
 
 @app.route('/health')
