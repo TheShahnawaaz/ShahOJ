@@ -121,7 +121,7 @@ def dashboard():
                             'public_problems': 0, 'total_users': 0}
 
         # Calculate pagination info
-        limit = PROBLEMS_PER_PAGE
+        limit = LIMIT_PER_PAGE
         total_pages = (result['total'] + limit - 1) // limit
 
         return render_template('pages/dashboard.html',
