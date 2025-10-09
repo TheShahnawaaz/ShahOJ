@@ -27,6 +27,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 # Load environment variables
 load_dotenv()
 
+# Global pagination settings
+LIMIT_PER_PAGE = 50  # Global limit for problems pagination
+
 # Initialize Flask app
 app = Flask(__name__)
 app.secret_key = config.get('security.secret_key', os.environ.get(
@@ -67,7 +70,7 @@ def dashboard():
             search=search,
             difficulty=difficulty,
             page=page,
-            limit=12  # Show 12 problems per page on dashboard
+            limit=LIMIT_PER_PAGE
         )
 
         # Get submission counts for all problems on this page
@@ -118,8 +121,7 @@ def dashboard():
                             'public_problems': 0, 'total_users': 0}
 
         # Calculate pagination info
-        # Ceiling division for 12 items per page
-        limit = 12  # Match the limit used above
+        limit = PROBLEMS_PER_PAGE
         total_pages = (result['total'] + limit - 1) // limit
 
         return render_template('pages/dashboard.html',
@@ -244,7 +246,7 @@ def my_problems():
         result = db_manager.list_user_problems(
             user['id'],
             page=page,
-            limit=12,
+            limit=LIMIT_PER_PAGE,
             search=search
         )
 
@@ -256,7 +258,7 @@ def my_problems():
             p['submission_count'] = submission_counts.get(p['slug'], 0)
 
         # Calculate pagination info
-        limit = 12
+        limit = LIMIT_PER_PAGE
         total_pages = max(1, (result['total'] + limit - 1) // limit)
 
         return render_template('pages/problems/my-problems.html',
@@ -285,12 +287,12 @@ def my_submissions_page():
         result = db_manager.list_user_submissions(
             user['id'],
             page=page,
-            limit=20,
+            limit=LIMIT_PER_PAGE,
             search=search
         )
 
         # Calculate pagination info
-        limit = 20
+        limit = LIMIT_PER_PAGE
         total_pages = max(1, (result['total'] + limit - 1) // limit)
 
         return render_template('pages/submissions/my-submissions.html',
@@ -344,7 +346,7 @@ def admin_problems():
     """Admin problem management view"""
     page = max(1, int(request.args.get('page', 1)))
     search = (request.args.get('search') or '').strip()
-    limit = 20
+    limit = LIMIT_PER_PAGE
     result = db_manager.list_all_problems(
         page=page, limit=limit, search=search or None)
     problems = result['items']
@@ -414,7 +416,7 @@ def admin_users():
     """Admin user management view"""
     page = max(1, int(request.args.get('page', 1)))
     search = (request.args.get('search') or '').strip()
-    limit = 20
+    limit = LIMIT_PER_PAGE
     result = db_manager.list_all_users(
         page=page, limit=limit, search=search or None)
     users = result['items']
@@ -445,7 +447,7 @@ def admin_submissions():
     """Admin submissions monitor view"""
     page = max(1, int(request.args.get('page', 1)))
     search = (request.args.get('search') or '').strip()
-    limit = 20
+    limit = LIMIT_PER_PAGE
     result = db_manager.list_all_submissions(
         page=page, limit=limit, search=search or None)
     submissions = result['items']
