@@ -12,6 +12,7 @@ from core.unified_problem_manager import UnifiedProblemManager
 from core.time_utils import format_ist, to_ist_iso
 from core.jobs import run_auto_build_workflow
 from flask import Flask, render_template, jsonify, request, redirect, url_for, flash, send_from_directory, g, Response
+from pathlib import Path
 import os
 import sys
 import traceback
@@ -1670,6 +1671,47 @@ def get_test_cases_api(slug, category):
         return jsonify({
             'success': False,
             'error': f'Error loading test cases: {str(e)}'
+        }), 500
+
+
+@app.route('/api/problem/<slug>/test-cases/<category>/<filename>', methods=['DELETE'])
+@require_problem_access('edit')
+def delete_test_case_api(slug, category, filename):
+    """Delete a specific test case and its associated answer file."""
+    try:
+        problem = unified_problem_manager.get_problem(slug)
+        if not problem:
+            return jsonify({'success': False, 'error': 'Problem not found'}), 404
+
+        if category not in ['samples', 'pretests', 'system']:
+            return jsonify({'success': False, 'error': 'Invalid category'}), 400
+
+        safe_name = Path(filename).name
+        if safe_name != filename or safe_name in ('', '.', '..'):
+            return jsonify({'success': False, 'error': 'Invalid filename'}), 400
+
+        test_dir = problem.problem_dir / 'tests' / category
+        input_path = test_dir / f"{safe_name}.in"
+        answer_path = test_dir / f"{safe_name}.ans"
+
+        if not input_path.exists():
+            return jsonify({'success': False, 'error': 'Test case not found'}), 404
+
+        input_path.unlink()
+        if answer_path.exists():
+            answer_path.unlink()
+
+        return jsonify({
+            'success': True,
+            'message': f"Deleted test case {safe_name} from {category}",
+            'filename': safe_name,
+            'category': category
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'Error deleting test case: {str(e)}'
         }), 500
 
 
