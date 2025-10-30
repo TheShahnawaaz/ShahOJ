@@ -431,6 +431,8 @@ const testResources = {{ {
 testResources.solutionReady = testResources.hasSolution && !testResources.solutionEmpty;
 testResources.generatorReady = testResources.hasGenerator && !testResources.generatorEmpty;
 
+let currentCategory = null;
+
 document.addEventListener('DOMContentLoaded', function() {
     
     // Header button event listeners
@@ -630,7 +632,9 @@ function loadTestCases(category) {
     const listDiv = document.getElementById('testCaseList');
     const titleDiv = document.getElementById('testCaseTitle');
     const contentDiv = document.getElementById('testCaseContent');
-    
+
+    currentCategory = category;
+
     titleDiv.innerHTML = `${category.charAt(0).toUpperCase() + category.slice(1)} Test Cases`;
     contentDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading test cases...</div>';
     listDiv.style.display = 'block';
@@ -684,7 +688,7 @@ function showAlert(type, message) {
 
 function displayTestCases(testCases, category) {
     const contentDiv = document.getElementById('testCaseContent');
-    
+
     if (testCases.length === 0) {
         contentDiv.innerHTML = `<div class="alert alert-info">No test cases found in ${category} category.</div>`;
         return;
@@ -693,16 +697,23 @@ function displayTestCases(testCases, category) {
     let html = '<div class="row">';
     
     testCases.forEach(testCase => {
-        const sizeText = testCase.input_size > 1024 ? 
-            `${(testCase.input_size / 1024).toFixed(1)}KB` : 
+        const sizeText = testCase.input_size > 1024 ?
+            `${(testCase.input_size / 1024).toFixed(1)}KB` :
             `${testCase.input_size}B`;
-        
+        const escapedFilename = testCase.filename.replace(/[\\']/g, '\\$&');
+
         html += `
             <div class="col-md-6 mb-3">
                 <div class="card test-case-card">
-                    <div class="card-header d-flex justify-content-between">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <span><strong>Test ${testCase.filename}</strong></span>
-                        <span class="badge bg-secondary">${sizeText}</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-secondary">${sizeText}</span>
+                            <button type="button" class="btn btn-outline-danger btn-sm" title="Delete test case"
+                                onclick="deleteTestCase('${category}', '${escapedFilename}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="card-body">
                         <h6>Input:</h6>
@@ -714,9 +725,40 @@ function displayTestCases(testCases, category) {
             </div>
         `;
     });
-    
+
     html += '</div>';
     contentDiv.innerHTML = html;
+}
+
+
+function deleteTestCase(category, filename) {
+    const displayName = filename;
+    const confirmDelete = confirm(`Delete test case ${displayName} from ${category}? This action cannot be undone.`);
+    if (!confirmDelete) {
+        return;
+    }
+
+    fetch(`/api/problem/{{ problem.slug }}/test-cases/${category}/${encodeURIComponent(filename)}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('success', data.message);
+                const categoryToReload = currentCategory || category;
+                if (categoryToReload) {
+                    loadTestCases(categoryToReload);
+                }
+            } else {
+                showAlert('danger', `Error deleting test case: ${data.error}`);
+            }
+        })
+        .catch(error => {
+            showAlert('danger', `Network error: ${error.message}`);
+        });
 }
 
 
