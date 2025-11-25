@@ -62,10 +62,10 @@
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- Google Fonts for logo styling -->
+    <!-- Google Fonts for beautiful typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
@@ -164,10 +164,96 @@
             transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
         }
 
-        /* Base Theme Styles */
+        /* ========================================
+           BEAUTIFUL TYPOGRAPHY SYSTEM
+           Using Poppins - Elegant, Modern, Friendly
+           ======================================== */
+        
+        /* Base Typography - Poppins for that premium feel */
         body {
             background-color: var(--primary-bg) !important;
             color: var(--text-primary) !important;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 15px;
+            line-height: 1.65;
+            font-weight: 400;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Headings - Elegant and impactful */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: 0.75em;
+        }
+        
+        h1 { font-size: 2.25rem; font-weight: 700; }
+        h2 { font-size: 1.875rem; font-weight: 700; }
+        h3 { font-size: 1.5rem; font-weight: 600; }
+        h4 { font-size: 1.25rem; font-weight: 600; }
+        h5 { font-size: 1.125rem; font-weight: 600; }
+        h6 { font-size: 1rem; font-weight: 600; }
+        
+        /* Paragraphs - Comfortable reading */
+        p {
+            margin-bottom: 1.25em;
+            line-height: 1.75;
+        }
+        
+        /* Links - Smooth transitions */
+        a {
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+
+        
+        /* Buttons - Clean and modern */
+        .btn {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+        
+        /* Tables - Professional look */
+        th {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Form inputs - Polished appearance */
+        input, textarea, select, .form-control {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 400;
+        }
+        
+        label, .form-label {
+            font-weight: 500;
+        }
+        
+        /* Badges - Bold and clear */
+        .badge {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        
+        /* Navbar brand */
+        .navbar-brand {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+        }
+        
+        /* Dark mode adjustments */
+        [data-theme="dark"] h1,
+        [data-theme="dark"] h2,
+        [data-theme="dark"] h3,
+        [data-theme="dark"] h4,
+        [data-theme="dark"] h5,
+        [data-theme="dark"] h6 {
+            color: #ffffff;
         }
 
         /* Force Bootstrap overrides for dark mode */
