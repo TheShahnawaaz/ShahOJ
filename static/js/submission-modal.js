@@ -1,9 +1,12 @@
 /**
  * Shared Submission Modal Component for PocketOJ
  * Used in both My Submissions page and Problem Detail page
+ * Now with Monaco Editor integration for beautiful code viewing
  */
 
 class SubmissionModal {
+    static currentEditors = [];
+    
     static show(submissionId) {
         console.log('SubmissionModal.show called with ID:', submissionId);
         
@@ -26,9 +29,28 @@ class SubmissionModal {
                 alert('Network error loading submission: ' + error.message);
             });
     }
+    
+    static cleanupEditors() {
+        // Cleanup any existing Monaco editors
+        if (this.currentEditors && this.currentEditors.length > 0) {
+            this.currentEditors.forEach(editor => {
+                if (editor && editor.destroy) {
+                    try {
+                        editor.destroy();
+                    } catch (e) {
+                        console.warn('Error destroying editor:', e);
+                    }
+                }
+            });
+            this.currentEditors = [];
+        }
+    }
 
     static render(submission) {
         console.log('SubmissionModal.render called with submission:', submission);
+        
+        // Cleanup any existing editors first
+        this.cleanupEditors();
         
         // Remove existing modal if present
         const existingModal = document.getElementById('sharedSubmissionModal');
@@ -57,6 +79,7 @@ class SubmissionModal {
         // Clean up on hide
         modal.addEventListener('hidden.bs.modal', () => {
             console.log('Modal hidden, cleaning up');
+            this.cleanupEditors();
             if (document.body.contains(modal)) {
                 document.body.removeChild(modal);
             }
@@ -202,7 +225,7 @@ class SubmissionModal {
                     <i class="fas fa-copy me-1"></i>Copy Code
                 </button>
             </div>
-            <pre class="submission-code-block"><code>${escapeHtml(sub.source_code || '')}</code></pre>`;
+            <div class="monaco-editor-container" id="submission-code-viewer" style="height: 400px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;"></div>`;
 
         let compileOut = '';
         if (sub.compile_output) {
@@ -213,7 +236,7 @@ class SubmissionModal {
                         <i class="fas fa-copy me-1"></i>Copy Output
                     </button>
                 </div>
-                <pre class="submission-code-block"><code>${escapeHtml(sub.compile_output)}</code></pre>`;
+                <div class="monaco-editor-container" id="submission-compile-viewer" style="height: 250px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;"></div>`;
         }
 
         let runtimeErr = '';
@@ -225,7 +248,7 @@ class SubmissionModal {
                         <i class="fas fa-copy me-1"></i>Copy Error
                     </button>
                 </div>
-                <pre class="submission-code-block"><code>${escapeHtml(sub.runtime_stderr)}</code></pre>`;
+                <div class="monaco-editor-container" id="submission-error-viewer" style="height: 250px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;"></div>`;
         }
 
         let summaryHtml = '';
@@ -305,6 +328,68 @@ class SubmissionModal {
         }
 
         document.getElementById(containerId).innerHTML = meta + codeBlock + compileOut + runtimeErr + summaryHtml;
+        
+        // Initialize Monaco editors after DOM is ready
+        setTimeout(() => {
+            this.initializeMonacoEditors(sub);
+        }, 100);
+    }
+    
+    static initializeMonacoEditors(sub) {
+        // Check if Monaco and MonacoEditorPresets are available
+        if (typeof window.MonacoEditorPresets === 'undefined') {
+            console.warn('MonacoEditorPresets not loaded, falling back to plain text');
+            return;
+        }
+        
+        try {
+            // Initialize source code viewer
+            if (document.getElementById('submission-code-viewer') && sub.source_code) {
+                const codeEditor = window.MonacoEditorPresets.createCodeViewer(
+                    'submission-code-viewer',
+                    sub.source_code,
+                    sub.language || 'cpp',
+                    {
+                        height: 400,
+                        minHeight: 200,
+                        maxHeight: 600
+                    }
+                );
+                this.currentEditors.push(codeEditor);
+            }
+            
+            // Initialize compile output viewer
+            if (document.getElementById('submission-compile-viewer') && sub.compile_output) {
+                const compileEditor = window.MonacoEditorPresets.createCodeViewer(
+                    'submission-compile-viewer',
+                    sub.compile_output,
+                    'plaintext',
+                    {
+                        height: 250,
+                        minHeight: 150,
+                        maxHeight: 400
+                    }
+                );
+                this.currentEditors.push(compileEditor);
+            }
+            
+            // Initialize runtime error viewer
+            if (document.getElementById('submission-error-viewer') && sub.runtime_stderr) {
+                const errorEditor = window.MonacoEditorPresets.createCodeViewer(
+                    'submission-error-viewer',
+                    sub.runtime_stderr,
+                    'plaintext',
+                    {
+                        height: 250,
+                        minHeight: 150,
+                        maxHeight: 400
+                    }
+                );
+                this.currentEditors.push(errorEditor);
+            }
+        } catch (error) {
+            console.error('Error initializing Monaco editors:', error);
+        }
     }
 
     static copyWithFeedback(button, text) {

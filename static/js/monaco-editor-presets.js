@@ -270,6 +270,51 @@ int main(int argc, char* argv[]) {
         });
     }
     
+    // Read-only Code Viewer (for submission modals)
+    static createCodeViewer(containerId, code, language = 'cpp', options = {}) {
+        // Map language codes to Monaco language IDs
+        const languageMap = {
+            'cpp': 'cpp',
+            'c++': 'cpp',
+            'python': 'python',
+            'py': 'python',
+            'java': 'java',
+            'javascript': 'javascript',
+            'js': 'javascript',
+            'plaintext': 'plaintext',
+            'text': 'plaintext'
+        };
+        
+        const monacoLanguage = languageMap[language.toLowerCase()] || 'plaintext';
+        
+        return new MonacoEditorComponent({
+            containerId: containerId,
+            language: monacoLanguage,
+            theme: 'vs-light',
+            defaultValue: code || '',
+            height: options.height || 400,
+            minHeight: options.minHeight || 200,
+            maxHeight: options.maxHeight || 600,
+            resizable: true,
+            showMinimap: options.showMinimap !== false,
+            readOnly: true,
+            disableAutoSave: true,
+            monacoOptions: {
+                readOnly: true,
+                domReadOnly: true,
+                contextmenu: false,
+                lineNumbers: 'on',
+                renderWhitespace: 'selection',
+                wordWrap: 'on',
+                scrollBeyondLastLine: false,
+                folding: true,
+                showFoldingControls: 'always',
+                ...options.monacoOptions
+            },
+            ...options
+        });
+    }
+    
     // Generic editor factory
     static createEditor(type, containerId, options = {}) {
         switch (type) {
@@ -287,6 +332,8 @@ int main(int argc, char* argv[]) {
                 return this.createCheckerEditor(containerId, options);
             case 'input':
                 return this.createInputEditor(containerId, options);
+            case 'code-viewer':
+                return this.createCodeViewer(containerId, options.code || '', options.language || 'cpp', options);
             default:
                 console.warn(`Unknown editor type: ${type}`);
                 return new MonacoEditorComponent({ containerId, ...options });

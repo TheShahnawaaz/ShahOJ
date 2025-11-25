@@ -80,6 +80,9 @@ problems/*/tests/*/compiled_*
 problems/*/checker/spj
 problems/*/solution_compiled*
 
+
+frontend/
+
 # Compiled C++ files
 *.exe
 *.out

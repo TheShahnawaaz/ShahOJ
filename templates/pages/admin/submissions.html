@@ -4,6 +4,10 @@
 {% block title %}Admin · Submissions - ShahOJ{% endblock %}
 
 {% block extra_css %}
+<!-- Monaco Editor CSS -->
+<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/editor/editor.main.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/monaco-editor-component.css') }}">
+
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/submission-modal.css') }}">
 {% endblock %}
@@ -136,6 +140,11 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Monaco Editor -->
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
+<script src="{{ url_for('static', filename='js/monaco-editor-component.js') }}"></script>
+<script src="{{ url_for('static', filename='js/monaco-editor-presets.js') }}"></script>
+
 <script src="{{ url_for('static', filename='js/table-sorter.js') }}"></script>
 <script src="{{ url_for('static', filename='js/submission-modal.js') }}"></script>
 <script>

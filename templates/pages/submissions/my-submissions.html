@@ -3,6 +3,10 @@
 {% block title %}My Submissions - ShahOJ{% endblock %}
 
 {% block extra_css %}
+<!-- Monaco Editor CSS -->
+<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/editor/editor.main.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/monaco-editor-component.css') }}">
+
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/submission-modal.css') }}">
 <style>
@@ -796,6 +800,11 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Monaco Editor -->
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
+<script src="{{ url_for('static', filename='js/monaco-editor-component.js') }}"></script>
+<script src="{{ url_for('static', filename='js/monaco-editor-presets.js') }}"></script>
+
 <script src="{{ url_for('static', filename='js/table-sorter.js') }}"></script>
 <script src="{{ url_for('static', filename='js/submission-modal.js') }}"></script>
 <script>
@@ -917,7 +926,7 @@ function renderSubmissionModal(sub){
         <i class="fas fa-copy me-1"></i>Copy Code
       </button>
     </div>
-    <pre class="code-block"><code>${escapeHtml(sub.source_code || '')}</code></pre>`;
+    <div class="monaco-editor-container" id="my-submission-code-viewer" style="height: 400px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;"></div>`;
 
   let compileOut = '';
   if (sub.compile_output) {
@@ -928,7 +937,7 @@ function renderSubmissionModal(sub){
           <i class="fas fa-copy me-1"></i>Copy Output
         </button>
       </div>
-      <pre class="code-block"><code>${escapeHtml(sub.compile_output)}</code></pre>`;
+      <div class="monaco-editor-container" id="my-submission-compile-viewer" style="height: 250px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;"></div>`;
   }
 
   let runtimeErr = '';
@@ -940,7 +949,7 @@ function renderSubmissionModal(sub){
           <i class="fas fa-copy me-1"></i>Copy Error
         </button>
       </div>
-      <pre class="code-block"><code>${escapeHtml(sub.runtime_stderr)}</code></pre>`;
+      <div class="monaco-editor-container" id="my-submission-error-viewer" style="height: 250px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;"></div>`;
   }
 
   let summaryHtml = '';
@@ -989,6 +998,102 @@ function renderSubmissionModal(sub){
   }
 
   document.getElementById('submission-details').innerHTML = meta + codeBlock + compileOut + runtimeErr + summaryHtml;
+  
+  // Initialize Monaco editors after DOM is ready
+  setTimeout(() => {
+    initMySubmissionMonacoEditors(sub);
+  }, 100);
+}
+
+// Track Monaco editors for cleanup
+let mySubmissionEditors = [];
+
+function initMySubmissionMonacoEditors(sub) {
+  // Cleanup existing editors
+  if (mySubmissionEditors && mySubmissionEditors.length > 0) {
+    mySubmissionEditors.forEach(editor => {
+      if (editor && editor.destroy) {
+        try {
+          editor.destroy();
+        } catch (e) {
+          console.warn('Error destroying editor:', e);
+        }
+      }
+    });
+    mySubmissionEditors = [];
+  }
+  
+  // Check if Monaco and MonacoEditorPresets are available
+  if (typeof window.MonacoEditorPresets === 'undefined') {
+    console.warn('MonacoEditorPresets not loaded, falling back to plain text');
+    return;
+  }
+  
+  try {
+    // Initialize source code viewer
+    if (document.getElementById('my-submission-code-viewer') && sub.source_code) {
+      const codeEditor = window.MonacoEditorPresets.createCodeViewer(
+        'my-submission-code-viewer',
+        sub.source_code,
+        sub.language || 'cpp',
+        {
+          height: 400,
+          minHeight: 200,
+          maxHeight: 600
+        }
+      );
+      mySubmissionEditors.push(codeEditor);
+    }
+    
+    // Initialize compile output viewer
+    if (document.getElementById('my-submission-compile-viewer') && sub.compile_output) {
+      const compileEditor = window.MonacoEditorPresets.createCodeViewer(
+        'my-submission-compile-viewer',
+        sub.compile_output,
+        'plaintext',
+        {
+          height: 250,
+          minHeight: 150,
+          maxHeight: 400
+        }
+      );
+      mySubmissionEditors.push(compileEditor);
+    }
+    
+    // Initialize runtime error viewer
+    if (document.getElementById('my-submission-error-viewer') && sub.runtime_stderr) {
+      const errorEditor = window.MonacoEditorPresets.createCodeViewer(
+        'my-submission-error-viewer',
+        sub.runtime_stderr,
+        'plaintext',
+        {
+          height: 250,
+          minHeight: 150,
+          maxHeight: 400
+        }
+      );
+      mySubmissionEditors.push(errorEditor);
+    }
+  } catch (error) {
+    console.error('Error initializing Monaco editors:', error);
+  }
+}
+
+// Cleanup editors when modal is hidden
+document.getElementById('submissionModal').addEventListener('hidden.bs.modal', function() {
+  if (mySubmissionEditors && mySubmissionEditors.length > 0) {
+    mySubmissionEditors.forEach(editor => {
+      if (editor && editor.destroy) {
+        try {
+          editor.destroy();
+        } catch (e) {
+          console.warn('Error destroying editor:', e);
+        }
+      }
+    });
+    mySubmissionEditors = [];
+  }
+});
 }
 </script>
 {% endblock %}
