@@ -1,5 +1,5 @@
 {% extends "layouts/base.html" %}
-{% from "layouts/components.html" import enhanced_breadcrumb, problem_detail_header, enhanced_card, file_status_indicator, test_case_summary %}
+{% from "layouts/components.html" import enhanced_breadcrumb, problem_detail_header, enhanced_card, tab_panel, file_status_indicator, test_case_summary %}
 
 {% block title %}{{ problem.config.get('title', problem.slug) }} - {{ problem.config.get('difficulty', 'Medium') }} | ShahOJ{% endblock %}
 
@@ -268,6 +268,14 @@
         opacity: 0.7;
         transform: none;
         cursor: not-allowed;
+    }
+
+    /* Small button size adjustments for toolbar */
+    .btn-run-samples.btn-sm,
+    .btn-run-custom.btn-sm,
+    .btn-run-submit.btn-sm {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.875rem;
     }
 
     /* Responsive adjustments */
@@ -816,19 +824,24 @@
             height: auto;
         }
         
-        .resizable-panel-left .card,
-        .resizable-panel-right .card {
+        .resizable-panel-left .card {
             height: auto;
             min-height: 400px;
+        }
+        
+        .resizable-panel-right .card {
+            height: auto;
+            min-height: 600px;
         }
         
         .resizable-panel-right .card-body {
             padding: 1rem;
             overflow-y: auto;
+            min-height: 550px;
         }
         
         .resizable-panel-right .editor-resize-container {
-            min-height: 300px;
+            min-height: 400px;
         }
         
         .resizable-panel-right #testResults {
@@ -1392,7 +1405,6 @@
 
     #recent-submissions-content .submission-actions {
         display: flex;
-        gap: 0.5rem;
     }
 
     #recent-submissions-content .submission-actions .btn {
@@ -1495,6 +1507,358 @@
         background: rgba(255, 255, 255, 0.05);
         border-color: rgba(255, 255, 255, 0.1);
     }
+
+    /* ========================================
+       LEFT PANE SUBMISSIONS TAB STYLING
+       Same styling as recent-submissions-content
+       ======================================== */
+    
+    #left-pane-submissions-content .submission-item {
+        display: grid;
+        grid-template-columns: 60px 1fr auto;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 1.25rem;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        margin-bottom: 0.75rem;
+        transition: all 0.3s ease;
+        background: var(--card-bg);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        position: relative;
+        overflow: hidden;
+    }
+
+    #left-pane-submissions-content .submission-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--primary-color);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    #left-pane-submissions-content .submission-item:hover {
+        background: var(--secondary-bg);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    
+    #left-pane-submissions-content .submission-item:hover .submission-actions {
+        background: var(--secondary-bg);
+    }
+
+    #left-pane-submissions-content .submission-item:hover::before {
+        opacity: 1;
+    }
+
+    /* New submission glow effect */
+    @keyframes newSubmissionGlow {
+        0% {
+            box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.7);
+            border-color: var(--btn-primary);
+            transform: scale(1);
+        }
+        50% {
+            box-shadow: 0 0 20px 5px rgba(13, 110, 253, 0.4);
+            border-color: var(--btn-primary);
+            transform: scale(1.02);
+        }
+        100% {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-color: var(--border-color);
+            transform: scale(1);
+        }
+    }
+
+    #left-pane-submissions-content .submission-item.new-submission-glow {
+        animation: newSubmissionGlow 1.5s ease-in-out 2;
+        background: linear-gradient(135deg, rgba(13, 110, 253, 0.05), var(--card-bg));
+    }
+
+    #left-pane-submissions-content .submission-number {
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+        text-align: left;
+        padding-right: 1rem;
+        border-right: 2px solid var(--border-color);
+        display: flex;
+        align-items: center;
+    }
+
+    #left-pane-submissions-content .submission-meta {
+        display: grid;
+        grid-template-columns: 160px 150px 90px 100px 100px;
+        align-items: center;
+        gap: 1rem;
+        overflow: hidden;
+        min-width: 0;
+    }
+
+    #left-pane-submissions-content .submission-meta > div {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        height: 28px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+    }
+
+    #left-pane-submissions-content .submission-verdict {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    #left-pane-submissions-content .submission-verdict i {
+        font-size: 1rem;
+    }
+
+    #left-pane-submissions-content .verdict-badge {
+        min-width: 80px;
+        text-align: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 28px;
+    }
+
+    #left-pane-submissions-content .submission-time {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        min-width: 140px;
+    }
+
+    #left-pane-submissions-content .submission-time i {
+        opacity: 0.7;
+        font-size: 0.8rem;
+    }
+
+    #left-pane-submissions-content .execution-time {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 0.85rem;
+        min-width: 90px;
+        background: var(--secondary-bg);
+        padding: 0.3rem 0.75rem;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        height: 28px;
+    }
+
+    #left-pane-submissions-content .execution-time i {
+        opacity: 0.8;
+        font-size: 0.8rem;
+    }
+
+    #left-pane-submissions-content .submission-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 10;
+        background: var(--card-bg);
+    }
+
+    #left-pane-submissions-content .submission-actions .btn {
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+    }
+
+    #left-pane-submissions-content .submission-actions .btn-outline-primary:hover {
+        background: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        color: white !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+    }
+
+    #left-pane-submissions-content .submission-actions .btn-outline-secondary:hover {
+        background: var(--secondary-bg) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    #left-pane-submissions-content .test-stats {
+        color: var(--text-primary);
+        font-size: 0.85rem;
+        font-weight: 600;
+        background: var(--secondary-bg);
+        padding: 0.3rem 0.75rem;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        height: 28px;
+        justify-content: center;
+    }
+
+    #left-pane-submissions-content .test-stats:empty,
+    #left-pane-submissions-content .test-stats:has(span[style*="opacity: 0"]) {
+        background: transparent;
+        border: none;
+    }
+
+    #left-pane-submissions-content .test-stats i {
+        opacity: 0.8;
+        font-size: 0.8rem;
+    }
+
+    #left-pane-submissions-content .compile-time {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        font-weight: 500;
+        height: 28px;
+        justify-content: center;
+    }
+
+    #left-pane-submissions-content .compile-time i {
+        opacity: 0.7;
+        font-size: 0.8rem;
+        font-size: 0.75rem;
+    }
+
+    /* Dark mode adjustments for left pane submissions */
+    [data-theme="dark"] #left-pane-submissions-content .submission-item {
+        border-color: var(--border-color);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    [data-theme="dark"] #left-pane-submissions-content .submission-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    [data-theme="dark"] #left-pane-submissions-content .execution-time {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    [data-theme="dark"] #left-pane-submissions-content .test-stats {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    [data-theme="dark"] #left-pane-submissions-content .submission-actions .btn-outline-primary:hover {
+        background: var(--btn-primary) !important;
+        border-color: var(--btn-primary) !important;
+        color: white !important;
+    }
+
+    [data-theme="dark"] #left-pane-submissions-content .submission-actions .btn-outline-secondary:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+        color: #cccccc !important;
+    }
+
+    [data-theme="dark"] #left-pane-submissions-content .submission-number {
+        color: var(--text-secondary);
+        border-right-color: var(--border-color);
+    }
+
+    /* Dark mode glow effect */
+    @keyframes newSubmissionGlowDark {
+        0% {
+            box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.9);
+            border-color: var(--btn-primary);
+            transform: scale(1);
+        }
+        50% {
+            box-shadow: 0 0 25px 8px rgba(13, 110, 253, 0.6);
+            border-color: var(--btn-primary);
+            transform: scale(1.02);
+        }
+        100% {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            border-color: var(--border-color);
+            transform: scale(1);
+        }
+    }
+
+    [data-theme="dark"] #left-pane-submissions-content .submission-item.new-submission-glow {
+        animation: newSubmissionGlowDark 1.5s ease-in-out 2;
+        background: linear-gradient(135deg, rgba(13, 110, 253, 0.15), var(--card-bg));
+    }
+
+    /* Remove default padding from tab content for submissions */
+    #left-pane-submissions .tab-pane-content {
+        padding: 1rem;
+    }
+
+    /* Responsive adjustments for submission items */
+    @media (max-width: 1400px) {
+        #left-pane-submissions-content .submission-meta {
+            grid-template-columns: 140px 130px 80px 90px 90px;
+            gap: 0.75rem;
+        }
+    }
+
+    @media (max-width: 1200px) {
+        #left-pane-submissions-content .submission-meta {
+            grid-template-columns: 130px 120px 70px 80px 80px;
+            gap: 0.5rem;
+        }
+        
+        #left-pane-submissions-content .submission-item {
+            gap: 0.75rem;
+        }
+    }
+
+    @media (max-width: 1024px) {
+        #left-pane-submissions-content .submission-meta {
+            grid-template-columns: minmax(100px, 1fr) minmax(100px, 1fr);
+            grid-auto-flow: row;
+        }
+        
+        #left-pane-submissions-content .submission-meta > div:nth-child(n+3) {
+            display: none;
+        }
+    }
+
+    @media (max-width: 768px) {
+        #left-pane-submissions-content .submission-item {
+            grid-template-columns: 50px 1fr auto;
+            padding: 0.75rem 1rem;
+        }
+        
+        #left-pane-submissions-content .submission-number {
+            font-size: 0.9rem;
+            padding-right: 0.5rem;
+        }
+        
+        #left-pane-submissions-content .submission-meta {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+        
+        #left-pane-submissions-content .submission-meta > div {
+            font-size: 0.8rem;
+        }
+        
+        #left-pane-submissions-content .submission-meta > div:first-child {
+            display: flex;
+        }
+        
+        #left-pane-submissions-content .submission-meta > div:nth-child(n+2) {
+            display: none;
+        }
+    }
+
+    /* ======================================== */
 
     /* Enhanced Modal Styling - Same as My Submissions */
     .temp-submission-modal .modal-content {
@@ -1766,6 +2130,536 @@
             font-size: 1rem;
         }
     }
+
+    /* ========================================
+       TAB PANEL SYSTEM - Modern tab interface
+       ======================================== */
+    
+    /* Tab Panel Container */
+    .tab-panel {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: var(--card-bg);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: var(--box-shadow);
+        border: 1px solid var(--border-color);
+    }
+
+    /* Tab Navigation */
+    .tab-panel-nav {
+        flex-shrink: 0;
+        background: var(--secondary-bg);
+        border-bottom: 2px solid var(--border-color);
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .tab-panel-nav .nav-item {
+        margin-bottom: 0;
+    }
+
+    .tab-panel-nav .nav-link {
+        border: none;
+        border-bottom: 3px solid transparent;
+        background: transparent;
+        color: var(--text-secondary);
+        padding: 0.75rem 1.25rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        position: relative;
+        border-radius: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .tab-panel-nav .nav-link i {
+        font-size: 0.9em;
+    }
+
+    .tab-panel-nav .nav-link:hover {
+        background: var(--table-hover);
+        color: var(--text-primary);
+        border-bottom-color: transparent;
+    }
+
+    .tab-panel-nav .nav-link.active {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: #ffffff;
+        border-bottom-color: transparent;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+    }
+
+    /* Closable Tab Close Button */
+    .tab-close-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        padding: 0 0.25rem;
+        margin-left: 0.5rem;
+        cursor: pointer;
+        opacity: 0.6;
+        transition: opacity 0.2s, color 0.2s;
+        font-size: 0.85em;
+        line-height: 1;
+    }
+
+    .tab-close-btn:hover {
+        opacity: 1;
+        color: var(--btn-danger);
+    }
+
+    .tab-close-btn:active {
+        transform: scale(0.9);
+    }
+
+    /* Active tab close button in light mode */
+    .tab-panel-nav .nav-link.active .tab-close-btn {
+        color: rgba(255, 255, 255, 0.9);
+        opacity: 1;
+    }
+
+    .tab-panel-nav .nav-link.active .tab-close-btn:hover {
+        color: #ffffff;
+        opacity: 1;
+    }
+
+    /* Tab Content Area */
+    .tab-panel-content {
+        flex: 1;
+        overflow: auto;
+        background: var(--card-bg);
+        min-height: 0; /* Important for flex scrolling */
+    }
+
+    .tab-pane {
+        height: 100%;
+    }
+
+    .tab-pane-content {
+        padding: 0 1.5rem 1.5rem 1.5rem;
+        height: 100%;
+        overflow: auto;
+    }
+
+    /* Remove padding for code editor tab to allow full width and height */
+    #right-pane-code .tab-pane-content {
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    /* Add padding only to the toolbar */
+    #right-pane-code .editor-toolbar {
+        padding: 0.75rem 1rem;
+        margin-bottom: 0;
+        flex-shrink: 0;
+    }
+
+    /* Make editor container take remaining space and full width */
+    #right-pane-code .editor-resize-container {
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+        margin: 0;
+    }
+
+    /* Make Monaco editor container full width */
+    #right-pane-code .monaco-editor-container {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    /* Editor Toolbar in tabs */
+    .editor-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border-color);
+        flex-wrap: wrap;
+    }
+
+    .editor-toolbar .btn {
+        font-size: 0.875rem;
+    }
+
+    /* Minimalistic icon-only buttons for Clear, Template, and Fullscreen */
+    #clearCodeBtn,
+    #loadTemplateBtn,
+    #fullscreenBtn {
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        padding: 0.5rem;
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        font-size: 1.1rem;
+    }
+
+    #clearCodeBtn:hover,
+    #loadTemplateBtn:hover,
+    #fullscreenBtn:hover {
+        background: var(--secondary-bg);
+        color: var(--text-primary);
+    }
+
+    #clearCodeBtn:active,
+    #loadTemplateBtn:active,
+    #fullscreenBtn:active {
+        transform: scale(0.95);
+    }
+
+    /* Dark mode for minimalistic buttons */
+    [data-theme="dark"] #clearCodeBtn,
+    [data-theme="dark"] #loadTemplateBtn,
+    [data-theme="dark"] #fullscreenBtn {
+        color: #8b8b8b;
+    }
+
+    [data-theme="dark"] #clearCodeBtn:hover,
+    [data-theme="dark"] #loadTemplateBtn:hover,
+    [data-theme="dark"] #fullscreenBtn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #cccccc;
+    }
+
+    /* Fullscreen mode - styles only applied after animation via class */
+    #right-pane-code.fullscreen-mode .tab-panel {
+        border-radius: 0 !important;
+        height: 100vh !important;
+        background: var(--card-bg) !important;
+    }
+
+    #right-pane-code.fullscreen-mode .tab-pane-content {
+        background: var(--card-bg) !important;
+    }
+
+    #right-pane-code.fullscreen-mode .editor-toolbar {
+        background: var(--card-bg) !important;
+    }
+
+    #right-pane-code.fullscreen-mode .tab-panel-nav {
+        background: var(--secondary-bg) !important;
+    }
+
+    /* Dark mode fullscreen */
+    [data-theme="dark"] #right-pane-code.fullscreen-mode .tab-panel,
+    [data-theme="dark"] #right-pane-code.fullscreen-mode .tab-pane-content,
+    [data-theme="dark"] #right-pane-code.fullscreen-mode .editor-toolbar {
+        background: var(--card-bg) !important;
+    }
+
+    [data-theme="dark"] #right-pane-code.fullscreen-mode .tab-panel-nav {
+        background: #1a1a1a !important;
+    }
+
+    /* Add backdrop blur effect when in fullscreen */
+    body.editor-fullscreen {
+        overflow: hidden;
+    }
+
+    /* Smooth icon rotation for fullscreen button */
+    #fullscreenBtn i {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #fullscreenBtn:hover i {
+        transform: scale(1.1);
+    }
+
+    /* Dark mode tab styling */
+    [data-theme="dark"] .tab-panel-nav {
+        background: #1a1a1a;
+        border-bottom-color: #3e3e42;
+    }
+
+    [data-theme="dark"] .tab-panel-nav .nav-link {
+        color: #8b8b8b;
+        border-bottom-color: transparent;
+    }
+
+    [data-theme="dark"] .tab-panel-nav .nav-link:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: #e0e0e0;
+        border-bottom-color: transparent;
+    }
+
+    [data-theme="dark"] .tab-panel-nav .nav-link.active {
+        background: linear-gradient(135deg, var(--btn-primary), #094766);
+        color: #ffffff;
+        border-bottom-color: transparent;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    [data-theme="dark"] .tab-close-btn {
+        color: #8b8b8b;
+    }
+
+    [data-theme="dark"] .tab-panel-nav .nav-link.active .tab-close-btn {
+        color: rgba(255, 255, 255, 0.9);
+        opacity: 1;
+    }
+
+    [data-theme="dark"] .tab-panel-nav .nav-link.active .tab-close-btn:hover {
+        color: #ffffff;
+        opacity: 1;
+    }
+
+    [data-theme="dark"] .tab-close-btn:hover {
+        color: #ff6b6b;
+    }
+
+    /* Responsive tabs */
+    @media (max-width: 768px) {
+        .tab-panel-nav .nav-link {
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .tab-pane-content {
+            padding: 0 1rem 1rem 1rem;
+        }
+        
+        /* Increase height for right pane (code editor) on mobile */
+        .resizable-panel-right {
+            min-height: 600px;
+        }
+        
+        .resizable-panel-right .tab-panel {
+            min-height: 600px;
+        }
+        
+        #right-pane-code {
+            min-height: 600px;
+        }
+        
+        #right-pane-code .tab-pane-content {
+            min-height: 550px;
+        }
+        
+        #right-pane-code .editor-resize-container {
+            min-height: 400px;
+        }
+        
+        #right-pane-code .monaco-editor-container {
+            min-height: 350px;
+        }
+    }
+
+    /* ========================================
+       TEST RESULTS IN TAB - Same styling as #testResults
+       ======================================== */
+    
+    /* Apply all testResults styles to test results tab content */
+    [id^="right-pane-test-results-"].tab-pane {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
+    
+    [id^="right-pane-test-results-"] .tab-pane-content {
+        padding: 1.5rem !important;
+        height: auto !important;
+        min-height: 100%;
+        overflow: visible !important;
+    }
+    
+    [id^="right-pane-test-results-"] .card {
+        background-color: var(--card-bg) !important;
+        border-color: var(--border-color) !important;
+        border: none;
+        margin-bottom: 1rem;
+    }
+    
+    [id^="right-pane-test-results-"] .card-header {
+        background-color: var(--secondary-bg) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+        border: 1px solid var(--border-color);
+        border-radius: 8px 8px 0 0;
+        padding: 1rem 1.5rem !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    }
+    
+    [id^="right-pane-test-results-"] .card-body {
+        background-color: var(--card-bg) !important;
+        color: var(--text-primary) !important;
+        border: 1px solid var(--border-color);
+        border-radius: 0 0 8px 8px;
+        overflow: visible;
+        max-height: none;
+    }
+    
+    [id^="right-pane-test-results-"] .card.text-center {
+        background-color: var(--card-bg) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    [id^="right-pane-test-results-"] .bg-light {
+        word-wrap: break-word !important;
+        font-family: 'Courier New', Consolas, Monaco, 'Lucida Console', monospace !important;
+        font-size: 0.875rem !important;
+        line-height: 1.4 !important;
+        padding: 0.75rem !important;
+        border-radius: 6px !important;
+        border: 1px solid #dee2e6 !important;
+        overflow-x: auto !important;
+        background-color: #f8f9fa !important;
+        color: #212529 !important;
+    }
+    
+    [id^="right-pane-test-results-"] .bg-light code,
+    [id^="right-pane-test-results-"] .bg-light pre {
+        white-space: pre-wrap !important;
+        word-wrap: break-word !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        color: inherit !important;
+    }
+    
+    [id^="right-pane-test-results-"] .card-header:not(.bg-danger):not(.bg-warning) {
+        background: linear-gradient(135deg, #28a745, #20c997) !important;
+        color: white !important;
+    }
+    
+    [id^="right-pane-test-results-"] .card-header h6 {
+        margin: 0 !important;
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+    }
+    
+    [id^="right-pane-test-results-"] .card-header i {
+        font-size: 1.1rem !important;
+        opacity: 0.9 !important;
+    }
+    
+    /* Dark mode for test results in tab */
+    [data-theme="dark"] [id^="right-pane-test-results-"] .card {
+        background-color: var(--card-bg) !important;
+        border-color: var(--border-color) !important;
+    }
+    
+    [data-theme="dark"] [id^="right-pane-test-results-"] .card-header {
+        background-color: #2d2d30 !important;
+        border-color: #3e3e42 !important;
+        color: #cccccc !important;
+    }
+    
+    [data-theme="dark"] [id^="right-pane-test-results-"] .card-body {
+        background-color: var(--card-bg) !important;
+        color: #cccccc !important;
+    }
+    
+    [data-theme="dark"] [id^="right-pane-test-results-"] .card.text-center {
+        background-color: #2d2d30 !important;
+        border-color: #3e3e42 !important;
+        color: #cccccc !important;
+    }
+    
+    [data-theme="dark"] [id^="right-pane-test-results-"] .bg-light {
+        background-color: #2d2d30 !important;
+        color: #cccccc !important;
+        border-color: #3e3e42 !important;
+    }
+    
+    [data-theme="dark"] [id^="right-pane-test-results-"] .text-success {
+        color: #4caf50 !important;
+    }
+    
+    [data-theme="dark"] [id^="right-pane-test-results-"] .text-danger {
+        color: #f44336 !important;
+    }
+    
+    [data-theme="dark"] [id^="right-pane-test-results-"] .text-info {
+        color: #2196f3 !important;
+    }
+    
+    [data-theme="dark"] [id^="right-pane-test-results-"] .text-warning {
+        color: #ff9800 !important;
+    }
+    
+    [data-theme="dark"] [id^="right-pane-test-results-"] .alert-success {
+        background-color: rgba(76, 175, 80, 0.1) !important;
+        border-color: rgba(76, 175, 80, 0.3) !important;
+        color: #4caf50 !important;
+    }
+    
+    [data-theme="dark"] [id^="right-pane-test-results-"] .alert-danger {
+        background-color: rgba(244, 67, 54, 0.1) !important;
+        border-color: rgba(244, 67, 54, 0.3) !important;
+        color: #f44336 !important;
+    }
+    
+    [data-theme="dark"] [id^="right-pane-test-results-"] .badge.bg-success {
+        background-color: #4caf50 !important;
+        color: #ffffff !important;
+    }
+    
+    [data-theme="dark"] [id^="right-pane-test-results-"] .badge.bg-danger {
+        background-color: #f44336 !important;
+        color: #ffffff !important;
+    }
+    
+    [data-theme="dark"] [id^="right-pane-test-results-"] .badge.bg-warning {
+        background-color: #ff9800 !important;
+        color: #000000 !important;
+    }
+    
+    [data-theme="dark"] [id^="right-pane-test-results-"] .badge.bg-info {
+        background-color: #2196f3 !important;
+        color: #ffffff !important;
+    }
+    
+    [data-theme="dark"] [id^="right-pane-test-results-"] .card-header.bg-success {
+        background: linear-gradient(135deg, #2d5a3d, #1e4d2b) !important;
+        color: #ffffff !important;
+    }
+    
+    [data-theme="dark"] [id^="right-pane-test-results-"] .card-header.bg-danger {
+        background: linear-gradient(135deg, #8b2635, #5f1e2d) !important;
+        color: #ffffff !important;
+    }
+    
+    [data-theme="dark"] [id^="right-pane-test-results-"] .card-header.bg-warning {
+        background: linear-gradient(135deg, #8b4513, #654321) !important;
+        color: #ffffff !important;
+    }
+    
+    [data-theme="dark"] [id^="right-pane-test-results-"] .card-header.bg-primary,
+    [data-theme="dark"] [id^="right-pane-test-results-"] .card-header.bg-info {
+        background: linear-gradient(135deg, #1e3a5f, #0d2748) !important;
+        color: #ffffff !important;
+    }
+    
+    [data-theme="dark"] [id^="right-pane-test-results-"] .card-header:not(.bg-success):not(.bg-danger):not(.bg-warning):not(.bg-primary):not(.bg-info) {
+        color: #cccccc !important;
+    }
+
+    /* ======================================== */
 </style>
 {% endblock %}
 
@@ -1786,26 +2680,46 @@
     <!-- Main Content: Resizable Side by Side Layout -->
     <div class="resizable-container-wrapper">
         <div class="resizable-container" id="resizableContainer">
-            <!-- Left Panel: Problem Statement -->
+            <!-- Left Panel: Problem Statement + Submissions -->
             <div class="resizable-panel resizable-panel-left">
                 <!-- Floating Scroll Button - Fixed to viewport but constrained to section -->
                 <button id="floatingScrollBtnLeft" class="floating-scroll-btn" style="display: none;" title="Scroll to see more">
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 
-                {% call enhanced_card("Problem Statement", "fas fa-file-alt", []) %}
-                    {% if statement_content %}
-                        <!-- Hidden raw markdown for SEO (search engines can read this) -->
-                        <div id="statement-content-seo" style="display: none;" aria-hidden="true">
-                            {{ statement_content|safe }}
+                {% call tab_panel("left-pane", [
+                    {'id': 'statement', 'label': 'Description', 'icon': 'fas fa-file-alt'},
+                    {'id': 'submissions', 'label': 'Submissions', 'icon': 'fas fa-history'}
+                ]) %}
+                    <!-- Tab 1: Problem Statement -->
+                    <div class="tab-pane fade show active" id="left-pane-statement" role="tabpanel" aria-labelledby="left-pane-statement-tab">
+                        <div class="tab-pane-content">
+                            {% if statement_content %}
+                                <!-- Hidden raw markdown for SEO (search engines can read this) -->
+                                <div id="statement-content-seo" style="display: none;" aria-hidden="true">
+                                    {{ statement_content|safe }}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Visible formatted content (JavaScript will render here) -->
+                            <div id="problemStatement">
+                                <div class="text-center py-4">
+                                    <i class="fas fa-spinner fa-spin text-primary"></i>
+                                    <p class="mt-2 text-muted">Loading problem statement...</p>
+                                </div>
+                            </div>
                         </div>
-                    {% endif %}
+                    </div>
                     
-                    <!-- Visible formatted content (JavaScript will render here) -->
-                    <div id="problemStatement">
-                        <div class="text-center py-4">
-                            <i class="fas fa-spinner fa-spin text-primary"></i>
-                            <p class="mt-2 text-muted">Loading problem statement...</p>
+                    <!-- Tab 2: Submissions -->
+                    <div class="tab-pane fade" id="left-pane-submissions" role="tabpanel" aria-labelledby="left-pane-submissions-tab">
+                        <div class="tab-pane-content">
+                            <div id="left-pane-submissions-content">
+                                <p class="text-muted text-center py-4">
+                                    <i class="fas fa-inbox"></i><br>
+                                    No submissions yet
+                                </p>
+                            </div>
                         </div>
                     </div>
                 {% endcall %}
@@ -1814,68 +2728,62 @@
             <!-- Resize Divider -->
             <div class="resize-divider" id="resizeDivider"></div>
 
-            <!-- Right Panel: Solution Editor -->
+            <!-- Right Panel: Code Editor + Dynamic Tabs -->
             <div class="resizable-panel resizable-panel-right">
                 <!-- Floating Scroll Button - Fixed to viewport but constrained to section -->
                 <button id="floatingScrollBtn" class="floating-scroll-btn" style="display: none;" title="Scroll to see results below">
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 
-            {% call enhanced_card("Solution Editor", "fas fa-code", [
-                {'text': 'Clear', 'icon': 'fas fa-trash', 'class': 'btn-outline-secondary btn-sm', 'id': 'clearCodeBtn'},
-                {'text': 'Template', 'icon': 'fas fa-file-code', 'class': 'btn-outline-info btn-sm', 'id': 'loadTemplateBtn'}
-            ]) %}
-                <div class="editor-resize-container">
-                    <div class="monaco-editor-container" id="cpp-solution-editor"></div>
-                    <div class="editor-resize-handle" id="cpp-solution-editor-resize-handle"></div>
-                </div>
-                
-                <!-- Test Solution Controls -->
-                <div class="mt-3 pt-3 border-top">
-                    {% if current_user %}
-                        <div class="d-flex gap-3 flex-wrap justify-content-between">
-                            <div class="d-flex gap-3 flex-wrap">
-                                <button class="btn btn-run-samples btn-enhanced" id="runSampleBtn">
-                                    <i class="fas fa-vial me-2"></i>Run Samples
-                                </button>
-                                <button class="btn btn-run-submit btn-enhanced" id="submitCodeBtn">
-                                    <i class="fas fa-paper-plane me-2"></i>Submit
-                                </button>
+                {% call tab_panel("right-pane", [
+                    {'id': 'code', 'label': 'Code', 'icon': 'fas fa-code'}
+                ], "right-pane-tabs") %}
+                    <!-- Permanent Tab: Code Editor -->
+                    <div class="tab-pane fade show active" id="right-pane-code" role="tabpanel" aria-labelledby="right-pane-code-tab">
+                        <div class="tab-pane-content">
+                            <!-- Editor Toolbar with all actions -->
+                            <div class="editor-toolbar">
+                                {% if current_user %}
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <button class="btn btn-run-samples btn-sm" id="runSampleBtn">
+                                            <i class="fas fa-vial me-1"></i>Run Samples
+                                        </button>
+                                        <button class="btn btn-run-submit btn-sm" id="submitCodeBtn">
+                                            <i class="fas fa-paper-plane me-1"></i>Submit
+                                        </button>
+                                        <button class="btn btn-run-custom btn-sm" id="runCustomBtn">
+                                            <i class="fas fa-keyboard me-1"></i>Custom Input
+                                        </button>
+                                    </div>
+                                {% else %}
+                                    <div class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        You need to <a href="{{ url_for('auth_login') }}" class="text-decoration-none">sign in</a> to run or submit
+                                    </div>
+                                {% endif %}
+                                <div class="d-flex gap-1 ms-auto">
+                                    <button id="clearCodeBtn" title="Clear Code">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <button id="loadTemplateBtn" title="Load Template">
+                                        <i class="fas fa-redo"></i>
+                                    </button>
+                                    <button id="fullscreenBtn" title="Toggle Fullscreen">
+                                        <i class="fas fa-expand"></i>
+                                    </button>
+                                </div>
                             </div>
-                            <div>
-                                <button class="btn btn-run-custom btn-enhanced" id="runCustomBtn">
-                                    <i class="fas fa-keyboard me-2"></i>Run Custom Input
-                                </button>
+                            
+                            <!-- Monaco Editor -->
+                            <div class="editor-resize-container">
+                                <div class="monaco-editor-container" id="cpp-solution-editor"></div>
                             </div>
                         </div>
-                    {% else %}
-                        <div class="text-muted">
-                            <i class="fas fa-info-circle me-1"></i>
-                            You need to <a href="{{ url_for('auth_login') }}" class="text-decoration-none">sign in</a> to run or submit
-                        </div>
-                    {% endif %}
-                </div>
-
-                <!-- Test Results Section (Inside Editor Card) -->
-                <div id="testResults" class="mt-3" style="display: none;">
-                    {% call enhanced_card("Test Results", "fas fa-chart-line", []) %}
-                        <div id="testResultsContent">
-                            <!-- Test results will be populated here -->
-                        </div>
-                    {% endcall %}
-                </div>
-                
-                <!-- Enhanced Recent Submissions Section -->
-                <div id="recentSubmissions" class="mt-3" style="display: none;">
-                    {% call enhanced_card("Recent Submissions", "fas fa-history", [
-                        {'text': 'View All', 'icon': 'fas fa-external-link-alt', 'class': 'btn-outline-primary btn-sm', 'onclick': 'viewAllSubmissionsForProblem()'}
-                    ]) %}
-                        <div id="recent-submissions-content">
-                            <!-- Will be populated by JavaScript -->
-                        </div>
-                    {% endcall %}
-                </div>
-            {% endcall %}
+                    </div>
+                    
+                    <!-- Dynamic Test Results tabs will be added here by JavaScript -->
+                {% endcall %}
+            </div>
         </div>
     </div>
     
@@ -1931,6 +2839,7 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <!-- Monaco Editor JS (load after other dependencies) -->
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
@@ -1938,13 +2847,147 @@
 <script src="{{ url_for('static', filename='js/monaco-editor-component.js') }}"></script>
 <script src="{{ url_for('static', filename='js/monaco-editor-presets.js') }}"></script>
 <script src="{{ url_for('static', filename='js/submission-modal.js') }}"></script>
+<!-- Confetti celebration animation -->
+<script src="{{ url_for('static', filename='js/confetti-celebration.js') }}"></script>
 
 <script>
+// ========================================
+// Tab Manager System
+// ========================================
+class TabManager {
+    constructor(panelId) {
+        this.panelId = panelId;
+        this.tabNav = document.querySelector(`#${panelId} .tab-panel-nav`);
+        this.tabContent = document.querySelector(`#${panelId} .tab-panel-content`);
+        this.temporaryTabs = new Map();
+    }
+    
+    // Add a temporary tab (e.g., test results)
+    addTemporaryTab(tabId, label, icon, content, closable = true) {
+        // Check if tab already exists
+        if (this.temporaryTabs.has(tabId)) {
+            this.switchToTab(tabId);
+            this.updateTabContent(tabId, content);
+            return;
+        }
+        
+        // Create tab button
+        const tabButton = document.createElement('li');
+        tabButton.className = 'nav-item';
+        tabButton.setAttribute('role', 'presentation');
+        
+        const button = document.createElement('button');
+        button.className = 'nav-link';
+        button.id = `${this.panelId}-${tabId}-tab`;
+        button.setAttribute('data-bs-toggle', 'tab');
+        button.setAttribute('data-bs-target', `#${this.panelId}-${tabId}`);
+        button.setAttribute('type', 'button');
+        button.setAttribute('role', 'tab');
+        button.setAttribute('aria-controls', `${this.panelId}-${tabId}`);
+        button.setAttribute('aria-selected', 'false');
+        
+        // Add icon and label
+        if (icon) {
+            const iconEl = document.createElement('i');
+            iconEl.className = icon;
+            button.appendChild(iconEl);
+            button.appendChild(document.createTextNode(' '));
+        }
+        button.appendChild(document.createTextNode(label));
+        
+        // Add close button if closable
+        if (closable) {
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'tab-close-btn';
+            closeBtn.setAttribute('data-tab-id', tabId);
+            closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                this.closeTab(tabId);
+            });
+            button.appendChild(closeBtn);
+        }
+        
+        tabButton.appendChild(button);
+        
+        // Create tab pane
+        const tabPane = document.createElement('div');
+        tabPane.className = 'tab-pane fade';
+        tabPane.id = `${this.panelId}-${tabId}`;
+        tabPane.setAttribute('role', 'tabpanel');
+        tabPane.setAttribute('aria-labelledby', `${this.panelId}-${tabId}-tab`);
+        tabPane.innerHTML = `<div class="tab-pane-content">${content}</div>`;
+        
+        // Add to DOM
+        this.tabNav.appendChild(tabButton);
+        this.tabContent.appendChild(tabPane);
+        
+        // Store reference
+        this.temporaryTabs.set(tabId, { button: tabButton, pane: tabPane });
+        
+        // Switch to new tab
+        this.switchToTab(tabId);
+    }
+    
+    closeTab(tabId) {
+        const tab = this.temporaryTabs.get(tabId);
+        if (!tab) return;
+        
+        // If active, switch to first permanent tab
+        const tabButton = tab.button.querySelector('button');
+        if (tabButton && tabButton.classList.contains('active')) {
+            const firstTab = this.tabNav.querySelector('.nav-link');
+            if (firstTab) {
+                const bsTab = new bootstrap.Tab(firstTab);
+                bsTab.show();
+            }
+        }
+        
+        // Remove from DOM
+        tab.button.remove();
+        tab.pane.remove();
+        this.temporaryTabs.delete(tabId);
+    }
+    
+    switchToTab(tabId) {
+        const tabButton = document.getElementById(`${this.panelId}-${tabId}-tab`);
+        if (tabButton) {
+            const bsTab = new bootstrap.Tab(tabButton);
+            bsTab.show();
+        }
+    }
+    
+    updateTabContent(tabId, content) {
+        const pane = document.getElementById(`${this.panelId}-${tabId}`);
+        if (pane) {
+            const contentDiv = pane.querySelector('.tab-pane-content');
+            if (contentDiv) {
+                contentDiv.innerHTML = content;
+            }
+        }
+    }
+    
+    closeAllTemporaryTabs() {
+        const tabIds = Array.from(this.temporaryTabs.keys());
+        tabIds.forEach(tabId => this.closeTab(tabId));
+    }
+}
+
+// Initialize tab managers
+let rightPaneTabs = null;
+let leftPaneTabs = null;
+
 // Global variables
 let solutionEditor = null;
 let currentTestResults = null;
+let testRunCounter = 0; // Counter for unique test result tabs
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tab managers
+    rightPaneTabs = new TabManager('right-pane');
+    leftPaneTabs = new TabManager('left-pane');
+    
     // Load problem statement
     loadProblemStatement();
 
@@ -2241,9 +3284,193 @@ signed main()
                 }
             }
         });
+
+        // Store original position for fullscreen exit animation
+        let originalPosition = null;
+
+        // Helper function to exit fullscreen mode
+        const exitFullscreenIfActive = () => {
+            const codePane = document.getElementById('right-pane-code');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const icon = fullscreenBtn?.querySelector('i');
+            
+            if (codePane?.classList.contains('fullscreen-mode') && originalPosition) {
+                // Animate back to original position
+                codePane.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                codePane.style.top = originalPosition.top + 'px';
+                codePane.style.left = originalPosition.left + 'px';
+                codePane.style.width = originalPosition.width + 'px';
+                codePane.style.height = originalPosition.height + 'px';
+                codePane.style.borderRadius = '8px';
+                
+                // Clean up after animation
+                setTimeout(() => {
+                    codePane.classList.remove('fullscreen-mode');
+                    document.body.classList.remove('editor-fullscreen');
+                    codePane.style.position = '';
+                    codePane.style.top = '';
+                    codePane.style.left = '';
+                    codePane.style.width = '';
+                    codePane.style.height = '';
+                    codePane.style.zIndex = '';
+                    codePane.style.transition = '';
+                    codePane.style.borderRadius = '';
+                    originalPosition = null;
+                    
+                    if (this.cppEditor && this.cppEditor.layout) {
+                        this.cppEditor.layout();
+                    }
+                }, 450);
+                
+                if (icon) {
+                    icon.classList.remove('fa-compress');
+                    icon.classList.add('fa-expand');
+                    fullscreenBtn.title = 'Toggle Fullscreen';
+                }
+                
+                return true; // Was in fullscreen
+            }
+            return false; // Was not in fullscreen
+        };
+
+        // Fullscreen toggle with smooth animation
+        document.getElementById('fullscreenBtn')?.addEventListener('click', () => {
+            const codePane = document.getElementById('right-pane-code');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const icon = fullscreenBtn.querySelector('i');
+            
+            if (codePane.classList.contains('fullscreen-mode')) {
+                // Exit fullscreen - animate back to original position
+                if (originalPosition) {
+                    // Keep it fixed but animate to original position
+                    codePane.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                    codePane.style.top = originalPosition.top + 'px';
+                    codePane.style.left = originalPosition.left + 'px';
+                    codePane.style.width = originalPosition.width + 'px';
+                    codePane.style.height = originalPosition.height + 'px';
+                    codePane.style.borderRadius = '8px';
+                    
+                    // Clean up after animation
+                    setTimeout(() => {
+                        codePane.classList.remove('fullscreen-mode');
+                        document.body.classList.remove('editor-fullscreen');
+                        codePane.style.position = '';
+                        codePane.style.top = '';
+                        codePane.style.left = '';
+                        codePane.style.width = '';
+                        codePane.style.height = '';
+                        codePane.style.zIndex = '';
+                        codePane.style.transition = '';
+                        codePane.style.borderRadius = '';
+                        originalPosition = null;
+                        
+                        if (this.cppEditor && this.cppEditor.layout) {
+                            this.cppEditor.layout();
+                        }
+                    }, 450);
+                }
+                
+                icon.classList.remove('fa-compress');
+                icon.classList.add('fa-expand');
+                fullscreenBtn.title = 'Toggle Fullscreen';
+                
+            } else {
+                // Enter fullscreen - animate from current position
+                const rect = codePane.getBoundingClientRect();
+                
+                // Store original position for exit animation
+                originalPosition = {
+                    top: rect.top,
+                    left: rect.left,
+                    width: rect.width,
+                    height: rect.height
+                };
+                
+                // Set initial position to current position (fixed)
+                codePane.style.position = 'fixed';
+                codePane.style.top = rect.top + 'px';
+                codePane.style.left = rect.left + 'px';
+                codePane.style.width = rect.width + 'px';
+                codePane.style.height = rect.height + 'px';
+                codePane.style.zIndex = '10000';
+                codePane.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                
+                document.body.classList.add('editor-fullscreen');
+                
+                // Trigger animation to fullscreen on next frame
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        codePane.style.top = '0px';
+                        codePane.style.left = '0px';
+                        codePane.style.width = '100vw';
+                        codePane.style.height = '100vh';
+                        codePane.style.borderRadius = '0px';
+                        codePane.classList.add('fullscreen-mode');
+                    });
+                });
+                
+                icon.classList.remove('fa-expand');
+                icon.classList.add('fa-compress');
+                fullscreenBtn.title = 'Exit Fullscreen';
+                
+                // Update editor layout after animation
+                setTimeout(() => {
+                    if (this.cppEditor && this.cppEditor.layout) {
+                        this.cppEditor.layout();
+                    }
+                }, 450);
+            }
+        });
+
+        // ESC key to exit fullscreen
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const codePane = document.getElementById('right-pane-code');
+                const fullscreenBtn = document.getElementById('fullscreenBtn');
+                const icon = fullscreenBtn?.querySelector('i');
+                
+                if (codePane?.classList.contains('fullscreen-mode') && originalPosition) {
+                    // Animate back to original position
+                    codePane.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                    codePane.style.top = originalPosition.top + 'px';
+                    codePane.style.left = originalPosition.left + 'px';
+                    codePane.style.width = originalPosition.width + 'px';
+                    codePane.style.height = originalPosition.height + 'px';
+                    codePane.style.borderRadius = '8px';
+                    
+                    // Clean up after animation
+                    setTimeout(() => {
+                        codePane.classList.remove('fullscreen-mode');
+                        document.body.classList.remove('editor-fullscreen');
+                        codePane.style.position = '';
+                        codePane.style.top = '';
+                        codePane.style.left = '';
+                        codePane.style.width = '';
+                        codePane.style.height = '';
+                        codePane.style.zIndex = '';
+                        codePane.style.transition = '';
+                        codePane.style.borderRadius = '';
+                        originalPosition = null;
+                        
+                        if (this.cppEditor && this.cppEditor.layout) {
+                            this.cppEditor.layout();
+                        }
+                    }, 450);
+                    
+                    if (icon) {
+                        icon.classList.remove('fa-compress');
+                        icon.classList.add('fa-expand');
+                        fullscreenBtn.title = 'Toggle Fullscreen';
+                    }
+                }
+            }
+        });
         
         // Run samples only
         document.getElementById('runSampleBtn')?.addEventListener('click', () => {
+            // Exit fullscreen if active
+            exitFullscreenIfActive();
+            
             // Check if user is authenticated
             const isAuthenticated = {{ 'true' if current_user else 'false' }};
             if (!isAuthenticated) {
@@ -2265,6 +3492,9 @@ signed main()
 
         // Run custom input
         document.getElementById('runCustomBtn')?.addEventListener('click', () => {
+            // Exit fullscreen if active
+            exitFullscreenIfActive();
+            
             // Check if user is authenticated
             const isAuthenticated = {{ 'true' if current_user else 'false' }};
             if (!isAuthenticated) {
@@ -2284,6 +3514,9 @@ signed main()
 
         // Submit code - Enhanced to show full test results
         document.getElementById('submitCodeBtn')?.addEventListener('click', async () => {
+            // Exit fullscreen if active
+            exitFullscreenIfActive();
+            
             const isAuthenticated = {{ 'true' if current_user else 'false' }};
             if (!isAuthenticated) {
                 alert('Please sign in to submit.');
@@ -2320,13 +3553,13 @@ signed main()
                     if (data.detailed_results) {
                         displayTestResults(data.detailed_results);
                         
-                        // Scroll to results section
-                        setTimeout(() => {
-                            document.getElementById('testResults')?.scrollIntoView({ 
-                                behavior: 'smooth', 
-                                block: 'start' 
-                            });
-                        }, 100);
+                        // Scroll to results section (no longer needed with tabs)
+                        // setTimeout(() => {
+                        //     document.getElementById('testResults')?.scrollIntoView({ 
+                        //         behavior: 'smooth', 
+                        //         block: 'start' 
+                        //     });
+                        // }, 100);
                     }
                     
                     // Show enhanced notification
@@ -2344,7 +3577,34 @@ signed main()
                     }
                     
                     // Refresh submissions list
-                    loadRecentSubmissions();
+                    await loadRecentSubmissions();
+                    
+                    // Trigger confetti for AC verdict
+                    if (data.verdict === 'AC') {
+                        setTimeout(() => {
+                            triggerConfetti();
+                        }, 300);
+                    }
+                    
+                    // Switch to Submissions tab on the left panel after a brief delay
+                    setTimeout(() => {
+                        const submissionsTab = document.getElementById('left-pane-submissions-tab');
+                        if (submissionsTab) {
+                            submissionsTab.click();
+                        }
+                        
+                        // Highlight the newest submission (first one)
+                        setTimeout(() => {
+                            const firstSubmission = document.querySelector('#left-pane-submissions-content .submission-item:first-child');
+                            if (firstSubmission) {
+                                firstSubmission.classList.add('new-submission-glow');
+                                // Remove the glow after animation completes
+                                setTimeout(() => {
+                                    firstSubmission.classList.remove('new-submission-glow');
+                                }, 3000);
+                            }
+                        }, 100);
+                    }, 500);
                 } else {
                     // Error
                     if (this.cppEditor && this.cppEditor.showAutoSaveNotification) {
@@ -2479,6 +3739,7 @@ function escapeForJs(str) {
 
 // Display test results (from test-solution.html)
 function displayTestResults(results) {
+    // Legacy elements (no longer used with tab system, but kept for compatibility)
     const testResultsDiv = document.getElementById('testResults');
     const testResultsContent = document.getElementById('testResultsContent');
     
@@ -2496,8 +3757,25 @@ function displayTestResults(results) {
             <i class="fas fa-times-circle"></i> <strong>Compilation Failed</strong><br>
             <pre class="mt-2">${results.compilation.errors}</pre>
         </div>`;
-        testResultsContent.innerHTML = html;
-        testResultsDiv.style.display = 'block';
+        
+        // Create tab for compilation error too
+        if (rightPaneTabs) {
+            testRunCounter++;
+            const tabId = `test-results-${testRunCounter}`;
+            const tabLabel = 'Test Results';
+            
+            rightPaneTabs.addTemporaryTab(
+                tabId,
+                tabLabel,
+                'fas fa-chart-line',
+                html,
+                true // closable
+            );
+        } else {
+            // Fallback for legacy code
+            testResultsContent.innerHTML = html;
+            testResultsDiv.style.display = 'block';
+        }
         return;
     }
     
@@ -2631,18 +3909,25 @@ function displayTestResults(results) {
         html += '</div></div>';
     }
     
-    testResultsContent.innerHTML = html;
-    testResultsDiv.style.display = 'block';
-    
-    // Scroll to results
-    testResultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    
-    // Update floating scroll button visibility
-    setTimeout(() => {
-        if (window.floatingScrollButton) {
-            window.floatingScrollButton.updateButtonVisibility();
-        }
-    }, 100);
+    // Use tab manager to display results (new tab-based interface)
+    if (rightPaneTabs) {
+        // Increment counter for unique tab IDs
+        testRunCounter++;
+        const tabId = `test-results-${testRunCounter}`;
+        const tabLabel = 'Test Results';
+        
+        rightPaneTabs.addTemporaryTab(
+            tabId,
+            tabLabel,
+            'fas fa-chart-line',
+            html,
+            true // closable
+        );
+    } else {
+        // Fallback for legacy code (shouldn't happen)
+        testResultsContent.innerHTML = html;
+        testResultsDiv.style.display = 'block';
+    }
 }
 
 
@@ -3143,20 +4428,32 @@ function normalizeTimestamp(ts) {
 
 async function loadRecentSubmissions() {
     try {
-        const res = await fetch(`/api/problem/{{ problem.slug }}/submissions?page=1&limit=8`);
+        const res = await fetch(`/api/problem/{{ problem.slug }}/submissions?page=1&limit=1000`);
         const data = await res.json();
+        
+        // Get the left pane submissions tab content area
+        const leftPaneContent = document.getElementById('left-pane-submissions-content');
+        
+        // Legacy elements (for backward compatibility, though no longer used)
         const section = document.getElementById('recentSubmissions');
         const content = document.getElementById('recent-submissions-content');
         
         if (!data.success || !data.items || data.items.length === 0) {
-            if (section) section.style.display = 'none';
+            if (leftPaneContent) {
+                leftPaneContent.innerHTML = `
+                    <p class="text-muted text-center py-4">
+                        <i class="fas fa-inbox"></i><br>
+                        No submissions yet
+                    </p>
+                `;
+            }
             return;
         }
         
-        if (section) section.style.display = '';
-        
         let html = '';
+        const totalSubmissions = data.items.length;
         data.items.forEach((submission, index) => {
+            const submissionNumber = totalSubmissions - index; // Reverse numbering (newest = highest)
             const verdict = (submission.verdict || submission.status || '').toUpperCase();
             const normalizedCreated = normalizeTimestamp(submission.created_at);
             const when = normalizedCreated
@@ -3190,7 +4487,7 @@ async function loadRecentSubmissions() {
                     summary = JSON.parse(submission.result_summary_json);
                     if (summary.statistics) {
                         const s = summary.statistics;
-                        testStats = `${s.passed}/${s.total_tests} passed`;
+                        testStats = `${s.passed}/${s.total_tests}`;
                     }
                 }
             } catch(e) {
@@ -3201,7 +4498,7 @@ async function loadRecentSubmissions() {
                         if (match) {
                             const total = parseInt(match[1]);
                             const passed = parseInt(match[2]);
-                            testStats = `${passed}/${total} passed`;
+                            testStats = `${passed}/${total}`;
                         }
                     } catch(e2) {
                         // If even regex parsing fails, continue without stats
@@ -3228,35 +4525,36 @@ async function loadRecentSubmissions() {
 
             html += `
                 <div class="submission-item">
+                    <div class="submission-number">#${submissionNumber}</div>
                     <div class="submission-meta">
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge ${badgeClass} verdict-badge">${verdict || '—'}</span>
+                        <div class="submission-verdict">
                             <i class="${statusIcon} ${statusColor}"></i>
+                            <span class="badge ${badgeClass} verdict-badge">${verdict || '—'}</span>
                         </div>
                         <div class="submission-time">
-                            <i class="fas fa-clock me-1"></i>
+                            <i class="fas fa-clock"></i>
                             <span title="${when}">${timeAgo || when}</span>
                         </div>
-                        ${testStats ? `
-                            <div class="test-stats">
-                                <i class="fas fa-vial me-1"></i>
+                        <div class="test-stats">
+                            ${testStats ? `
+                                <i class="fas fa-vial"></i>
                                 <span>${testStats}</span>
-                            </div>
-                        ` : ''}
+                            ` : '<span style="opacity: 0;">—</span>'}
+                        </div>
                         <div class="execution-time">
-                            <i class="fas fa-stopwatch me-1"></i>
+                            <i class="fas fa-stopwatch"></i>
                             <span>${submission.time_ms ? submission.time_ms + 'ms' : '—'}</span>
                         </div>
-                        ${submission.compile_time_ms ? `
-                            <div class="compile-time">
-                                <i class="fas fa-hammer me-1"></i>
+                        <div class="compile-time">
+                            ${submission.compile_time_ms ? `
+                                <i class="fas fa-hammer"></i>
                                 <span>${submission.compile_time_ms}ms</span>
-                            </div>
-                        ` : ''}
+                            ` : '<span style="opacity: 0;">—</span>'}
+                        </div>
                     </div>
                     <div class="submission-actions">
                         <button class="btn btn-sm btn-outline-primary" onclick="SubmissionModal.show('${submission.id}')" title="View Details">
-                            <i class="fas fa-eye me-1"></i>View
+                            <i class="fas fa-eye"></i>
                         </button>
                         ${submission.source_code ? `
                             <button class="btn btn-sm btn-outline-secondary" onclick="copySubmissionCode('${submission.id}')" title="Copy Code">
@@ -3280,18 +4578,26 @@ async function loadRecentSubmissions() {
             `;
         }
         
-        content.innerHTML = html;
+        // Populate the left pane submissions tab
+        if (leftPaneContent) {
+            leftPaneContent.innerHTML = html;
+        }
         
-        // Update floating scroll button visibility
-        setTimeout(() => {
-            if (window.floatingScrollButton) {
-                window.floatingScrollButton.updateButtonVisibility();
-            }
-        }, 100);
+        // Legacy: Also populate old content div if it exists (for compatibility)
+        if (content) {
+            content.innerHTML = html;
+        }
         
     } catch (e) {
-        const section = document.getElementById('recentSubmissions');
-        if (section) section.style.display = 'none';
+        const leftPaneContent = document.getElementById('left-pane-submissions-content');
+        if (leftPaneContent) {
+            leftPaneContent.innerHTML = `
+                <p class="text-muted text-center py-4">
+                    <i class="fas fa-exclamation-triangle"></i><br>
+                    Error loading submissions
+                </p>
+            `;
+        }
     }
 }
 

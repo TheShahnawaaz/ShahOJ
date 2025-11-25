@@ -641,7 +641,7 @@ class DatabaseManager:
             conn.row_factory = sqlite3.Row
             rows = conn.execute(query, problem_slugs).fetchall()
             return {row['problem_slug']: row['count'] for row in rows}
-    
+
     def get_user_solve_status_for_problems(self, user_id: str, problem_slugs: List[str]) -> Dict[str, str]:
         """
         Get solve status for a user across multiple problems.

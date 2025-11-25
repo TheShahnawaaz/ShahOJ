@@ -80,7 +80,7 @@ def dashboard():
             problem_slugs)
         for p in result['problems']:
             p['submission_count'] = submission_counts.get(p['slug'], 0)
-        
+
         # Get user's solve status for these problems (if authenticated)
         if user:
             solve_status = db_manager.get_user_solve_status_for_problems(
