@@ -779,7 +779,7 @@
                 <thead class="table-dark">
                     <tr>
                         <th class="sortable-header text-center" data-column="solve_status" data-type="text" style="width: 80px;">
-                            <i class="fas fa-check-circle me-1"></i>Status
+                            Status
                         </th>
                         <th class="sortable-header" data-column="title" data-type="text">
                             <i class="fas fa-sort me-1"></i>Problem Title
@@ -814,6 +814,8 @@
                                     <i class="fas fa-check-circle text-success" title="Solved" style="font-size: 1.2rem;"></i>
                                 {% elif problem.solve_status == 'attempted' %}
                                     <i class="fas fa-minus-circle text-warning" title="Attempted" style="font-size: 1.2rem;"></i>
+                                {% else %}
+                                    <i class="fas fa-circle text-muted" title="Not Attempted" style="font-size: 0.6rem;"></i>
                                 {% endif %}
                             {% endif %}
                         </td>

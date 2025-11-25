@@ -56,13 +56,6 @@
             <div class="flex-grow-1">
                 <h1 class="mb-2">
                     <i class="fas fa-file-code"></i> {{ problem.config.get('title') or problem.slug }}
-                    {% if current_user %}
-                        {% if solve_status == 'solved' %}
-                            <i class="fas fa-check-circle text-success ms-2" title="Solved" style="font-size: 0.8em;"></i>
-                        {% elif solve_status == 'attempted' %}
-                            <i class="fas fa-minus-circle text-warning ms-2" title="Attempted" style="font-size: 0.8em;"></i>
-                        {% endif %}
-                    {% endif %}
                     <button class="btn btn-link p-0 ms-2" onclick="copyProblemLink('{{ problem.slug }}')" title="Copy problem link">
                         <i class="fas fa-link text-white-50"></i>
                     </button>
@@ -93,6 +86,25 @@
                             <i class="fas fa-memory"></i> {{ problem.config.get('limits.memory_mb') or 256 }}MB
                         </span>
                     </div>
+                    
+                    <!-- Solve Status Indicator -->
+                    {% if current_user %}
+                        <div class="px-3">
+                            {% if solve_status == 'solved' %}
+                                <span class="badge bg-success fs-6 px-3 py-2">
+                                    <i class="fas fa-check-circle me-1"></i>Solved
+                                </span>
+                            {% elif solve_status == 'attempted' %}
+                                <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+                                    <i class="fas fa-minus-circle me-1"></i>Attempted
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary fs-6 px-3 py-2">
+                                    <i class="fas fa-circle me-1" style="font-size: 0.6em;"></i>Todo
+                                </span>
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 </div>
             </div>
             
