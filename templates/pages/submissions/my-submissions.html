@@ -1080,18 +1080,22 @@ function initMySubmissionMonacoEditors(sub) {
 }
 
 // Cleanup editors when modal is hidden
-document.getElementById('submissionModal').addEventListener('hidden.bs.modal', function() {
-  if (mySubmissionEditors && mySubmissionEditors.length > 0) {
-    mySubmissionEditors.forEach(editor => {
-      if (editor && editor.destroy) {
-        try {
-          editor.destroy();
-        } catch (e) {
-          console.warn('Error destroying editor:', e);
+// Note: SubmissionModal.show() creates 'sharedSubmissionModal' dynamically,
+// so we need to use event delegation on document
+document.addEventListener('hidden.bs.modal', function(event) {
+  if (event.target.id === 'sharedSubmissionModal') {
+    if (mySubmissionEditors && mySubmissionEditors.length > 0) {
+      mySubmissionEditors.forEach(editor => {
+        if (editor && editor.destroy) {
+          try {
+            editor.destroy();
+          } catch (e) {
+            console.warn('Error destroying editor:', e);
+          }
         }
-      }
-    });
-    mySubmissionEditors = [];
+      });
+      mySubmissionEditors = [];
+    }
   }
 });
 }
