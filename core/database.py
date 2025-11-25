@@ -641,6 +641,49 @@ class DatabaseManager:
             conn.row_factory = sqlite3.Row
             rows = conn.execute(query, problem_slugs).fetchall()
             return {row['problem_slug']: row['count'] for row in rows}
+    
+    def get_user_solve_status_for_problems(self, user_id: str, problem_slugs: List[str]) -> Dict[str, str]:
+        """
+        Get solve status for a user across multiple problems.
+        Returns dict mapping problem_slug to status: 'solved', 'attempted', or 'not_attempted'
+        
+        Status logic:
+        - solved: Has at least one submission with verdict 'AC'
+        - attempted: Has submissions but none with verdict 'AC'
+        - not_attempted: No submissions
+        """
+        if not problem_slugs or not user_id:
+            return {}
+        
+        placeholders = ','.join(['?'] * len(problem_slugs))
+        query = f"""
+            SELECT 
+                problem_slug,
+                MAX(CASE WHEN verdict = 'AC' THEN 1 ELSE 0 END) as has_accepted,
+                COUNT(*) as submission_count
+            FROM submissions
+            WHERE user_id = ? AND problem_slug IN ({placeholders})
+            GROUP BY problem_slug
+        """
+        
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(query, [user_id] + problem_slugs).fetchall()
+            
+            status_map = {}
+            for row in rows:
+                slug = row['problem_slug']
+                if row['has_accepted']:
+                    status_map[slug] = 'solved'
+                else:
+                    status_map[slug] = 'attempted'
+            
+            # Mark problems with no submissions as not_attempted
+            for slug in problem_slugs:
+                if slug not in status_map:
+                    status_map[slug] = 'not_attempted'
+            
+            return status_map
 
     def get_public_problems(self, search: str = None, difficulty: str = None,
                             page: int = 1, limit: int = 20) -> Dict:

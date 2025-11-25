@@ -21,6 +21,26 @@
 
     body { background-color: var(--primary-bg); }
 
+    /* Solve Status Icons */
+    .solve-status-icon {
+        font-size: 1.2rem;
+        transition: transform 0.2s ease;
+    }
+    
+    .solve-status-icon:hover {
+        transform: scale(1.2);
+    }
+    
+    /* Solve status animations */
+    @keyframes checkPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    
+    .solve-status-solved {
+        animation: checkPulse 2s ease-in-out infinite;
+    }
+
     /* Welcome Section */
     .welcome-section {
         background: linear-gradient(135deg, var(--primary-color), #0056b3);
@@ -758,6 +778,9 @@
             <table class="table table-hover" id="problems-table">
                 <thead class="table-dark">
                     <tr>
+                        <th class="sortable-header text-center" data-column="solve_status" data-type="text" style="width: 80px;">
+                            <i class="fas fa-check-circle me-1"></i>Status
+                        </th>
                         <th class="sortable-header" data-column="title" data-type="text">
                             <i class="fas fa-sort me-1"></i>Problem Title
                         </th>
@@ -784,6 +807,17 @@
                 <tbody>
                     {% for problem in problems %}
                     <tr style="cursor: pointer;" data-href="{{ url_for('problem_detail', slug=problem.slug) }}">
+                        <!-- Solve Status -->
+                        <td class="text-center" data-sort-value="{{ problem.solve_status }}">
+                            {% if is_authenticated %}
+                                {% if problem.solve_status == 'solved' %}
+                                    <i class="fas fa-check-circle text-success" title="Solved" style="font-size: 1.2rem;"></i>
+                                {% elif problem.solve_status == 'attempted' %}
+                                    <i class="fas fa-minus-circle text-warning" title="Attempted" style="font-size: 1.2rem;"></i>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        
                         <!-- Problem Title -->
                         <td data-sort-value="{{ problem.title or problem.slug }}">
                             <a href="{{ url_for('problem_detail', slug=problem.slug) }}" class="admin-problem-link">

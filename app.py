@@ -80,6 +80,17 @@ def dashboard():
             problem_slugs)
         for p in result['problems']:
             p['submission_count'] = submission_counts.get(p['slug'], 0)
+        
+        # Get user's solve status for these problems (if authenticated)
+        if user:
+            solve_status = db_manager.get_user_solve_status_for_problems(
+                user['id'], problem_slugs)
+            for p in result['problems']:
+                p['solve_status'] = solve_status.get(p['slug'], 'not_attempted')
+        else:
+            # Not authenticated users don't have solve status
+            for p in result['problems']:
+                p['solve_status'] = 'not_attempted'
 
         # Get author information for all problems
         author_info = {}
@@ -257,6 +268,12 @@ def my_problems():
             problem_slugs)
         for p in result['items']:
             p['submission_count'] = submission_counts.get(p['slug'], 0)
+        
+        # Get user's solve status for these problems
+        solve_status = db_manager.get_user_solve_status_for_problems(
+            user['id'], problem_slugs)
+        for p in result['items']:
+            p['solve_status'] = solve_status.get(p['slug'], 'not_attempted')
 
         # Calculate pagination info
         limit = LIMIT_PER_PAGE
@@ -951,6 +968,14 @@ def problem_detail(slug):
         is_author = bool(
             user and (user['id'] == problem_data.get('author_id')))
         is_superuser = bool(user and user.get('is_superuser'))
+        
+        # Get solve status for this problem (if user is authenticated)
+        solve_status = 'not_attempted'
+        if user:
+            status_map = db_manager.get_user_solve_status_for_problems(
+                user['id'], [slug])
+            solve_status = status_map.get(slug, 'not_attempted')
+        
         return render_template('pages/problem/detail.html',
                                problem=unified_problem,
                                problem_data=problem_data,
@@ -958,7 +983,8 @@ def problem_detail(slug):
                                current_user=user,
                                is_author=is_author or is_superuser,
                                is_superuser=is_superuser,
-                               statement_content=statement_content  # Pass statement for SEO
+                               statement_content=statement_content,  # Pass statement for SEO
+                               solve_status=solve_status  # Pass solve status
                                )
     except Exception as e:
         return f"Error loading problem: {e}", 500
