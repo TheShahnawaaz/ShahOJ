@@ -24,7 +24,7 @@ User-agent: Googlebot-Image
 Allow: /static/images/*
 
 # Sitemap location
-Sitemap: https://theshahnawaz.pythonanywhere.com/sitemap.xml
+Sitemap: https://oj.theshahnawaz.in/sitemap.xml
 
 # Crawl delay (optional, adjust as needed)
 Crawl-delay: 1
