@@ -910,13 +910,15 @@ def api_problems():
             })
 
         stats = unified_problem_manager.get_statistics()
+        total_test_cases = sum(sum(p['test_cases'].values()) for p in problems_data)
+        
         return jsonify({
             'success': True,
             'problems': problems_data,
             'stats': {
                 'total_problems': stats['total_problems'],
-                'total_test_cases': stats['total_test_cases'],
-                'difficulty_breakdown': stats['difficulty_breakdown']
+                'total_test_cases': total_test_cases,
+                'difficulty_breakdown': stats.get('difficulty_distribution', {})
             }
         })
 
